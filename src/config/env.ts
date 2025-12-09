@@ -7,6 +7,8 @@ const envSchema = z.object({
   DB_URL: z
     .string()
     .default("mongodb+srv://hridoy:1234@practice0.qsptr89.mongodb.net"),
+  NODE_ENV: z.string().default("development"),
+
   SALT_ROUNDS: z.coerce.number().default(10),
 
   JWT_ACCESS_SECRET: z.string().min(1, "Access token secret required"),
@@ -14,6 +16,9 @@ const envSchema = z.object({
 
   JWT_ACCESS_EXPIRY: z.string().default("7d"),
   JWT_REFRESH_EXPIRY: z.string().default("30d"),
+
+  GMAIL_USER: z.string().min(1, "Gmail user required"),
+  GMAIL_PASS: z.string().min(1, "Gmail password required"),
 });
 
 export const env = envSchema.parse(process.env);

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { ZodError } from "zod";
 import { apiError } from "../errors/api-error";
 import { formatZodError } from "../errors/zodErrorFormatter";
+import { logger } from "../utils/logger";
 
 export const errorHandler = (
   err: Error,
@@ -11,6 +12,8 @@ export const errorHandler = (
 ) => {
   let message: any;
   let statusCode: number;
+
+  logger.info({ err }, "error");
 
   if (err instanceof ZodError) {
     statusCode = 400;
