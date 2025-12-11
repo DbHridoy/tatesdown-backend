@@ -25,19 +25,20 @@ export class AuthMiddleware {
   // Authenticate middleware
   authenticate = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const authHeader = req.headers.authorization;
+      const accessToken = req.headers.authorization;
 
-      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      if (!accessToken) {
         throw new apiError(Errors.NoToken.code, Errors.NoToken.message);
       }
 
-      const token = authHeader.split(" ")[1];
-      const payload = this.jwtUtils.verifyAccessToken(token) as JwtPayload;
+      const payload = this.jwtUtils.verifyAccessToken(
+        accessToken
+      ) as JwtPayload;
 
       if (!payload || !payload.userId) {
         throw new apiError(
-          Errors.Unauthorized.code,
-          Errors.Unauthorized.message
+          Errors.InvalidToken.code,
+          Errors.InvalidToken.message
         );
       }
 
@@ -76,7 +77,6 @@ export class AuthMiddleware {
         if (!roles.includes(req.user.role)) {
           throw new apiError(Errors.Forbidden.code, Errors.Forbidden.message);
         }
-
         next();
       } catch (error) {
         next(error);
