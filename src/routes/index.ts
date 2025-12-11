@@ -3,6 +3,7 @@ import userRoute from "../modules/user/user.route";
 import authRoute from "../modules/auth/auth.route";
 import adminRoute from "../modules/admin/admin.route";
 import clientRoute from "../modules/client/client.route";
+import quoteRoute from "../modules/quote/quote.route";
 
 const appRouter = Router();
 
@@ -18,6 +19,10 @@ const moduleRoutes = [
   {
     path: "/client",
     router: clientRoute,
+  },
+  {
+    path: "/quote",
+    router: quoteRoute,
   },
   {
     path: "/user",
