@@ -1,8 +1,44 @@
+import { Types } from "mongoose";
 import User from "./user.model";
+import { apiError } from "../../errors/api-error";
+import { Errors } from "../../constants/error-codes";
+import { SalesRepRepository } from "../sales-rep/sales-rep.repository";
+import { ProductionManagerRepository } from "../production-manager/production-manager.repository";
 
 export default class UserRepository {
+
+  private salesRepo = new SalesRepRepository();
+  private productionManagerRepo = new ProductionManagerRepository();
+
   createUser = async (userBody: any) => {
+    const { role } = userBody;
+
     const newUser = new User(userBody);
-    return newUser.save();
+    
+    if (role === "sales-rep") {
+      const newSalesRep = this.salesRepo.createSalesRep(newUser._id);
+    } else if (role === "production-manager") {
+      const newProductionManager=this.productionManagerRepo.createProductionManager(newUser._id)
+    } else {
+      throw new apiError(Errors.EnumValue.code, Errors.EnumValue.message);
+    }
+    
+    return await newUser.save();
+  };
+
+  findUserById = async (id: string) => {
+    return await User.findById(id);
+  };
+
+  findUserByEmail = async (email: string) => {
+    return await User.findOne({ email });
+  };
+
+  updateUserPassword = async (id: Types.ObjectId, hashedPassword: string) => {
+    return User.findByIdAndUpdate(
+      id,
+      { password: hashedPassword },
+      { new: true }
+    );
   };
 }

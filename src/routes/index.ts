@@ -1,15 +1,30 @@
 import { Router } from "express";
 import userRoute from "../modules/user/user.route";
+import authRoute from "../modules/auth/auth.route";
+import adminRoute from "../modules/admin/admin.route";
+import clientRoute from "../modules/client/client.route";
 
-const appRouter= Router()
+const appRouter = Router();
 
-const moduleRoutes=[
-    {
-        path:"/user",
-        router:userRoute
-    }
-]
+const moduleRoutes = [
+  {
+    path: "/auth",
+    router: authRoute,
+  },
+  {
+    path: "/admin",
+    router: adminRoute,
+  },
+  {
+    path: "/client",
+    router: clientRoute,
+  },
+  {
+    path: "/user",
+    router: userRoute,
+  },
+];
 
-moduleRoutes.forEach((route)=>appRouter.use(route.path,route.router))
+moduleRoutes.forEach((route) => appRouter.use(route.path, route.router));
 
-export default appRouter
+export default appRouter;

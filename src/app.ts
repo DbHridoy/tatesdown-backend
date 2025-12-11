@@ -2,11 +2,13 @@ import express from "express";
 import type { Application, Request, Response } from "express";
 import { errorHandler } from "./middlewares/error-handler.middleware";
 import appRouter from "./routes/index";
+import cookieParser from "cookie-parser";
 
 const app: Application = express();
 
 // Middleware
 app.use(express.json());
+app.use(cookieParser())
 
 
 // Versioned router

@@ -1,23 +1,14 @@
 import UserRepository from "./user.repository";
-import bcrypt from "bcrypt";
-import HashUtils from "../../utils/hash-utils";
 import { logger } from "../../utils/logger";
+import { apiError } from "../../errors/api-error";
+import { Errors } from "../../constants/error-codes";
+import { container } from "../../container";
+import bcrypt from "bcrypt";
 
 export default class UserService {
-  constructor(private userRepo: UserRepository, private hashUtils: HashUtils) {}
+  private hashUtils = container.hasUtils;
+  private jwtUtils = container.jwtUtils;
+  constructor(private userRepo: UserRepository) {}
 
-  createUser = async (userBody: { name: string; email: string; password: string }) => {
-    const hashedPassword = await this.hashUtils.hashPassword(userBody.password);
-    logger.info({ hashedPassword }, "HashedPassword");
-
-    const user = {
-      ...userBody,
-      password: hashedPassword
-    };
-
-    logger.info({ user }, "user");
-
-    const newUser = await this.userRepo.createUser(user);
-    return newUser;
-  };
+ 
 }

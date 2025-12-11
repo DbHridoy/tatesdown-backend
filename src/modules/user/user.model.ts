@@ -8,6 +8,8 @@ const userSchema = new Schema({
   email: {
     type: String,
     required: true,
+    index:true,
+    unique:true
   },
   role: {
     type: String,
@@ -20,6 +22,6 @@ const userSchema = new Schema({
 });
 
 
-const User=model("user",userSchema)
+const User=model("User",userSchema)
 
 export default User
