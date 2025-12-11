@@ -4,6 +4,7 @@ import authRoute from "../modules/auth/auth.route";
 import adminRoute from "../modules/admin/admin.route";
 import clientRoute from "../modules/client/client.route";
 import quoteRoute from "../modules/quote/quote.route";
+import jobRoute from "../modules/job/job.route";
 
 const appRouter = Router();
 
@@ -23,6 +24,10 @@ const moduleRoutes = [
   {
     path: "/quote",
     router: quoteRoute,
+  },
+  {
+    path: "/job",
+    router: jobRoute,
   },
   {
     path: "/user",
