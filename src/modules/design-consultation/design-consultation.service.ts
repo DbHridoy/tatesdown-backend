@@ -1,9 +1,10 @@
 import { DesignConsultationRepository } from "./design-consultation.repository";
+import { createDesignConsultationSchemaType } from "./design-consultation.type";
 
 export class DesignConsultationService {
     constructor(private readonly designConsultationRepository: DesignConsultationRepository) {}
 
-    createNewDesignConsultation=async(designConsultationInfo:object)=>{
+    createNewDesignConsultation=async(designConsultationInfo:createDesignConsultationSchemaType)=>{
         return await this.designConsultationRepository.createNewDesignConsultation(designConsultationInfo)
     }
     getAllDesignConsultation=async ()=>{
