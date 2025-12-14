@@ -7,6 +7,7 @@ import authRepository from "../user/user.repository";
 import OTPModel from "./otp.model";
 import { AuthRepository } from "./auth.repository";
 import UserRepository from "../user/user.repository";
+import { createUserType } from "./auth.type";
 
 export class AuthService {
   private hashUtils = container.hasUtils;
@@ -16,12 +17,9 @@ export class AuthService {
 
   constructor(private authRepo: AuthRepository) {}
 
-  createUser = async (userBody: {
-    name: string;
-    email: string;
-    password: string;
-  }) => {
+  createUser = async (userBody: createUserType) => {
     const existingUser = await this.userRepo.findUserByEmail(userBody.email);
+
     if (existingUser) {
       throw new apiError(
         Errors.AlreadyExists.code,
@@ -39,6 +37,10 @@ export class AuthService {
     logger.info({ user }, "user");
 
     const newUser = await this.userRepo.createUser(user);
+
+    console.log("+++++++++++++++++++++++++++++++++++++++++");
+    console.log(newUser);
+    console.log("+++++++++++++++++++++++++++++++++++++++++");
     return newUser;
   };
 
@@ -138,31 +140,30 @@ export class AuthService {
   }
 
   async refreshToken(accessToken: string) {
-  const payload = await this.jwtUtils.verifyAccessToken(accessToken);
+    const payload = await this.jwtUtils.verifyAccessToken(accessToken);
 
-  if (!payload || typeof payload === "string" || !("userId" in payload)) {
-    throw new apiError(Errors.NoToken.code, "Invalid token payload");
-  }
+    if (!payload || typeof payload === "string" || !("userId" in payload)) {
+      throw new apiError(Errors.NoToken.code, "Invalid token payload");
+    }
 
-  const user = await this.userRepo.findUserById(payload.userId);
+    const user = await this.userRepo.findUserById(payload.userId);
 
-  if (!user) {
-    throw new apiError(Errors.NotFound.code, Errors.NotFound.message);
-  }
+    if (!user) {
+      throw new apiError(Errors.NotFound.code, Errors.NotFound.message);
+    }
 
-  const tokenPayload = {
-    userId: user._id,
-    fullName: user.fullName,
-    email: user.email,
-    role: user.role,
-  };
+    const tokenPayload = {
+      userId: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+    };
 
-  const tokens = await this.jwtUtils.generateBothTokens(tokenPayload);
+    const tokens = await this.jwtUtils.generateBothTokens(tokenPayload);
 
-  return {
+    return {
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
     };
-}
-
+  }
 }

@@ -15,7 +15,9 @@ export class AuthController {
       const userBody = req.body;
       logger.info(userBody, "userBody");
       const newUser = await this.authService.createUser(userBody);
-      res.status(201).json({
+      res.status(HttpCodes.Created).json({
+        success: true,
+        message: "User created successfully",
         data: newUser,
       });
     }
@@ -59,7 +61,7 @@ export class AuthController {
     async (req: Request, res: Response, next: NextFunction) => {
       const { email } = req.body;
       const result = await this.authService.sendOtp(email);
-      logger.info(result);
+      logger.info(result, "result");
       res.status(HttpCodes.Ok).json(result);
     }
   );

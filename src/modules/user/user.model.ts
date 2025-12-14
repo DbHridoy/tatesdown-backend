@@ -8,12 +8,16 @@ const userSchema = new Schema({
   email: {
     type: String,
     required: true,
-    index:true,
-    unique:true
+    index: true,
+    unique: true,
   },
   role: {
     type: String,
     required: true,
+    enum: ["admin", "sales-rep", "production-manager"],
+  },
+  cluster: {
+    type: String,
   },
   password: {
     type: String,
@@ -21,7 +25,6 @@ const userSchema = new Schema({
   },
 });
 
+const User = model("User", userSchema);
 
-const User=model("User",userSchema)
-
-export default User
+export default User;
