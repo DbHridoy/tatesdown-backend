@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { validate } from "../../middlewares/validate.middleware";
-import UserRepository from "../user/user.repository";
+import {UserRepository} from "../user/user.repository";
 import { AuthService } from "./auth.service";
 import { AuthController } from "./auth.controller";
 import { createUserSchema, loginUserSchema } from "./auth.schema";

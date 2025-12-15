@@ -16,6 +16,10 @@ const moduleRoutes = [
     router: authRoute,
   },
   {
+    path: "/user",
+    router: userRoute,
+  },
+  {
     path: "/admin",
     router: adminRoute,
   },
@@ -38,11 +42,7 @@ const moduleRoutes = [
   {
     path: "/expense",
     router: expenseRoute,
-  },
-  {
-    path: "/user",
-    router: userRoute,
-  },
+  }
 ];
 
 moduleRoutes.forEach((route) => appRouter.use(route.path, route.router));

@@ -1,14 +1,26 @@
 import { Router } from "express";
+import { UserRepository } from "./user.repository";
+import { UserService } from "./user.service";
+import { UserController } from "./user.controller";
+import { validate } from "../../middlewares/validate.middleware";
+import { UpdateUserSchemaForOtherRoles } from "./user.schema";
+import { AuthMiddleware } from "../../middlewares/auth.middleware";
+import { upload } from "../../middlewares/multer.middleware";
 
 const userRoute = Router();
 
+const userRepo = new UserRepository();
+const userService = new UserService(userRepo);
+const userController = new UserController(userService);
+const authMiddleware = new AuthMiddleware();
 
-
-// Test route
-userRoute.get("/", (req, res) => {
-  res.json({ message: "This is the user route" });
-});
-
+userRoute.post(
+  "/update-profile",
+  authMiddleware.authenticate,          // 1️⃣ auth first
+  upload.single("profileImage"),         // 2️⃣ parse FormData
+  validate(UpdateUserSchemaForOtherRoles), // 3️⃣ validate text fields
+  userController.updateProfile           // 4️⃣ controller
+);
 
 
 export default userRoute;

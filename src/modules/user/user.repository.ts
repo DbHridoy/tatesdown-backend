@@ -6,7 +6,7 @@ import { SalesRepRepository } from "../sales-rep/sales-rep.repository";
 import { ProductionManagerRepository } from "../production-manager/production-manager.repository";
 import { AdminRepository } from "../admin/admin.repository";
 
-export default class UserRepository {
+export class UserRepository {
   private salesRepo = new SalesRepRepository();
   private productionManagerRepo = new ProductionManagerRepository();
   private adminRepo = new AdminRepository();
@@ -44,5 +44,9 @@ export default class UserRepository {
       { password: hashedPassword },
       { new: true }
     );
+  };
+
+  updateProfile = async (id: string, body: any) => {
+    return User.findByIdAndUpdate(id, body, { new: true });
   };
 }

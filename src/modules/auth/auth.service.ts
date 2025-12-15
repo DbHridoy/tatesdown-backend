@@ -3,10 +3,9 @@ import { apiError } from "../../errors/api-error";
 import { Errors } from "../../constants/error-codes";
 import { container } from "../../container";
 import bcrypt from "bcrypt";
-import authRepository from "../user/user.repository";
 import OTPModel from "./otp.model";
 import { AuthRepository } from "./auth.repository";
-import UserRepository from "../user/user.repository";
+import {UserRepository} from "../user/user.repository";
 import { createUserType } from "./auth.type";
 
 export class AuthService {
@@ -46,11 +45,13 @@ export class AuthService {
 
   loginUser = async (email: string, password: string) => {
     const user = await this.userRepo.findUserByEmail(email);
+    logger.info({ user }, "User from service");
     if (!user) {
       throw new apiError(Errors.NotFound.code, Errors.NotFound.message);
     }
 
     const isVerified = bcrypt.compareSync(password, user.password);
+    logger.info({isVerified}, "isVerified");
     if (!isVerified) {
       throw new apiError(Errors.Unauthorized.code, Errors.Unauthorized.message);
     }
@@ -139,8 +140,8 @@ export class AuthService {
     return { success: true, message: "Password updated successfully" };
   }
 
-  async refreshToken(accessToken: string) {
-    const payload = await this.jwtUtils.verifyAccessToken(accessToken);
+  async refreshToken(refreshToken: string) {
+    const payload = await this.jwtUtils.verifyRefreshToken(refreshToken);
 
     if (!payload || typeof payload === "string" || !("userId" in payload)) {
       throw new apiError(Errors.NoToken.code, "Invalid token payload");

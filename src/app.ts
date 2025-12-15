@@ -5,10 +5,13 @@ import appRouter from "./routes/index";
 import cookieParser from "cookie-parser";
 import { requestLogger } from "./middlewares/requestLogger.middleware";
 import { HttpCodes } from "./constants/status-codes";
+import cors from "cors";
+import { corsOptions } from "./config/cors";
 
 const app: Application = express();
 
 // Middleware
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 app.use(requestLogger);
@@ -27,7 +30,9 @@ app.get("/api/v1", (req: Request, res: Response) => {
 
 // Not found handler — LAST
 app.use((req: Request, res: Response) => {
-  res.status(HttpCodes.NotFound).json({ message: `Route ${req.originalUrl} not found` });
+  res
+    .status(HttpCodes.NotFound)
+    .json({ message: `Route ${req.originalUrl} not found` });
 });
 
 // Global error handler

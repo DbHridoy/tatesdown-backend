@@ -9,6 +9,8 @@ const envSchema = z.object({
     .default("mongodb+srv://hridoy:1234@practice0.qsptr89.mongodb.net"),
   NODE_ENV: z.string().default("development"),
 
+  CLIENT_URLS: z.string().default("http://localhost:5173"),
+
   SALT_ROUNDS: z.coerce.number().default(10),
 
   JWT_ACCESS_SECRET: z.string().min(1, "Access token secret required"),

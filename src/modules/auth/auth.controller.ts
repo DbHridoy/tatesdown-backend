@@ -26,9 +26,9 @@ export class AuthController {
   loginUser = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const body = req.body;
-
+      logger.info(body, "Login body");
       const user = await this.authService.loginUser(body.email, body.password);
-
+      logger.info(user, "User from login controller");
       const { password, ...safeUser } = user.user.toObject();
 
       const data = {
@@ -37,14 +37,15 @@ export class AuthController {
         refreshToken: user.refreshToken,
       };
 
-      logger.info({ user }, "user from controller");
+      // logger.info({ user }, "User from controller");
 
-      // Access Token Cookie
-      res.cookie("accessToken", user.accessToken, {
+      // Backend cookie (login or refresh)
+      res.cookie("refreshToken", user.refreshToken, {
         httpOnly: true,
-        secure: false,
-        sameSite: "strict",
+        secure: true, // HTTP in dev
+        sameSite: "none", // POST + GET works cross-port in dev
         maxAge: 7 * 24 * 60 * 60 * 1000,
+        // path: "/auth/refresh-token",
       });
 
       // Response
@@ -104,20 +105,21 @@ export class AuthController {
 
   refreshToken = asyncHandler(
     async (req: Request, res: Response, _next: NextFunction) => {
-      const accessToken = req.cookies?.accessToken;
-      logger.info(accessToken, "from auth controller");
-      if (!accessToken) {
-        throw new apiError(Errors.NoToken.code, "Access token is required");
+      const refreshToken = req.cookies?.refreshToken;
+      logger.info(refreshToken, "from auth controller");
+      if (!refreshToken) {
+        throw new apiError(Errors.NoToken.code, "Refresh token is required");
       }
 
-      const result = await this.authService.refreshToken(accessToken);
+      const result = await this.authService.refreshToken(refreshToken);
 
       // Optionally update the cookie with new refresh token
-      res.cookie("accessToken", result.accessToken, {
+      res.cookie("refreshToken", result.refreshToken, {
         httpOnly: true,
-        secure: env.NODE_ENV === "production",
-        sameSite: "none",
+        secure: false, // HTTP in dev
+        sameSite: "lax", // works on cross-port dev
         maxAge: 7 * 24 * 60 * 60 * 1000,
+        path: "/auth/refresh-token",
       });
 
       const responseData = {
@@ -130,10 +132,17 @@ export class AuthController {
 
   logout = asyncHandler(
     async (req: Request, res: Response, _next: NextFunction) => {
-      res.clearCookie("accessToken", {
+      logger.info(
+        { cookies: req.cookies },
+        "Refresh token from auth controller"
+      );
+      if (!req.cookies.refreshToken) {
+        throw new apiError(Errors.NoToken.code, "Refresh token is required");
+      }
+      res.clearCookie("refreshToken", {
         httpOnly: true,
-        secure: env.NODE_ENV === "production",
-        sameSite: "strict",
+        secure: false,
+        sameSite: "lax",
       });
 
       return res.status(HttpCodes.Ok).json({

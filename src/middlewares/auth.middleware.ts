@@ -3,7 +3,7 @@ import { apiError } from "../errors/api-error";
 import { Errors } from "../constants/error-codes";
 import { container } from "../container";
 import { JwtPayload } from "jsonwebtoken";
-import UserRepository from "../modules/user/user.repository";
+import {UserRepository} from "../modules/user/user.repository";
 
 declare global {
   namespace Express {

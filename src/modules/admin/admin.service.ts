@@ -1,6 +1,6 @@
 import { Errors } from "../../constants/error-codes";
 import { apiError } from "../../errors/api-error";
-import UserRepository from "../user/user.repository";
+import {UserRepository} from "../user/user.repository";
 import { AdminRepository } from "./admin.repository";
 
 export class AdminService {
