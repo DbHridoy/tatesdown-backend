@@ -7,6 +7,7 @@ import { requestLogger } from "./middlewares/requestLogger.middleware";
 import { HttpCodes } from "./constants/status-codes";
 import cors from "cors";
 import { corsOptions } from "./config/cors";
+import path from "path";
 
 const app: Application = express();
 
@@ -15,6 +16,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 app.use(requestLogger);
+app.use("/uploads", express.static(path.join(__dirname, "uploads")))
 
 // Versioned router
 app.use("/api/v1", appRouter);

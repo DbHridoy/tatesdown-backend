@@ -5,7 +5,7 @@ import { UserController } from "./user.controller";
 import { validate } from "../../middlewares/validate.middleware";
 import { UpdateUserSchemaForOtherRoles } from "./user.schema";
 import { AuthMiddleware } from "../../middlewares/auth.middleware";
-import { upload } from "../../middlewares/multer.middleware";
+import { uploadFile } from "../../middlewares/uploadLocal.middleware";
 
 const userRoute = Router();
 
@@ -16,11 +16,13 @@ const authMiddleware = new AuthMiddleware();
 
 userRoute.post(
   "/update-profile",
-  authMiddleware.authenticate,          // 1️⃣ auth first
-  upload.single("profileImage"),         // 2️⃣ parse FormData
+  authMiddleware.authenticate, // 1️⃣ auth first
+  uploadFile({
+    fieldName: "profileImage",
+    uploadType: "single",
+  }), // 2️⃣ parse FormData
   validate(UpdateUserSchemaForOtherRoles), // 3️⃣ validate text fields
-  userController.updateProfile           // 4️⃣ controller
+  userController.updateProfile // 4️⃣ controller
 );
-
 
 export default userRoute;

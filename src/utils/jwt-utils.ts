@@ -1,5 +1,6 @@
 import jwt, { JwtPayload, Secret, SignOptions } from "jsonwebtoken";
 import { env } from "../config/env";
+import { logger } from "./logger";
 
 export class JwtUtils {
   private accessSecret: Secret = env.JWT_ACCESS_SECRET;
@@ -21,6 +22,7 @@ export class JwtUtils {
   };
 
   verifyAccessToken = async (token: string): Promise<JwtPayload | string> => {
+    logger.info({token},"Access token from utils")
     return jwt.verify(token, this.accessSecret);
   };
 
@@ -31,7 +33,11 @@ export class JwtUtils {
   };
 
   verifyRefreshToken = async (token: string): Promise<JwtPayload | string> => {
-    return jwt.verify(token, this.refreshSecret);
+    const payload = await jwt.verify(token, this.refreshSecret);
+    if(!payload || typeof payload === "string") {
+      throw new Error("Invalid token from utils");
+    }
+    return payload;
   };
 
   generateBothTokens = async (payload: object) => {

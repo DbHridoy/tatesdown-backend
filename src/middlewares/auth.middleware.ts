@@ -3,20 +3,9 @@ import { apiError } from "../errors/api-error";
 import { Errors } from "../constants/error-codes";
 import { container } from "../container";
 import { JwtPayload } from "jsonwebtoken";
-import {UserRepository} from "../modules/user/user.repository";
+import { UserRepository } from "../modules/user/user.repository";
+import { logger } from "../utils/logger";
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: {
-        userId: string;
-        fullName: string;
-        email: string;
-        role: string;
-      };
-    }
-  }
-}
 
 export class AuthMiddleware {
   private jwtUtils = container.jwtUtils;
@@ -25,16 +14,19 @@ export class AuthMiddleware {
   // Authenticate middleware
   authenticate = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const accessToken = req.headers.authorization;
+      const token = req.headers.authorization;
+      logger.info({ token }, "Access token from auth middleware");
 
-      if (!accessToken) {
+      if (!token || !token.startsWith("Bearer ")) {
         throw new apiError(Errors.NoToken.code, Errors.NoToken.message);
       }
 
-      const payload = this.jwtUtils.verifyAccessToken(
-        accessToken
-      ) as JwtPayload;
+      const accessToken = token.slice(7);
 
+      const payload = (await this.jwtUtils.verifyAccessToken(
+        accessToken
+      )) as JwtPayload;
+      logger.info({ payload }, "Payload from auth middleware");
       if (!payload || !payload.userId) {
         throw new apiError(
           Errors.InvalidToken.code,

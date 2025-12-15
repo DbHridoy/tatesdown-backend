@@ -7,6 +7,7 @@ const UserSchema = z.object({
   cluster: z.string(),
   role: z.enum(["admin", "sales-rep", "production-manager"]),
   password: z.string(),
+  profileImage: z.string().optional(),
 });
 
 export const UpdateUserSchemaForOtherRoles = UserSchema.omit({

@@ -3,6 +3,7 @@ import { ZodError } from "zod";
 import { apiError } from "../errors/api-error";
 import { formatZodError } from "../errors/zodErrorFormatter";
 import { logger } from "../utils/logger";
+import { TokenExpiredError } from "jsonwebtoken";
 
 export const errorHandler = (
   err: Error,
@@ -22,6 +23,10 @@ export const errorHandler = (
   } else if (err instanceof apiError) {
     statusCode = err.statusCode;
     message = err.message;
+    return res.status(statusCode).json({ message });
+  } else if (err instanceof TokenExpiredError) {
+    statusCode = 401;
+    message = "Token expired";
     return res.status(statusCode).json({ message });
   } else {
     return res.status(500).json({ message: "Internal server error" });
