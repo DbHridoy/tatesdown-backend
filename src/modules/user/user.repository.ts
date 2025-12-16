@@ -33,13 +33,12 @@ export class UserRepository {
   findUserById = async (id: string) => {
     return await User.findById(id);
   };
-
   findUserByEmail = async (email: string) => {
     return await User.findOne({ email });
   };
 
   updateUserPassword = async (id: Types.ObjectId, hashedPassword: string) => {
-    return User.findByIdAndUpdate(
+    return await User.findByIdAndUpdate(
       id,
       { password: hashedPassword },
       { new: true }
@@ -47,6 +46,6 @@ export class UserRepository {
   };
 
   updateProfile = async (id: string, body: any) => {
-    return User.findByIdAndUpdate(id, body, { new: true });
+    return await User.findByIdAndUpdate(id, body, { new: true });
   };
 }

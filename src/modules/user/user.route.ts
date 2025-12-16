@@ -14,7 +14,9 @@ const userService = new UserService(userRepo);
 const userController = new UserController(userService);
 const authMiddleware = new AuthMiddleware();
 
-userRoute.post(
+userRoute.get("/get-user-profile", authMiddleware.authenticate, userController.getUserProfile);
+
+userRoute.patch(
   "/update-profile",
   authMiddleware.authenticate, // 1️⃣ auth first
   uploadFile({

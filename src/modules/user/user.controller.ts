@@ -1,4 +1,4 @@
-import { NextFunction, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { asyncHandler } from "../../utils/async-handler";
 import { logger } from "../../utils/logger";
 import { UserService } from "./user.service";
@@ -10,7 +10,18 @@ import { TypedRequestBodyWithFile } from "../../types/request.type";
 
 export class UserController {
   constructor(private userService: UserService) {}
-
+getUserProfile=asyncHandler(async(req:Request,res:Response,next:NextFunction)=>{
+    const userId=req.user?.userId;
+    if(!userId){
+        throw new apiError(Errors.NotFound.code,Errors.NotFound.message)
+    }
+    const user=await this.userService.getUserProfile(userId);
+    res.status(HttpCodes.Ok).json({
+        success:true,
+        message:"User profile fetched successfully",
+        data:user
+    })
+})
   updateProfile = asyncHandler(
     async (
       req: TypedRequestBodyWithFile<updateOtherRoleUserType>,

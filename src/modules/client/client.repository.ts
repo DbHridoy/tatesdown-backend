@@ -17,8 +17,6 @@ export class ClientRepository {
   getAllClients = async (query: any) => {
     const { filter, search, options } = buildDynamicSearch(Client, query);
     return await Client.find({ ...filter, ...search }, null, options)
-      .populate("callLogs")
-      .populate("notes");
   };
 
   getClientById = async (id: string) => {
