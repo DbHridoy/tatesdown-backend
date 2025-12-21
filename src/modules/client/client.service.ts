@@ -54,4 +54,10 @@ export class ClientService {
   getClientNoteByClientId = async (clientId: string) => {
     return await this.clientRepository.getClientNoteByClientId(clientId);
   };
+  updateClient = async (clientId: string, clientInfo: object) => {
+    return await this.clientRepository.updateClient(clientId, clientInfo);
+  };
+  deleteClient = async (clientId: string) => {
+    return await this.clientRepository.deleteClient(clientId);
+  };
 }

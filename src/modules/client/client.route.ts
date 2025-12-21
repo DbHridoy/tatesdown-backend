@@ -33,9 +33,17 @@ clientRoute.post(
   clientController.createClientNote
 );
 
-clientRoute.get("/get-all-clients",clientController.getAllClients)
-clientRoute.get("/get-all-calllogs",clientController.getAllCallLogs)
-clientRoute.get("/get-single-client/:clientId",clientController.getSingleClient)
-clientRoute.get("/get-single-calllogs/:clientId",clientController.getCallLogsByClientId)
+clientRoute.get("/get-all-clients", clientController.getAllClients);
+clientRoute.get("/get-all-calllogs", clientController.getAllCallLogs);
+clientRoute.patch("/update-client/:clientId", clientController.updateClient);
+clientRoute.get(
+  "/get-single-client/:clientId",
+  clientController.getSingleClient
+);
+clientRoute.get(
+  "/get-single-calllogs/:clientId",
+  clientController.getCallLogsByClientId
+);
+clientRoute.delete("/delete-client/:clientId", clientController.deleteClient);
 
 export default clientRoute;

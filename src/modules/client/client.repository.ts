@@ -1,5 +1,5 @@
 import { Types } from "mongoose";
-import Client from "./client.model";
+import { Client } from "./client.model";
 import Call from "./call-log.model";
 import clientNote from "./client-note.model";
 import { buildDynamicSearch } from "../../utils/dynamic-search-utils";
@@ -47,5 +47,11 @@ export class ClientRepository {
 
   getClientNoteByClientId = async (clientId: string) => {
     return await clientNote.findById(clientId);
+  };
+  updateClient = async (clientId: string, clientInfo: object) => {
+    return await Client.findByIdAndUpdate(clientId, clientInfo, { new: true });
+  };
+  deleteClient = async (clientId: string) => {
+    return await Client.findByIdAndDelete(clientId);
   };
 }

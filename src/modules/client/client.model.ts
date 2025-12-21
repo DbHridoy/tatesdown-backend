@@ -1,13 +1,27 @@
-import { model, Schema } from "mongoose";
+import { model, Schema, Document } from "mongoose";
+import { generateSequentialId } from "../common/counter.service";
 
-const ClientSchema = new Schema(
+export interface ClientDocument extends Document {
+  clientId: string;
+  clientName: string;
+  partnerName: string;
+  phoneNumber: string;
+  email: string;
+  address: string;
+  leadSource: "Door" | "Inbound" | "Social";
+  rating: number;
+  callStatus: "Not Called" | "Picked-Up Yes" | "Picked-Up No" | "No Pickup";
+}
+
+const ClientSchema = new Schema<ClientDocument>(
   {
+    clientId: { type: String },
     clientName: { type: String, required: true },
     partnerName: { type: String, required: true },
     phoneNumber: { type: String, required: true },
     email: { type: String, required: true },
     address: { type: String, required: true },
-    source: {
+    leadSource: {
       type: String,
       enum: ["Door", "Inbound", "Social"],
       required: true,
@@ -22,28 +36,24 @@ const ClientSchema = new Schema(
   { toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
-const virtuals = [
-  {
-    name: "callLogs",
-    ref: "Call",
-    localField: "_id",
-    foreignField: "clientId",
-  },
-  {
-    name: "notes",
-    ref: "ClientNote",
-    localField: "_id",
-    foreignField: "clientId",
-  },
-];
-
-virtuals.forEach((v) => {
-  ClientSchema.virtual(v.name, {
-    ref: v.ref,
-    localField: v.localField,
-    foreignField: v.foreignField,
-  });
+// Virtuals
+ClientSchema.virtual("callLogs", {
+  ref: "Call",
+  localField: "_id",
+  foreignField: "clientId",
 });
 
-const Client = model("Client", ClientSchema);
-export default Client;
+ClientSchema.virtual("notes", {
+  ref: "ClientNote",
+  localField: "_id",
+  foreignField: "clientId",
+});
+
+// Pre-save hook for sequential ID
+ClientSchema.pre<ClientDocument>("save", async function (this: ClientDocument) {
+  if (!this.clientId) {
+    this.clientId = await generateSequentialId("C", "client");
+  }
+});
+
+export const Client = model<ClientDocument>("Client", ClientSchema);

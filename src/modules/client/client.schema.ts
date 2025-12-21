@@ -10,7 +10,7 @@ export const CreateClientSchema = z.object({
   phoneNumber: z.string(),
   email: z.string().email(),
   address: z.string(),
-  source: z.string(),
+  leadSource: z.string(),
   rating: z.number(),
   callStatus: z.enum([
     "Not Called",

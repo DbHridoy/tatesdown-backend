@@ -105,4 +105,27 @@ export class ClientController {
       const clientNotes = this.clientService.getClientNoteByClientId;
     }
   );
+  updateClient=asyncHandler(
+    async(req:Request,res:Response,next:NextFunction)=>{
+      const clientId=req.params.clientId
+      const updatedClientInfo=req.body
+      const updatedClient=await this.clientService.updateClient(clientId,updatedClientInfo)
+      res.status(HttpCodes.Ok).json({
+        success: true,
+        message: "Client updated successfully",
+        data: updatedClient,
+      })
+    }
+  )
+  deleteClient=asyncHandler(
+    async (req:Request,res:Response,next:NextFunction)=>{
+      const clientId = req.params.clientId;
+      const deletedClient =await this.clientService.deleteClient(clientId);
+      res.status(HttpCodes.Ok).json({
+        success: true,
+        message: "Client deleted successfully",
+        data: deletedClient,
+      })
+    }
+  )
 }
