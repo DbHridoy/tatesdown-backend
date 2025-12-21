@@ -1,4 +1,5 @@
 import z from "zod";
-import { UpdateUserSchemaForOtherRoles } from "./user.schema";
+import { CreateUserSchema, UpdateUserSchemaForOtherRoles } from "./user.schema";
 
 export type updateOtherRoleUserType = z.infer<typeof UpdateUserSchemaForOtherRoles>;
+export type createUserType=z.infer<typeof CreateUserSchema>

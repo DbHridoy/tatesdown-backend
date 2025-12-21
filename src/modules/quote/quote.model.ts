@@ -3,7 +3,7 @@ import { generateSequentialId } from "../common/counter.service";
 
 export interface QuoteDocument extends Document {
   quoteId: string;
-  jobId: string;
+  clientId: string;
   amount: number;
   notes?: string;
 }
@@ -11,7 +11,7 @@ export interface QuoteDocument extends Document {
 const QuoteSchema = new Schema<QuoteDocument>(
   {
     quoteId: { type: String, required: true },
-    jobId: { type: String, required: true },
+    clientId: { type: String, required: true },
     amount: { type: Number, required: true },
     notes: { type: String },
   },
