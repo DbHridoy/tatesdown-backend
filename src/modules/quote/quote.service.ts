@@ -8,8 +8,8 @@ export class QuoteService{
         return await this.quoteRepository.createQuote(quoteInfo)
     }
 
-    getAllQuote= async ()=>{
-        return await this.quoteRepository.getAllQuotes()
+    getAllQuote= async (query:any)=>{
+        return await this.quoteRepository.getAllQuotes(query)
     }
 
     getSingleQuote=async (id:string)=>{

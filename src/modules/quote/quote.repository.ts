@@ -1,5 +1,6 @@
+import { buildDynamicSearch } from "../../utils/dynamic-search-utils";
 import { updateQuoteDetails } from "./quote.interface";
-import Quote from "./quote.model";
+import { Quote } from "./quote.model";
 
 export class QuoteRepository {
   createQuote = async (quoteInfo: object) => {
@@ -7,12 +8,15 @@ export class QuoteRepository {
     return newQuote.save();
   };
 
-  getAllQuotes = async () => {
-    return await Quote.find();
+  getAllQuotes = async (query: any) => {
+    const { filter, search, options } = buildDynamicSearch(Quote, query);
+    return await Quote.find({ ...filter, ...search }, null, options).populate(
+      "clientId salesRepId"
+    );
   };
 
   getSingleQuote = async (id: string) => {
-    return await Quote.findById(id).populate("clientId");
+    return await Quote.findById(id).populate("clientId salesRepId");
   };
 
   updateQuoteById = async (id: string, quoteInfo: updateQuoteDetails) => {

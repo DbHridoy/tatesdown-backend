@@ -6,11 +6,14 @@ export class ExpenseRepository {
     return await newMileage.save();
   };
 
-  getAllMileage=async ()=>{
-    return await Mileage.find()
-  }
+  getAllMileage = async () => {
+    return await Mileage.find();
+  };
+  getMyMileage = async (userId: string) => {
+    return await Mileage.find({ salesRepId: userId }).populate("salesRepId");
+  };
 
-  getMileageById=async(id:string)=>{
-    return await Mileage.findById(id)
-  }
+  getMileageById = async (id: string) => {
+    return await Mileage.findById(id);
+  };
 }

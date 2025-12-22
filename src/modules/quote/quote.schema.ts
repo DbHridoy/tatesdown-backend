@@ -4,13 +4,19 @@ const ObjectIdSchema = z
   .string()
   .regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId");
 
-export const CreateQuoteSchema = z.object({
+export const QuoteSchema = z.object({
   clientId: ObjectIdSchema,
+  salesRepId: ObjectIdSchema,
   estimatedPrice: z.coerce.number(),
-  bidSheed: z.string(),
-  bookedOnTheSpot: z.boolean(),
+  bidSheet: z.string(),
+  bookedOnSpot: z.string(),
   expiryDate: z.coerce.date(),
+  notes:z.string()
 });
 
-export const UpdateQuoteSchema = CreateQuoteSchema.omit({ clientId: true }) // remove clientId
+export const CreateQuoteSchema=QuoteSchema.omit({
+  bidSheet:true
+})
+
+export const UpdateQuoteSchema = QuoteSchema.omit({ clientId: true,salesRepId:true }) // remove clientId
   .partial().strict();

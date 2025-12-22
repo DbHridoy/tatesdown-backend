@@ -1,20 +1,69 @@
-import z from "zod";
+import { z } from "zod";
 
-const ObjectIdSchema = z
+/* ------------------------------------
+   Common ObjectId validator
+------------------------------------ */
+export const ObjectIdSchema = z
   .string()
   .regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId");
-export const CreateJobSchema = z.object({
-  clientId: ObjectIdSchema,
-  title: z.string(),
-  estimatedPrice: z.coerce.number(),
-  downPayment: z.coerce.number(),
-  jobStatus: z.string(),
-});
 
-export const UpdateJobSchema=CreateJobSchema.omit({clientId:true}).partial().strict()
+/* ------------------------------------
+   Job Status Enum
+------------------------------------ */
+export const JobStatusEnum = z.enum([
+  "Scheduled",
+  "In Progress",
+  "On Hold",
+  "Completed",
+  "Cancelled",
+]);
 
-export const CreateJobNoteSchema = z.object({
-  jobId: ObjectIdSchema,
-  note: z.string(),
-  file: z.string(),
-});
+/* ------------------------------------
+   CREATE JOB
+------------------------------------ */
+export const CreateJobSchema = z
+  .object({
+    clientId: ObjectIdSchema,
+    salesRepId: ObjectIdSchema,
+    quoteId: ObjectIdSchema,
+
+    title: z.string().min(1, "Job title is required"),
+
+    description: z.string().optional(),
+
+    estimatedPrice: z.coerce
+      .number()
+      .positive("Estimated price must be greater than 0"),
+
+    downPayment: z.coerce
+      .number()
+      .min(0, "Down payment cannot be negative"),
+
+    startDate: z.coerce.date(),
+
+    status: JobStatusEnum,
+  })
+  .strict();
+
+/* ------------------------------------
+   UPDATE JOB
+------------------------------------ */
+export const UpdateJobSchema = CreateJobSchema
+  .omit({
+    clientId: true,
+    salesRepId: true,
+    quoteId: true,
+  })
+  .partial()
+  .strict();
+
+/* ------------------------------------
+   CREATE JOB NOTE
+------------------------------------ */
+export const CreateJobNoteSchema = z
+  .object({
+    jobId: ObjectIdSchema,
+    note: z.string().min(1, "Note is required"),
+    file: z.string().optional(),
+  })
+  .strict();

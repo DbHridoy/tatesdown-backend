@@ -1,6 +1,6 @@
 import JobNote from "./job-note.model";
 import { jobNote, newJobs, updateJobs } from "./job.interface";
-import Job from "./job.model";
+import { Job } from "./job.model";
 
 export class JobRepository {
   createNewJob = async (jobInfo: newJobs) => {
@@ -24,10 +24,10 @@ export class JobRepository {
   };
 
   getAllJobs = async () => {
-    return await Job.find().populate("jobNote");
+    return await Job.find().populate("clientId salesRepId quoteId");
   };
 
   getJobById = async (id: string) => {
-    return await Job.findById(id);
+    return await Job.findById(id).populate("clientId salesRepId quoteId");
   };
 }

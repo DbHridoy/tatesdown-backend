@@ -10,7 +10,7 @@ export class ExpenseController {
     async (req: Request, res: Response, next: NextFunction) => {
       logger.info({body: req.body},"Requestbody from expense controller")
       logger.info(req.file,"File from expense controller")
-      const { month, year, totalMilesDriven, note } = req.body;
+      const { salesRepId, month, year, totalMilesDriven, note } = req.body;
 
       // uploaded file (from multer)
       const file = req.file?.fileUrl;
@@ -19,6 +19,7 @@ export class ExpenseController {
       }
 
       const mileage = await this.expenseService.createNewMileage({
+        salesRepId,
         month,
         year,
         totalMilesDriven,
@@ -28,6 +29,7 @@ export class ExpenseController {
 
       res.status(201).json({
         success: true,
+        message:"Mileage created successfully",
         data: mileage,
       });
     }
@@ -38,16 +40,27 @@ export class ExpenseController {
       const allMileage = await this.expenseService.getAllMileage();
       return res.status(200).json({
         success: true,
+        message:"All mileage fetched successfully",
         data: allMileage,
       });
     }
   );
+  getMyMileage=asyncHandler(async(req:Request,res:Response,next:NextFunction)=>{
+    const userId=req.user!.userId 
+    const mileage=await this.expenseService.getMyMileage(userId)
+    return res.status(200).json({
+      success:true,
+      message:"Mileage fetched successfully",
+      data:mileage
+    })
+  })
   getMileageById = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const mileageId = req.params.mileageId;
       const mileage = await this.expenseService.getMileageById(mileageId);
       return res.status(200).json({
         success: true,
+        message:"Mileage fetched successfully",
         data: mileage,
       });
     }

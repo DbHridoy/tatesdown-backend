@@ -58,7 +58,7 @@ export const designConsultationService=new DesignConsultationService(designConsu
 export const designConsultationController=new DesignConsultationController(designConsultationService)
 
 export const expenseRepository=new ExpenseRepository()
-export const expenseService=new ExpenseService(expenseRepository)
+export const expenseService=new ExpenseService(expenseRepository,commonService)
 export const expenseController=new ExpenseController(expenseService)
 
 export const jobRepository=new JobRepository()

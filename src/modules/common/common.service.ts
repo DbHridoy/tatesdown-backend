@@ -15,7 +15,9 @@ export class CommonService {
     const variable = await this.commonRepository.getVariable();
     return variable;
   };
- upsertVariable=async(variables : any)=> {
-    return this.commonRepository.upsertVariable(variables)
-  }
+
+  upsertVariable = async (variables: any) => {
+    return this.commonRepository.upsertVariable(variables);
+  };
+  
 }
