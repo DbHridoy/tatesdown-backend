@@ -1,19 +1,13 @@
 import { Router } from "express";
-import { ClientRepository } from "./client.repository";
-import { ClientService } from "./client.service";
-import { ClientController } from "./client.controller";
 import { validate } from "../../middlewares/validate.middleware";
 import {
   CreateCallLogSchema,
   CreateClientNoteSchema,
   CreateClientSchema,
 } from "./client.schema";
+import { clientController } from "../../container";
 
 const clientRoute = Router();
-
-const clientRepo = new ClientRepository();
-const clientService = new ClientService(clientRepo);
-const clientController = new ClientController(clientService);
 
 clientRoute.post(
   "/create-client",

@@ -1,5 +1,5 @@
 import { model, Schema, Document } from "mongoose";
-import { generateSequentialId } from "../common/counter.service";
+import { commonService } from "../../container";
 
 export interface QuoteDocument extends Document {
   quoteId: string;
@@ -21,7 +21,7 @@ const QuoteSchema = new Schema<QuoteDocument>(
 // Pre-save hook
 QuoteSchema.pre<QuoteDocument>("save", async function (this: QuoteDocument) {
   if (!this.quoteId) {
-    this.quoteId = await generateSequentialId("Q", "quote");
+    this.quoteId = await commonService.generateSequentialId("Q", "quote");
   }
 });
 

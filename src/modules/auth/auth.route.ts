@@ -1,17 +1,10 @@
 import { Router } from "express";
 import { validate } from "../../middlewares/validate.middleware";
-import {UserRepository} from "../user/user.repository";
-import { AuthService } from "./auth.service";
-import { AuthController } from "./auth.controller";
 import { createUserSchema, loginUserSchema } from "./auth.schema";
-import { AuthRepository } from "./auth.repository";
+import { authController } from "../../container";
 
 const authRoute = Router();
 
-// Dependency injection
-const authRepo = new AuthRepository();
-const authService = new AuthService(authRepo);
-const authController = new AuthController(authService);
 
 // Register route
 authRoute.post(

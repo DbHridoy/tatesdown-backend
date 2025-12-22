@@ -1,5 +1,5 @@
 import { model, Schema, Document } from "mongoose";
-import { generateSequentialId } from "../common/counter.service";
+import { commonService } from "../../container";
 
 export interface ClientDocument extends Document {
   clientId: string;
@@ -52,7 +52,7 @@ ClientSchema.virtual("notes", {
 // Pre-save hook for sequential ID
 ClientSchema.pre<ClientDocument>("save", async function (this: ClientDocument) {
   if (!this.clientId) {
-    this.clientId = await generateSequentialId("C", "client");
+    this.clientId = await commonService.generateSequentialId("C", "client");
   }
 });
 

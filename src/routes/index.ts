@@ -7,6 +7,7 @@ import quoteRoute from "../modules/quote/quote.route";
 import jobRoute from "../modules/job/job.route";
 import expenseRoute from "../modules/expense/expense.route";
 import designConsultationRoute from "../modules/design-consultation/design-consultation.route";
+import commonRoute from "../modules/common/common.route";
 
 const appRouter = Router();
 
@@ -42,6 +43,10 @@ const moduleRoutes = [
   {
     path: "/expense",
     router: expenseRoute,
+  },
+  {
+    path: "/common",
+    router: commonRoute,
   }
 ];
 

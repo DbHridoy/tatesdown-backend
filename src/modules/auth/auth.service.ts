@@ -1,20 +1,17 @@
 import { logger } from "../../utils/logger";
 import { apiError } from "../../errors/api-error";
 import { Errors } from "../../constants/error-codes";
-import { container } from "../../container";
 import bcrypt from "bcrypt";
-import OTPModel from "./otp.model";
 import { AuthRepository } from "./auth.repository";
 import {UserRepository} from "../user/user.repository";
 import { createUserType } from "./auth.type";
+import { HashUtils } from "../../utils/hash-utils";
+import { JwtUtils } from "../../utils/jwt-utils";
+import { Mailer } from "../../utils/mailer-utils";
 
 export class AuthService {
-  private hashUtils = container.hasUtils;
-  private jwtUtils = container.jwtUtils;
-  private mailerUtils = container.mailerUtils;
-  private userRepo: UserRepository = new UserRepository();
 
-  constructor(private authRepo: AuthRepository) {}
+  constructor(private authRepo: AuthRepository,private userRepo:UserRepository,private hashUtils:HashUtils,private jwtUtils:JwtUtils,private mailerUtils:Mailer) {}
 
   createUser = async (userBody: createUserType) => {
     const existingUser = await this.userRepo.findUserByEmail(userBody.email);

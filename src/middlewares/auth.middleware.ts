@@ -1,16 +1,16 @@
 import { NextFunction, Request, Response } from "express";
 import { apiError } from "../errors/api-error";
 import { Errors } from "../constants/error-codes";
-import { container } from "../container";
 import { JwtPayload } from "jsonwebtoken";
 import { UserRepository } from "../modules/user/user.repository";
 import { logger } from "../utils/logger";
+import { JwtUtils } from "../utils/jwt-utils";
 
 
 export class AuthMiddleware {
-  private jwtUtils = container.jwtUtils;
-  private authRepo = new UserRepository();
-
+constructor(private jwtUtils:JwtUtils,private authRepo:UserRepository){
+    
+}
   // Authenticate middleware
   authenticate = async (req: Request, res: Response, next: NextFunction) => {
     try {

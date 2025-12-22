@@ -1,15 +1,10 @@
 import { Router } from "express";
-import { QuoteRepository } from "./quote.repository";
-import { QuoteService } from "./quote.service";
-import { QuoteController } from "./quote.controller";
 import { validate } from "../../middlewares/validate.middleware";
 import { CreateQuoteSchema, UpdateQuoteSchema } from "./quote.schema";
+import { quoteController } from "../../container";
 
 const quoteRoute = Router();
 
-const quoteRepo = new QuoteRepository();
-const quoteService = new QuoteService(quoteRepo);
-const quoteController = new QuoteController(quoteService);
 
 quoteRoute.post(
   "/create-quote",

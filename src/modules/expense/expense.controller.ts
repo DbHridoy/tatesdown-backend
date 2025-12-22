@@ -1,22 +1,34 @@
 import { Request, Response, NextFunction } from "express";
 import { asyncHandler } from "../../utils/async-handler";
 import { ExpenseService } from "./expense.service";
-import { MileageInfo } from "./expense.interface";
+import { logger } from "../../utils/logger";
 
 export class ExpenseController {
   constructor(private expenseService: ExpenseService) {}
 
   createNewMileage = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
-      const mileageInfo = req.body;
+      logger.info({body: req.body},"Requestbody from expense controller")
+      logger.info(req.file,"File from expense controller")
+      const { month, year, totalMilesDriven, note } = req.body;
 
-      const newMileage = await this.expenseService.createNewMileage(
-        mileageInfo as MileageInfo
-      );
+      // uploaded file (from multer)
+      const file = req.file?.fileUrl;
+      if (!file) {
+        return res.status(400).json({ message: "File is required" });
+      }
 
-      return res.status(201).json({
+      const mileage = await this.expenseService.createNewMileage({
+        month,
+        year,
+        totalMilesDriven,
+        file,
+        note,
+      });
+
+      res.status(201).json({
         success: true,
-        data: newMileage,
+        data: mileage,
       });
     }
   );

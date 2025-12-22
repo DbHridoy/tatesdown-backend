@@ -1,5 +1,5 @@
 import { model, Schema, Document } from "mongoose";
-import { generateSequentialId } from "../common/counter.service";
+import { commonService } from "../../container";
 
 export interface JobDocument extends Document {
   jobId: string;
@@ -23,7 +23,7 @@ const JobSchema = new Schema<JobDocument>(
 // Pre-save hook
 JobSchema.pre<JobDocument>("save", async function (this: JobDocument) {
   if (!this.jobId) {
-    this.jobId = await generateSequentialId("J", "job");
+    this.jobId = await commonService.generateSequentialId("J", "job");
   }
 });
 

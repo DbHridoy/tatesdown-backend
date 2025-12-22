@@ -2,13 +2,14 @@ import { UserRepository } from "./user.repository";
 import { logger } from "../../utils/logger";
 import { apiError } from "../../errors/api-error";
 import { Errors } from "../../constants/error-codes";
-import { container } from "../../container";
 import { createUserType } from "./user.type";
+import { hashUtils } from "../../container";
+import { mailer } from "../../container";
+import { HashUtils } from "../../utils/hash-utils";
+import { Mailer } from "../../utils/mailer-utils";
 
 export class UserService {
-  private hashUtils = container.hasUtils;
-  private mailerUtils = container.mailerUtils;
-  constructor(private userRepo: UserRepository) {}
+  constructor(private userRepo: UserRepository,private hashUtils:HashUtils,private mailer:Mailer) {}
   getUserProfile = async (id: string) => {
     return await this.userRepo.findUserById(id);
   };
