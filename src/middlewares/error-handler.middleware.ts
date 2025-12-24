@@ -19,16 +19,18 @@ export const errorHandler = (
   if (err instanceof ZodError) {
     statusCode = 400;
     message = formatZodError(err);
-    return res.status(statusCode).json({ message });
+    return res.status(statusCode).json({ success: false, message });
   } else if (err instanceof apiError) {
     statusCode = err.statusCode;
     message = err.message;
-    return res.status(statusCode).json({ message });
+    return res.status(statusCode).json({ success: false, message });
   } else if (err instanceof TokenExpiredError) {
     statusCode = 401;
     message = "Token expired";
-    return res.status(statusCode).json({ message });
+    return res.status(statusCode).json({ success: false, message });
   } else {
-    return res.status(500).json({ message: "Internal server error" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
   }
 };

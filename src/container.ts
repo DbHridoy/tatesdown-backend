@@ -26,6 +26,7 @@ import { JobController } from "./modules/job/job.controller";
 import { QuoteRepository } from "./modules/quote/quote.repository";
 import { QuoteService } from "./modules/quote/quote.service";
 import { QuoteController } from "./modules/quote/quote.controller";
+import { buildDynamicSearch } from "./utils/dynamic-search-utils";
 
 export const hashUtils = new HashUtils();
 export const jwtUtils = new JwtUtils();
@@ -35,7 +36,7 @@ export const commonRepository = new CommonRepository();
 export const commonService = new CommonService(commonRepository);
 export const commonController = new CommonController(commonService);
 
-export const userRepository = new UserRepository();
+export const userRepository = new UserRepository(buildDynamicSearch);
 export const userService = new UserService(userRepository, hashUtils, mailer);
 export const userController = new UserController(userService);
 
@@ -51,6 +52,7 @@ export const authService = new AuthService(
   jwtUtils,
   mailer
 );
+export const authMiddleware = new AuthMiddleware(jwtUtils, userRepository);
 export const authController = new AuthController(authService);
 
 export const designConsultationRepository=new DesignConsultationRepository()
@@ -69,4 +71,6 @@ export const quoteRepository=new QuoteRepository()
 export const quoteService=new QuoteService(quoteRepository)
 export const quoteController=new QuoteController(quoteService)
 
-export const authMiddleware = new AuthMiddleware(jwtUtils, userRepository);
+
+
+

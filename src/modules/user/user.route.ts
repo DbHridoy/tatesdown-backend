@@ -6,23 +6,23 @@ import { authMiddleware, userController } from "../../container";
 
 const userRoute = Router();
 
-userRoute.post(
-  "/create-user",
-  validate(CreateUserSchema),
-  authMiddleware.authenticate,
-  authMiddleware.authorize(["admin"]),
-  userController.createUser
-);
+// userRoute.use(authMiddleware.authenticate)
+
+userRoute.post("/", validate(CreateUserSchema), userController.createUser);
+
+userRoute.get("/", userController.getAllUsers);
+userRoute.get("/:id", userController.getUserById);
+
+userRoute.delete("/:id", userController.deleteUser);
 
 userRoute.get(
-  "/get-user-profile",
+  "/me",
   authMiddleware.authenticate,
-  authMiddleware.authorize(["admin", "sales-rep", "production-manager"]),
   userController.getUserProfile
 );
 
 userRoute.patch(
-  "/update-profile",
+  "/me",
   authMiddleware.authenticate, // 1️⃣ auth first
   uploadFile({
     fieldName: "profileImage",
@@ -31,6 +31,15 @@ userRoute.patch(
   validate(UpdateUserSchemaForOtherRoles), // 3️⃣ validate text fields
   authMiddleware.authorize(["admin", "sales-rep", "production-manager"]),
   userController.updateProfile // 4️⃣ controller
+);
+
+userRoute.patch(
+  "/:id",
+  uploadFile({
+    fieldName: "profileImage",
+    uploadType: "single",
+  }), // 2️⃣ parse FormData
+  userController.updateUser // 4️⃣ controller
 );
 
 export default userRoute;

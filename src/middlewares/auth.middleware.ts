@@ -15,7 +15,7 @@ constructor(private jwtUtils:JwtUtils,private authRepo:UserRepository){
   authenticate = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const token = req.headers.authorization;
-      logger.info({ token }, "Access token from auth middleware");
+      // logger.info({ token }, "Access token from auth middleware");
 
       if (!token || !token.startsWith("Bearer ")) {
         throw new apiError(Errors.NoToken.code, Errors.NoToken.message);
@@ -26,7 +26,7 @@ constructor(private jwtUtils:JwtUtils,private authRepo:UserRepository){
       const payload = (await this.jwtUtils.verifyAccessToken(
         accessToken
       )) as JwtPayload;
-      logger.info({ payload }, "Payload from auth middleware");
+      // logger.info({ payload }, "Payload from auth middleware");
       if (!payload || !payload.userId) {
         throw new apiError(
           Errors.InvalidToken.code,
