@@ -1,73 +1,79 @@
 import { model, Schema, Document, Types } from "mongoose";
 import { commonService } from "../../container";
 
+// Note interface & schema
+export interface INote extends Document {
+  note: string;
+  createdBy: Types.ObjectId;
+}
+
+const NoteSchema = new Schema<INote>({
+  note: { type: String, required: true },
+  createdBy: { type: Types.ObjectId, ref: "User", required: true },
+});
+
+// Design Consultation interface & schema
+export interface IDesignConsultation extends Document {
+  products: string;
+  colorCodes: string;
+  estimatedGallos: string;
+  upsellDescription: string;
+  upsellValue: string;
+  addedHours: number;
+  estimatedStartDate: Date;
+  file: string;
+}
+
+const DesignConsultationSchema = new Schema<IDesignConsultation>({
+  products: { type: String, required: true },
+  colorCodes: { type: String },
+  estimatedGallos: { type: String },
+  upsellDescription: { type: String },
+  upsellValue: { type: String },
+  addedHours: { type: Number, default: 0 },
+  estimatedStartDate: { type: Date },
+  file: { type: String },
+});
+
+// Main Job interface & schema
 export interface JobDocument extends Document {
-  jobId: string;               // Auto-generated (J0001, J0002...)
+  customId: string;
   clientId: Types.ObjectId;
   salesRepId: Types.ObjectId;
   quoteId: Types.ObjectId;
   title: string;
-  description?: string;
+  notes?: INote[];
+  designConsultation?: IDesignConsultation[];
   estimatedPrice: number;
   downPayment: number;
   startDate: Date;
-  status: "Pending" | "Scheduled" | "In Progress" | "On Hold" | "Completed" | "Cancelled";
+  status:
+    | "Pending"
+    | "Scheduled"
+    | "In Progress"
+    | "On Hold"
+    | "Completed"
+    | "Cancelled";
 }
 
 const JobSchema = new Schema<JobDocument>(
   {
-    jobId: {
-      type: String,
-      unique: true,              // 🔐 Prevent duplicates
-      index: true,
-    },
-
-    clientId: {
-      type: Schema.Types.ObjectId,
-      ref: "Client",
-      required: true,
-    },
-
-    salesRepId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-
     quoteId: {
       type: Schema.Types.ObjectId,
       ref: "Quote",
       required: true,
-      unique: true,              // 🔒 One Job per Quote
+      unique: true,
     },
 
-    title: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+    customId: { type: String, unique: true, index: true },
+    title: { type: String, required: true, trim: true },
 
-    description: {
-      type: String,
-      trim: true,
-    },
+    notes: { type: [NoteSchema], default: [] },
+    designConsultation: { type: [DesignConsultationSchema], default: [] },
 
-    estimatedPrice: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-
-    downPayment: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-
-    startDate: {
-      type: Date,
-      required: true,
-    },
+    estimatedPrice: { type: Number, required: true, min: 0 },
+    downPayment: { type: Number, required: true, min: 0 },
+    startDate: { type: Date, required: true },
 
     status: {
       type: String,
@@ -82,20 +88,13 @@ const JobSchema = new Schema<JobDocument>(
       default: "Pending",
     },
   },
-  {
-    timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
-  }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
-/**
- * Auto-generate sequential Job ID
- * Example: J0001, J0002
- */
+// Pre-save hook to generate custom job ID
 JobSchema.pre<JobDocument>("save", async function (next) {
-  if (!this.jobId) {
-    this.jobId = await commonService.generateSequentialId("J", "job");
+  if (!this.customId) {
+    this.customId = await commonService.generateSequentialId("J", "job");
   }
 });
 

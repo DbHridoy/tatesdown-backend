@@ -5,39 +5,34 @@ import {
   CreateClientNoteSchema,
   CreateClientSchema,
 } from "./client.schema";
-import { clientController } from "../../container";
+import { authMiddleware, clientController } from "../../container";
+import { uploadFile } from "../../middlewares/uploadLocal.middleware";
 
 const clientRoute = Router();
 
+clientRoute.use(authMiddleware.authenticate)
+
 clientRoute.post(
   "/create-client",
-  validate(CreateClientSchema),
   clientController.createClient
 );
 
 clientRoute.post(
-  "/create-call-log",
-  validate(CreateCallLogSchema),
-  clientController.createCallLog
+  "/add-note/:clientId",
+  uploadFile({ fieldName: "file", uploadType: "single" }),
+  clientController.addNote
 );
-
 clientRoute.post(
-  "/create-client-note",
-  validate(CreateClientNoteSchema),
-  clientController.createClientNote
+  "/add-call-log/:clientId",
+  clientController.addCallLog
 );
-
 clientRoute.get("/get-all-clients", clientController.getAllClients);
-clientRoute.get("/get-all-calllogs", clientController.getAllCallLogs);
-clientRoute.patch("/update-client/:clientId", clientController.updateClient);
+
 clientRoute.get(
   "/get-single-client/:clientId",
   clientController.getSingleClient
 );
-clientRoute.get(
-  "/get-single-calllogs/:clientId",
-  clientController.getCallLogsByClientId
-);
+clientRoute.patch("/update-client/:clientId", clientController.updateClient);
 clientRoute.delete("/delete-client/:clientId", clientController.deleteClient);
 
 export default clientRoute;

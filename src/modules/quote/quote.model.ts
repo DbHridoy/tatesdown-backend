@@ -1,32 +1,37 @@
 import { model, Schema, Types } from "mongoose";
 import { commonService } from "../../container";
 
+interface INote extends Document {
+  note: string;
+  createdBy: Types.ObjectId;
+}
+
+const NoteSchema=new Schema<INote>({
+  note:{type:String,required:true},
+  createdBy:{type:Types.ObjectId,ref:"User",required:true}
+})
 export interface QuoteDocument {
-  quoteId: string;
+  customId: string;
   clientId: Types.ObjectId;
   salesRepId: Types.ObjectId;
   estimatedPrice: number;
   bidSheet: string;
   bookedOnSpot: string;
   expiryDate: Date;
-  notes?: string;
+  notes?: INote[];
   status?: string;
 }
 
 const QuoteSchema = new Schema<QuoteDocument>(
   {
-    quoteId: {
-      type: String,
-    },
     clientId: {
       type: Types.ObjectId,
       ref: "Client",
       required: true,
     },
-    salesRepId: {
-      type: Types.ObjectId,
-      ref: "User",
-      required: true,
+
+    customId: {
+      type: String,
     },
     estimatedPrice: {
       type: Number,
@@ -45,7 +50,8 @@ const QuoteSchema = new Schema<QuoteDocument>(
       required: true,
     },
     notes: {
-      type: String,
+      type: [NoteSchema],
+      default: [],
     },
     status: {
       type: String,
@@ -61,8 +67,8 @@ const QuoteSchema = new Schema<QuoteDocument>(
 
 // Pre-save hook
 QuoteSchema.pre("save", async function () {
-  if (!this.quoteId) {
-    this.quoteId = await commonService.generateSequentialId("Q", "quote");
+  if (!this.customId) {
+    this.customId = await commonService.generateSequentialId("Q", "quote");
   }
 });
 

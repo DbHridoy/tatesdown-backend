@@ -8,7 +8,8 @@ export class ClientController {
   createClient = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const { body } = req;
-      const newClient = await this.clientService.createClient(body);
+      const salesRepId=req.user?.userId
+      const newClient = await this.clientService.createClient({...body,salesRepId});
       res.status(HttpCodes.Ok).json({
         success: true,
         message: "Client created successfully",
@@ -17,10 +18,39 @@ export class ClientController {
     }
   );
 
-  createCallLog = asyncHandler(
+addNote = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  const { clientId } = req.params;
+  const { note, createdBy } = req.body;
+
+  if (!note || !createdBy) {
+    return res.status(400).json({
+      success: false,
+      message: "Both 'note' and 'createdBy' are required",
+    });
+  }
+
+  // Add uploaded file URL if present
+  const noteData: any = { note, createdBy };
+  if (req.file?.fileUrl) {
+    noteData.file = req.file.fileUrl; // store file URL in note
+  }
+
+  const newNote = await this.clientService.createClientNote(clientId, noteData);
+
+  res.status(HttpCodes.Ok).json({
+    success: true,
+    message: "Note added successfully",
+    data: newNote,
+  });
+});
+
+
+
+  addCallLog = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
+      const {clientId}=req.params
       const { body } = req;
-      const newCallLog = await this.clientService.createCallLog(body);
+      const newCallLog = await this.clientService.createCallLog(clientId,body);
       res.status(HttpCodes.Ok).json({
         success: true,
         message: "Call log created successfully",
@@ -29,17 +59,6 @@ export class ClientController {
     }
   );
 
-  createClientNote = asyncHandler(
-    async (req: Request, res: Response, next: NextFunction) => {
-      const { body } = req;
-      const newNote =await this.clientService.createClientNote(body);
-      res.status(HttpCodes.Ok).json({
-        success: true,
-        message: "Client note created successfully",
-        data: newNote,
-      });
-    }
-  );
 
   getAllClients = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
@@ -65,46 +84,6 @@ export class ClientController {
     }
   );
 
-  getAllCallLogs = asyncHandler(
-    async (req: Request, res: Response, next: NextFunction) => {
-      const allCallLogs = this.clientService.getAllCallLogs();
-      res.status(HttpCodes.Ok).json({
-        success: true,
-        message: "All call logs fetched successfully",
-        data: allCallLogs,
-      });
-    }
-  );
-
-  getCallLogsByClientId = asyncHandler(
-    async (req: Request, res: Response, next: NextFunction) => {
-      const clientId = req.params.clientId;
-      const callLogs = this.clientService.getCallLogByClientId(clientId);
-      res.status(HttpCodes.Ok).json({
-        success: true,
-        message: "All call logs for this client fetched successfully",
-        data: callLogs,
-      });
-    }
-  );
-
-  getAllClientNotes = asyncHandler(
-    async (req: Request, res: Response, next: NextFunction) => {
-      const allClientNotes = this.clientService.getAllClientNote();
-      res.status(HttpCodes.Ok).json({
-        success: true,
-        message: "All client notes fetched successfully",
-        data: allClientNotes,
-      });
-    }
-  );
-
-  getClientNotesByClientId = asyncHandler(
-    async (req: Request, res: Response, next: NextFunction) => {
-      const clientId = req.params.clientId;
-      const clientNotes = this.clientService.getClientNoteByClientId;
-    }
-  );
   updateClient=asyncHandler(
     async(req:Request,res:Response,next:NextFunction)=>{
       const clientId=req.params.clientId
