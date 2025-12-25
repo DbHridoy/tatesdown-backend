@@ -2,7 +2,7 @@ import { model, Schema, Types } from "mongoose";
 import { commonService } from "../../container";
 
 export interface QuoteDocument {
-  quoteId: string;
+  customQuoteId: string;
   clientId: Types.ObjectId;
   salesRepId: Types.ObjectId;
   estimatedPrice: number;
@@ -15,7 +15,7 @@ export interface QuoteDocument {
 
 const QuoteSchema = new Schema<QuoteDocument>(
   {
-    quoteId: {
+    customQuoteId: {
       type: String,
     },
     clientId: {
@@ -61,8 +61,8 @@ const QuoteSchema = new Schema<QuoteDocument>(
 
 // Pre-save hook
 QuoteSchema.pre("save", async function () {
-  if (!this.quoteId) {
-    this.quoteId = await commonService.generateSequentialId("Q", "quote");
+  if (!this.customQuoteId) {
+    this.customQuoteId = await commonService.generateSequentialId("Q", "quote");
   }
 });
 

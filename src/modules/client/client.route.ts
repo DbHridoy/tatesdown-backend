@@ -6,38 +6,43 @@ import {
   CreateClientSchema,
 } from "./client.schema";
 import { clientController } from "../../container";
+import { uploadFile } from "../../middlewares/uploadLocal.middleware";
 
 const clientRoute = Router();
 
 clientRoute.post(
-  "/create-client",
+  "/",
   validate(CreateClientSchema),
   clientController.createClient
 );
-
 clientRoute.post(
-  "/create-call-log",
+  "/call-log",
   validate(CreateCallLogSchema),
   clientController.createCallLog
 );
-
 clientRoute.post(
-  "/create-client-note",
+  "/client-note",
+  uploadFile({
+    fieldName: "file",
+    uploadType: "single",
+  }),
   validate(CreateClientNoteSchema),
   clientController.createClientNote
 );
 
-clientRoute.get("/get-all-clients", clientController.getAllClients);
-clientRoute.get("/get-all-calllogs", clientController.getAllCallLogs);
-clientRoute.patch("/update-client/:clientId", clientController.updateClient);
+clientRoute.get("/", clientController.getAllClients);
 clientRoute.get(
-  "/get-single-client/:clientId",
+  "/:clientId",
   clientController.getSingleClient
 );
+clientRoute.get("/call-log", clientController.getAllCallLogs);
 clientRoute.get(
-  "/get-single-calllogs/:clientId",
+  "/call-log/:clientId",
   clientController.getCallLogsByClientId
 );
-clientRoute.delete("/delete-client/:clientId", clientController.deleteClient);
+
+clientRoute.patch("/update-client/:clientId", clientController.updateClient);
+
+clientRoute.delete("/:clientId", clientController.deleteClient);
 
 export default clientRoute;

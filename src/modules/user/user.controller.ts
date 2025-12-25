@@ -37,7 +37,8 @@ export class UserController {
       res.status(HttpCodes.Ok).json({
         success: true,
         message: "All users fetched successfully",
-        data: users,
+        data: users.data,
+        total: users.total,
       });
     }
   );

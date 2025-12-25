@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { asyncHandler } from "../../utils/async-handler";
 import { ClientService } from "./client.service";
 import { HttpCodes } from "../../constants/status-codes";
+import { logger } from "../../utils/logger";
 
 export class ClientController {
   constructor(private clientService: ClientService) {}
@@ -31,8 +32,17 @@ export class ClientController {
 
   createClientNote = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
-      const { body } = req;
-      const newNote =await this.clientService.createClientNote(body);
+      const body = req.body;
+
+      // Add file URL if uploaded
+      if (req.file?.fileUrl) {
+        body.file = req.file.fileUrl;
+      }
+
+      logger.info({body},"ClientController.createClientNote");
+
+      const newNote = await this.clientService.createClientNote(body);
+
       res.status(HttpCodes.Ok).json({
         success: true,
         message: "Client note created successfully",
@@ -48,7 +58,8 @@ export class ClientController {
       res.status(HttpCodes.Ok).json({
         success: true,
         message: "All clients fetched successfully",
-        data: allClients,
+        data: allClients.data,
+        total: allClients.total,
       });
     }
   );
@@ -61,7 +72,7 @@ export class ClientController {
         success: true,
         message: "Client fetched successfully",
         data: client,
-      })
+      });
     }
   );
 
@@ -105,27 +116,30 @@ export class ClientController {
       const clientNotes = this.clientService.getClientNoteByClientId;
     }
   );
-  updateClient=asyncHandler(
-    async(req:Request,res:Response,next:NextFunction)=>{
-      const clientId=req.params.clientId
-      const updatedClientInfo=req.body
-      const updatedClient=await this.clientService.updateClient(clientId,updatedClientInfo)
+  updateClient = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const clientId = req.params.clientId;
+      const updatedClientInfo = req.body;
+      const updatedClient = await this.clientService.updateClient(
+        clientId,
+        updatedClientInfo
+      );
       res.status(HttpCodes.Ok).json({
         success: true,
         message: "Client updated successfully",
         data: updatedClient,
-      })
+      });
     }
-  )
-  deleteClient=asyncHandler(
-    async (req:Request,res:Response,next:NextFunction)=>{
+  );
+  deleteClient = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
       const clientId = req.params.clientId;
-      const deletedClient =await this.clientService.deleteClient(clientId);
+      const deletedClient = await this.clientService.deleteClient(clientId);
       res.status(HttpCodes.Ok).json({
         success: true,
         message: "Client deleted successfully",
         data: deletedClient,
-      })
+      });
     }
-  )
+  );
 }

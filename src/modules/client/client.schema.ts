@@ -34,8 +34,9 @@ export const CreateCallLogSchema = z.object({
   note: z.string(),
 });
 
-export const CreateClientNoteSchema = z.object({
-  clientId: ObjectIdSchema,
-  text: z.string(),
-  file: z.array(z.string()).optional(),
-});
+export const CreateClientNoteSchema = z
+  .object({
+    clientId: ObjectIdSchema,
+    text: z.string(),
+  })
+  .optional();

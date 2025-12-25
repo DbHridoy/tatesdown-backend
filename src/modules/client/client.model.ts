@@ -2,7 +2,7 @@ import { model, Schema, Document } from "mongoose";
 import { commonService } from "../../container";
 
 export interface ClientDocument extends Document {
-  clientId: string;
+  customClientId: string;
   clientName: string;
   partnerName: string;
   phoneNumber: string;
@@ -15,7 +15,7 @@ export interface ClientDocument extends Document {
 
 const ClientSchema = new Schema<ClientDocument>(
   {
-    clientId: { type: String },
+    customClientId: { type: String },
     clientName: { type: String, required: true },
     partnerName: { type: String, required: true },
     phoneNumber: { type: String, required: true },
@@ -51,8 +51,8 @@ ClientSchema.virtual("notes", {
 
 // Pre-save hook for sequential ID
 ClientSchema.pre<ClientDocument>("save", async function (this: ClientDocument) {
-  if (!this.clientId) {
-    this.clientId = await commonService.generateSequentialId("C", "client");
+  if (!this.customClientId) {
+    this.customClientId = await commonService.generateSequentialId("C", "client");
   }
 });
 

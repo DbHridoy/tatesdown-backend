@@ -9,11 +9,9 @@ const ClientNoteSchema = new Schema({
   text: {
     type: String,
   },
-  file: [
-    {
-      type: String,
-    },
-  ],
+  file: {
+    type: String,
+  },
 });
 
 const clientNote = model("ClientNote", ClientNoteSchema);

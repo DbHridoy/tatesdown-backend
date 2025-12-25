@@ -11,15 +11,12 @@ const userRoute = Router();
 userRoute.post("/", validate(CreateUserSchema), userController.createUser);
 
 userRoute.get("/", userController.getAllUsers);
-userRoute.get("/:id", userController.getUserById);
-
-userRoute.delete("/:id", userController.deleteUser);
-
 userRoute.get(
   "/me",
   authMiddleware.authenticate,
   userController.getUserProfile
 );
+userRoute.get("/:id", userController.getUserById);
 
 userRoute.patch(
   "/me",
@@ -32,7 +29,6 @@ userRoute.patch(
   authMiddleware.authorize(["admin", "sales-rep", "production-manager"]),
   userController.updateProfile // 4️⃣ controller
 );
-
 userRoute.patch(
   "/:id",
   uploadFile({
@@ -41,5 +37,7 @@ userRoute.patch(
   }), // 2️⃣ parse FormData
   userController.updateUser // 4️⃣ controller
 );
+
+userRoute.delete("/:id", userController.deleteUser);
 
 export default userRoute;

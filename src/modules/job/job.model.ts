@@ -2,7 +2,7 @@ import { model, Schema, Document, Types } from "mongoose";
 import { commonService } from "../../container";
 
 export interface JobDocument extends Document {
-  jobId: string;               // Auto-generated (J0001, J0002...)
+  customJobId: string;               // Auto-generated (J0001, J0002...)
   clientId: Types.ObjectId;
   salesRepId: Types.ObjectId;
   quoteId: Types.ObjectId;
@@ -16,7 +16,7 @@ export interface JobDocument extends Document {
 
 const JobSchema = new Schema<JobDocument>(
   {
-    jobId: {
+    customJobId: {
       type: String,
       unique: true,              // 🔐 Prevent duplicates
       index: true,
@@ -94,8 +94,8 @@ const JobSchema = new Schema<JobDocument>(
  * Example: J0001, J0002
  */
 JobSchema.pre<JobDocument>("save", async function (next) {
-  if (!this.jobId) {
-    this.jobId = await commonService.generateSequentialId("J", "job");
+  if (!this.customJobId) {
+    this.customJobId = await commonService.generateSequentialId("J", "job");
   }
 });
 

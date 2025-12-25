@@ -16,7 +16,11 @@ export class ClientRepository {
 
   getAllClients = async (query: any) => {
     const { filter, search, options } = buildDynamicSearch(Client, query);
-    return await Client.find({ ...filter, ...search }, null, options)
+    const [clients, total] = await Promise.all([
+      Client.find({ ...filter, ...search }, null, options),
+      Client.countDocuments({ ...filter, ...search }),
+    ])
+    return { data: clients, total }
   };
 
   getClientById = async (id: string) => {
