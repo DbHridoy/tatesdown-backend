@@ -6,17 +6,13 @@ const ObjectIdSchema = z
 
 export const QuoteSchema = z.object({
   clientId: ObjectIdSchema,
-  salesRepId: ObjectIdSchema,
   estimatedPrice: z.coerce.number(),
-  bidSheet: z.string(),
   bookedOnSpot: z.string(),
   expiryDate: z.coerce.date(),
   notes:z.string()
 });
 
-export const CreateQuoteSchema=QuoteSchema.omit({
-  bidSheet:true
-})
+export const CreateQuoteSchema=QuoteSchema
 
-export const UpdateQuoteSchema = QuoteSchema.omit({ clientId: true,salesRepId:true }) // remove clientId
-  .partial().strict();
+export const UpdateQuoteSchema = QuoteSchema.omit({ clientId: true }) // remove clientId
+  .partial();

@@ -1,7 +1,9 @@
 import { model, Schema, Document } from "mongoose";
 import { commonService } from "../../container";
+import { Types } from "mongoose";
 
 export interface ClientDocument extends Document {
+  salesRepId: Types.ObjectId;
   customClientId: string;
   clientName: string;
   partnerName: string;
@@ -15,6 +17,11 @@ export interface ClientDocument extends Document {
 
 const ClientSchema = new Schema<ClientDocument>(
   {
+    salesRepId:{
+        type:Types.ObjectId,
+        ref:"User",
+        required:true
+    },
     customClientId: { type: String },
     clientName: { type: String, required: true },
     partnerName: { type: String, required: true },

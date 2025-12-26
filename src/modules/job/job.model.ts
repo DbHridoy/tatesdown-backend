@@ -2,43 +2,35 @@ import { model, Schema, Document, Types } from "mongoose";
 import { commonService } from "../../container";
 
 export interface JobDocument extends Document {
-  customJobId: string;               // Auto-generated (J0001, J0002...)
-  clientId: Types.ObjectId;
-  salesRepId: Types.ObjectId;
+  customJobId: string;
   quoteId: Types.ObjectId;
   title: string;
   description?: string;
   estimatedPrice: number;
   downPayment: number;
   startDate: Date;
-  status: "Pending" | "Scheduled" | "In Progress" | "On Hold" | "Completed" | "Cancelled";
+  status:
+    | "Pending"
+    | "Scheduled"
+    | "In Progress"
+    | "On Hold"
+    | "Completed"
+    | "Cancelled";
 }
 
 const JobSchema = new Schema<JobDocument>(
   {
     customJobId: {
       type: String,
-      unique: true,              // 🔐 Prevent duplicates
+      unique: true, // 🔐 Prevent duplicates
       index: true,
-    },
-
-    clientId: {
-      type: Schema.Types.ObjectId,
-      ref: "Client",
-      required: true,
-    },
-
-    salesRepId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
     },
 
     quoteId: {
       type: Schema.Types.ObjectId,
       ref: "Quote",
       required: true,
-      unique: true,              // 🔒 One Job per Quote
+      unique: true, // 🔒 One Job per Quote
     },
 
     title: {

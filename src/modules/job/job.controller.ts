@@ -57,7 +57,8 @@ export class JobController {
       res.status(HttpCodes.Ok).json({
         success: true,
         message: "Job fetched successfully",
-        data: job,
+        data: job.jobs,
+        total: job.total,
       });
     }
   );

@@ -24,10 +24,14 @@ export class JobRepository {
   };
 
   getAllJobs = async () => {
-    return await Job.find().populate("clientId salesRepId quoteId");
+    const [jobs, total] = await Promise.all([
+      Job.find(),
+      Job.countDocuments(),
+    ]);
+    return { jobs, total };
   };
 
   getJobById = async (id: string) => {
-    return await Job.findById(id).populate("clientId salesRepId quoteId");
+    return await Job.findById(id)
   };
 }

@@ -6,19 +6,29 @@ import { uploadFile } from "../../middlewares/uploadLocal.middleware";
 
 const quoteRoute = Router();
 
-
 quoteRoute.post(
-  "/create-quote",
+  "/",
   uploadFile({
-    fieldName:"bidSheet",
-    uploadType:"single"
+    fieldName: "bidSheet",
+    uploadType: "single",
   }),
   validate(CreateQuoteSchema),
   quoteController.createQuote
 );
-quoteRoute.get("/get-all-quotes", quoteController.getAllQuote);
-quoteRoute.delete("/delete-quote/:quoteId",quoteController.deleteQuoteById)
-quoteRoute.get("/get-single-quote/:quoteId", quoteController.getSingleQuote);
-quoteRoute.patch("/update-quote/:quoteId",validate(UpdateQuoteSchema),quoteController.updateQuoteById)
+
+quoteRoute.get("/", quoteController.getAllQuote);
+quoteRoute.get("/:quoteId", quoteController.getSingleQuote);
+
+quoteRoute.patch(
+  "/:quoteId",
+  uploadFile({
+    fieldName: "bidSheet",
+    uploadType: "single",
+  }),
+  // validate(UpdateQuoteSchema),
+  quoteController.updateQuoteById
+);
+
+quoteRoute.delete("/:quoteId", quoteController.deleteQuoteById);
 
 export default quoteRoute;

@@ -9,6 +9,7 @@ export class ClientController {
   createClient = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const { body } = req;
+      logger.info({body},"ClientController.createClient")
       const newClient = await this.clientService.createClient(body);
       res.status(HttpCodes.Ok).json({
         success: true,

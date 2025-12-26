@@ -9,7 +9,14 @@ export class QuoteService{
     }
 
     getAllQuote= async (query:any)=>{
-        return await this.quoteRepository.getAllQuotes(query)
+        const quoteData =await this.quoteRepository.getAllQuotes(query)
+        // const formattedQuotes=quoteData.map((quote)=>{
+        //     return {
+                
+        //     }
+        // })
+        // return formattedQuotes
+        return quoteData
     }
 
     getSingleQuote=async (id:string)=>{

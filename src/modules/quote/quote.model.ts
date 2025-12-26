@@ -23,11 +23,6 @@ const QuoteSchema = new Schema<QuoteDocument>(
       ref: "Client",
       required: true,
     },
-    salesRepId: {
-      type: Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
     estimatedPrice: {
       type: Number,
       required: true,
@@ -65,5 +60,7 @@ QuoteSchema.pre("save", async function () {
     this.customQuoteId = await commonService.generateSequentialId("Q", "quote");
   }
 });
+
+QuoteSchema.index({createdAt:-1})
 
 export const Quote = model<QuoteDocument>("Quote", QuoteSchema);
