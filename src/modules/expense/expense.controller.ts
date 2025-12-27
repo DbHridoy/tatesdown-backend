@@ -8,8 +8,8 @@ export class ExpenseController {
 
   createNewMileage = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
-      logger.info({body: req.body},"Requestbody from expense controller")
-      logger.info(req.file,"File from expense controller")
+      logger.info({ body: req.body }, "Requestbody from expense controller");
+      logger.info(req.file, "File from expense controller");
       const { salesRepId, month, year, totalMilesDriven, note } = req.body;
 
       // uploaded file (from multer)
@@ -29,7 +29,7 @@ export class ExpenseController {
 
       res.status(201).json({
         success: true,
-        message:"Mileage created successfully",
+        message: "Mileage created successfully",
         data: mileage,
       });
     }
@@ -40,27 +40,32 @@ export class ExpenseController {
       const allMileage = await this.expenseService.getAllMileage();
       return res.status(200).json({
         success: true,
-        message:"All mileage fetched successfully",
+        message: "All mileage fetched successfully",
         data: allMileage,
       });
     }
   );
-  getMyMileage=asyncHandler(async(req:Request,res:Response,next:NextFunction)=>{
-    const userId=req.user!.userId 
-    const mileage=await this.expenseService.getMyMileage(userId)
-    return res.status(200).json({
-      success:true,
-      message:"Mileage fetched successfully",
-      data:mileage
-    })
-  })
+  getMyMileage = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const userId = req.user!.userId;
+      const mileage = await this.expenseService.getMyMileage(userId);
+      return res.status(200).json({
+        success: true,
+        message: "Mileage fetched successfully",
+        data: mileage.data,
+        total: mileage.total,
+        totalMilesDriven: mileage.totalMilesDriven,
+        totalDeduction: mileage.totalDeduction,
+      });
+    }
+  );
   getMileageById = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const mileageId = req.params.mileageId;
       const mileage = await this.expenseService.getMileageById(mileageId);
       return res.status(200).json({
         success: true,
-        message:"Mileage fetched successfully",
+        message: "Mileage fetched successfully",
         data: mileage,
       });
     }

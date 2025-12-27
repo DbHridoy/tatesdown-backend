@@ -29,6 +29,8 @@ const DesignConsultationSchema = new Schema({
   file: {
     type: String,
   },
+},{
+  timestamps: true,
 });
 
 const DesignConsultation = model(

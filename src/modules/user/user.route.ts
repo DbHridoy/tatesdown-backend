@@ -25,7 +25,7 @@ userRoute.patch(
     fieldName: "profileImage",
     uploadType: "single",
   }), // 2️⃣ parse FormData
-  validate(UpdateUserSchemaForOtherRoles), // 3️⃣ validate text fields
+  // validate(UpdateUserSchemaForOtherRoles), // 3️⃣ validate text fields
   authMiddleware.authorize(["admin", "sales-rep", "production-manager"]),
   userController.updateProfile // 4️⃣ controller
 );

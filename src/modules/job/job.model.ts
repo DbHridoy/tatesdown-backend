@@ -8,9 +8,11 @@ export interface JobDocument extends Document {
   description?: string;
   estimatedPrice: number;
   downPayment: number;
+  budgetSpent: number;
   startDate: Date;
   status:
     | "Pending"
+    | "Pending Close"
     | "Scheduled"
     | "In Progress"
     | "On Hold"
@@ -50,6 +52,11 @@ const JobSchema = new Schema<JobDocument>(
       min: 0,
     },
 
+    budgetSpent: {
+      type: Number,
+      min: 0,
+    },
+
     downPayment: {
       type: Number,
       required: true,
@@ -65,6 +72,7 @@ const JobSchema = new Schema<JobDocument>(
       type: String,
       enum: [
         "Pending",
+        "Pending Close",
         "Scheduled",
         "In Progress",
         "On Hold",
@@ -81,10 +89,18 @@ const JobSchema = new Schema<JobDocument>(
   }
 );
 
-/**
- * Auto-generate sequential Job ID
- * Example: J0001, J0002
- */
+JobSchema.virtual("notes", {
+  ref: "JobNote",
+  localField: "_id",
+  foreignField: "jobId",
+});
+
+JobSchema.virtual("designConsultaion", {
+  ref: "DesignConsultation",
+  localField: "_id",
+  foreignField: "jobId",
+});
+
 JobSchema.pre<JobDocument>("save", async function (next) {
   if (!this.customJobId) {
     this.customJobId = await commonService.generateSequentialId("J", "job");

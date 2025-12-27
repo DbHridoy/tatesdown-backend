@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { asyncHandler } from "../../utils/async-handler";
 import { JobService } from "./job.service";
 import { HttpCodes } from "../../constants/status-codes";
+import { logger } from "../../utils/logger";
 
 export class JobController {
   constructor(private readonly jobService: JobService) {}
@@ -9,6 +10,8 @@ export class JobController {
   createNewJob = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const jobInfo = req.body;
+
+      logger.info({ jobInfo }, "Jobcontroller.createNewJob");
       const job = await this.jobService.createNewJob(jobInfo);
       res.status(HttpCodes.Ok).json({
         success: true,
@@ -43,6 +46,9 @@ export class JobController {
   createJobNote = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const jobNote = req.body;
+      if(req.file){
+        jobNote.file = req.file.fileUrl;
+      }
       const job = await this.jobService.createJobNote(jobNote);
       res.status(HttpCodes.Ok).json({
         success: true,
@@ -53,7 +59,8 @@ export class JobController {
   );
   getAllJobs = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
-      const job = await this.jobService.getAllJobs();
+      const query = req.query;
+      const job = await this.jobService.getAllJobs(query);
       res.status(HttpCodes.Ok).json({
         success: true,
         message: "Job fetched successfully",
@@ -70,6 +77,47 @@ export class JobController {
         success: true,
         message: "Job fetched successfully",
         data: job,
+      });
+    }
+  );
+
+  createNewDesignConsultation = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const consultationBody = req.body;
+      if(req.file){
+        consultationBody.file = req.file.fileUrl;
+      }
+      const newDesignConsultation =
+        await this.jobService.createNewDesignConsultation(consultationBody);
+      res.status(HttpCodes.Ok).json({
+        success: true,
+        message: "Design Consultation created successfully",
+        data: newDesignConsultation,
+      });
+    }
+  );
+
+  getAllDesignConsultation = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const allDesignConsultation =
+        await this.jobService.getAllDesignConsultation();
+      res.status(HttpCodes.Ok).json({
+        success: true,
+        message: "All Design Consultation fetched successfully",
+        data: allDesignConsultation,
+      });
+    }
+  );
+
+  getDesignConsultationById = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { id } = req.params;
+      const designConsultation =
+        await this.jobService.getDesignConsultationById(id);
+      res.status(HttpCodes.Ok).json({
+        success: true,
+        message: "Design Consultation fetched successfully",
+        data: designConsultation,
       });
     }
   );

@@ -16,6 +16,8 @@ export const JobStatusEnum = z.enum([
   "On Hold",
   "Completed",
   "Cancelled",
+  "Pending",
+  "Pending Close",
 ]);
 
 /* ------------------------------------

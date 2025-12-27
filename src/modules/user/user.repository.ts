@@ -10,24 +10,23 @@ export class UserRepository {
     return await newUser.save();
   };
 
- getAllUsers = async (query: any) => {
-  const { filter, search, options } = this.buildDynamicSearch(User, query);
+  getAllUsers = async (query: any) => {
+    const { filter, search, options } = this.buildDynamicSearch(User, query);
 
-  const baseQuery = {
-    role: { $ne: "admin" },
-    ...filter,
-    ...search,
+    const baseQuery = {
+      role: { $ne: "admin" },
+      ...filter,
+      ...search,
+    };
+
+    // Run both queries concurrently
+    const [users, total] = await Promise.all([
+      User.find(baseQuery, null, options),
+      User.countDocuments(baseQuery),
+    ]);
+
+    return { data: users, total };
   };
-
-  // Run both queries concurrently
-  const [users, total] = await Promise.all([
-    User.find(baseQuery, null, options),
-    User.countDocuments(baseQuery),
-  ]);
-
-  return { data: users, total };
-};
-
 
   deleteUser = async (id: string) => {
     return await User.findByIdAndDelete(id);

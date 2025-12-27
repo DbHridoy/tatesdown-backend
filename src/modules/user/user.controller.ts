@@ -108,6 +108,8 @@ export class UserController {
         body.profileImage = req.file.fileUrl;
       }
 
+      logger.info({body},"UserController.updateProfile")
+
       logger.info({ user: req.user, body }, "Updating user profile");
 
       const updatedUser = await this.userService.updateProfile(userId, body);

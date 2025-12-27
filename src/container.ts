@@ -14,9 +14,6 @@ import { ClientController } from "./modules/client/client.controller";
 import { AuthRepository } from "./modules/auth/auth.repository";
 import { AuthService } from "./modules/auth/auth.service";
 import { AuthController } from "./modules/auth/auth.controller";
-import { DesignConsultationRepository } from "./modules/design-consultation/design-consultation.repository";
-import { DesignConsultationService } from "./modules/design-consultation/design-consultation.service";
-import { DesignConsultationController } from "./modules/design-consultation/design-consultation.controller";
 import { ExpenseRepository } from "./modules/expense/expense.repository";
 import { ExpenseService } from "./modules/expense/expense.service";
 import { ExpenseController } from "./modules/expense/expense.controller";
@@ -55,22 +52,17 @@ export const authService = new AuthService(
 export const authMiddleware = new AuthMiddleware(jwtUtils, userRepository);
 export const authController = new AuthController(authService);
 
-export const designConsultationRepository=new DesignConsultationRepository()
-export const designConsultationService=new DesignConsultationService(designConsultationRepository)
-export const designConsultationController=new DesignConsultationController(designConsultationService)
+export const expenseRepository = new ExpenseRepository();
+export const expenseService = new ExpenseService(
+  expenseRepository,
+  commonService
+);
+export const expenseController = new ExpenseController(expenseService);
 
-export const expenseRepository=new ExpenseRepository()
-export const expenseService=new ExpenseService(expenseRepository,commonService)
-export const expenseController=new ExpenseController(expenseService)
+export const jobRepository = new JobRepository();
+export const jobService = new JobService(jobRepository);
+export const jobController = new JobController(jobService);
 
-export const jobRepository=new JobRepository()
-export const jobService=new JobService(jobRepository)
-export const jobController=new JobController(jobService)
-
-export const quoteRepository=new QuoteRepository()
-export const quoteService=new QuoteService(quoteRepository)
-export const quoteController=new QuoteController(quoteService)
-
-
-
-
+export const quoteRepository = new QuoteRepository();
+export const quoteService = new QuoteService(quoteRepository);
+export const quoteController = new QuoteController(quoteService);
