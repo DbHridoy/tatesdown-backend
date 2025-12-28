@@ -34,6 +34,9 @@ export class JobRepository {
           path: "quoteId",
           populate: {
             path: "clientId",
+            populate: {
+              path: "salesRepId",
+            },
           },
         })
         .populate({
@@ -54,6 +57,9 @@ export class JobRepository {
         path: "quoteId",
         populate: {
           path: "clientId",
+          populate: {
+            path: "salesRepId",
+          },
         },
       })
       .populate({
@@ -78,5 +84,22 @@ export class JobRepository {
 
   getDesignConsultationById = async (id: string) => {
     return await DesignConsultation.findById(id);
+  };
+
+  getAllDownpaymentRequest = async (query: any) => {
+    const { filter, search, options } = buildDynamicSearch(Job, query);
+
+    const finalFilter = {
+      ...filter,
+      ...search,
+      downPaymentStatus: "Pending",
+    };
+
+    const [downpaymentRequest, total] = await Promise.all([
+      Job.find(finalFilter, null, options),
+      Job.countDocuments(finalFilter),
+    ]);
+
+    return { downpaymentRequest, total };
   };
 }

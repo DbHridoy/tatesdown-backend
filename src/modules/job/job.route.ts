@@ -35,10 +35,11 @@ jobRoute.get(
   "/design-consultation/:id",
   jobController.getDesignConsultationById
 );
+jobRoute.get("/downpayment-request",jobController.getAllDownpaymentRequest);
 
 jobRoute.patch(
   "/:jobId",
-  validate(UpdateJobSchema),
+  // validate(UpdateJobSchema),
   jobController.updateJobById
 );
 

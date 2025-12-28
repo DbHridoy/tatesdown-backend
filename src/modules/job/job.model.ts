@@ -9,6 +9,7 @@ export interface JobDocument extends Document {
   estimatedPrice: number;
   downPayment: number;
   budgetSpent: number;
+  downPaymentStatus: "Approved" | "Rejected" | "Pending";
   startDate: Date;
   status:
     | "Pending"
@@ -61,6 +62,12 @@ const JobSchema = new Schema<JobDocument>(
       type: Number,
       required: true,
       min: 0,
+    },
+
+    downPaymentStatus: {
+      type: String,
+      enum: ["Approved", "Rejected", "Pending"],
+      default: "Pending",
     },
 
     startDate: {

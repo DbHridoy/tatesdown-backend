@@ -24,9 +24,7 @@ export class JobService {
   getJobById = async (id: string) => {
     return await this.jobRepository.getJobById(id);
   };
-  createNewDesignConsultation = async (
-    designConsultationInfo: any
-  ) => {
+  createNewDesignConsultation = async (designConsultationInfo: any) => {
     const newDesignConsultation = new DesignConsultation(
       designConsultationInfo
     );
@@ -39,5 +37,8 @@ export class JobService {
 
   getDesignConsultationById = async (id: string) => {
     return await DesignConsultation.findById(id);
+  };
+  getAllDownpaymentRequest = async (query: any) => {
+    return await this.jobRepository.getAllDownpaymentRequest(query);
   };
 }

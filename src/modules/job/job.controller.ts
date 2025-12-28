@@ -46,7 +46,7 @@ export class JobController {
   createJobNote = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const jobNote = req.body;
-      if(req.file){
+      if (req.file) {
         jobNote.file = req.file.fileUrl;
       }
       const job = await this.jobService.createJobNote(jobNote);
@@ -84,7 +84,7 @@ export class JobController {
   createNewDesignConsultation = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const consultationBody = req.body;
-      if(req.file){
+      if (req.file) {
         consultationBody.file = req.file.fileUrl;
       }
       const newDesignConsultation =
@@ -118,6 +118,20 @@ export class JobController {
         success: true,
         message: "Design Consultation fetched successfully",
         data: designConsultation,
+      });
+    }
+  );
+  getAllDownpaymentRequest = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const params = req.query;
+      const downpaymentRequest = await this.jobService.getAllDownpaymentRequest(
+        params
+      );
+      res.status(HttpCodes.Ok).json({
+        success: true,
+        message: "All downpayment request fetched successfully",
+        data: downpaymentRequest.downpaymentRequest,
+        total: downpaymentRequest.total,
       });
     }
   );

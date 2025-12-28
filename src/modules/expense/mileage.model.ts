@@ -8,7 +8,7 @@ interface IMileage {
   file: string;
   note?: string;
   deduction: number;
-  status: "pending" | "approved" | "rejected";
+  status: "Pending" | "Approved" | "Rejected ";
 }
 
 const MileageSchema = new Schema<IMileage>(
@@ -26,9 +26,8 @@ const MileageSchema = new Schema<IMileage>(
     deduction: { type: Number, required: true },
     status: {
       type: String,
-      enum: ["pending", "approved", "rejected"],
-      default: "pending",
-      required: true,
+      enum: ["Pending", "Approved", "Rejected"],
+      default: "Pending"
     },
   },
   { timestamps: true }

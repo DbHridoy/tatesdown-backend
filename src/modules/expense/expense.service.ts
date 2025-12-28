@@ -1,15 +1,14 @@
-import { MileageInfo } from "./expense.interface";
+
 import { ExpenseRepository } from "./expense.repository";
 import { CommonService } from "../common/common.service";
 
 export class ExpenseService {
-
   constructor(
     private readonly expenseRepository: ExpenseRepository,
     private readonly commonService: CommonService
   ) {}
 
-  createNewMileage = async (mileageInfo: MileageInfo) => {
+  createNewMileage = async (mileageInfo: any) => {
     const variable = await this.commonService.getVariable();
     if (!variable) {
       throw new Error("Mileage rate not set");
@@ -17,20 +16,25 @@ export class ExpenseService {
     const deduction = variable?.mileageRate * mileageInfo.totalMilesDriven;
     return await this.expenseRepository.createNewMileage({
       ...mileageInfo,
-      deduction,
-      status:"pending",
+      deduction
     });
   };
 
   getAllMileage = async () => {
     return await this.expenseRepository.getAllMileage();
   };
-  getMyMileage=async(userId:string)=>{
-    return await this.expenseRepository.getMyMileage(userId)
-  }
+
+  getPendingMileage = async (query: any) => {
+    return await this.expenseRepository.getPendingMileage(query);
+  };
+updateMileage=async(mileageId:string,mileageInfo:any)=>{
+  return await this.expenseRepository.updateMileage(mileageId,mileageInfo)
+}
+  getMyMileage = async (userId: string) => {
+    return await this.expenseRepository.getMyMileage(userId);
+  };
 
   getMileageById = async (id: string) => {
     return await this.expenseRepository.getMileageById(id);
   };
-
 }
