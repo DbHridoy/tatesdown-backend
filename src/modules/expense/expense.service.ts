@@ -1,4 +1,3 @@
-
 import { ExpenseRepository } from "./expense.repository";
 import { CommonService } from "../common/common.service";
 
@@ -16,7 +15,7 @@ export class ExpenseService {
     const deduction = variable?.mileageRate * mileageInfo.totalMilesDriven;
     return await this.expenseRepository.createNewMileage({
       ...mileageInfo,
-      deduction
+      deduction,
     });
   };
 
@@ -27,11 +26,13 @@ export class ExpenseService {
   getPendingMileage = async (query: any) => {
     return await this.expenseRepository.getPendingMileage(query);
   };
-updateMileage=async(mileageId:string,mileageInfo:any)=>{
-  return await this.expenseRepository.updateMileage(mileageId,mileageInfo)
-}
-  getMyMileage = async (userId: string) => {
-    return await this.expenseRepository.getMyMileage(userId);
+
+  updateMileage = async (mileageId: string, mileageInfo: any) => {
+    return await this.expenseRepository.updateMileage(mileageId, mileageInfo);
+  };
+
+  getMyMileage = async (userId: string, query: any) => {
+    return await this.expenseRepository.getMyMileage(userId, query);
   };
 
   getMileageById = async (id: string) => {

@@ -89,6 +89,7 @@ export class JobRepository {
   getAllDownpaymentRequest = async (query: any) => {
     const { filter, search, options } = buildDynamicSearch(Job, query);
 
+    // merge filters correctly
     const finalFilter = {
       ...filter,
       ...search,
@@ -96,10 +97,46 @@ export class JobRepository {
     };
 
     const [downpaymentRequest, total] = await Promise.all([
-      Job.find(finalFilter, null, options),
+      Job.find(finalFilter, null, options).populate({
+        path: "quoteId",
+        populate: {
+          path: "clientId",
+        },
+      }),
       Job.countDocuments(finalFilter),
     ]);
 
     return { downpaymentRequest, total };
+  };
+
+  getAllJobCloseApproval = async (query: any) => {
+    const { filter, search, options } = buildDynamicSearch(Job, query);
+
+    // merge filters correctly
+    const finalFilter = {
+      ...filter,
+      ...search,
+      status: "Pending Close",
+    };
+
+    const [jobs, total] = await Promise.all([
+      Job.find(finalFilter, null, options).populate({
+        path: "quoteId",
+        populate: {
+          path: "clientId",
+        },
+      }),
+      Job.countDocuments(finalFilter),
+    ]);
+
+    return { jobs, total };
+  };
+
+  updateDownpaymentStatus = async (id: string, status: string) => {
+    return await Job.findByIdAndUpdate(
+      id,
+      { downPaymentStatus: status },
+      { new: true }
+    );
   };
 }

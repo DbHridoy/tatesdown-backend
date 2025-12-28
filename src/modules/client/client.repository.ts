@@ -19,8 +19,8 @@ export class ClientRepository {
     const [clients, total] = await Promise.all([
       Client.find({ ...filter, ...search }, null, options),
       Client.countDocuments({ ...filter, ...search }),
-    ])
-    return { data: clients, total }
+    ]);
+    return { data: clients, total };
   };
 
   getClientById = async (id: string) => {

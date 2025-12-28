@@ -29,14 +29,16 @@ jobRoute.post(
 );
 
 jobRoute.get("/", jobController.getAllJobs);
-jobRoute.get("/:jobId", jobController.getJobById);
 jobRoute.get("/design-consultation", jobController.getAllDesignConsultation);
+jobRoute.get("/downpayment-request", jobController.getAllDownpaymentRequest);
+jobRoute.get("/job-close-approval", jobController.getAllJobCloseApproval);
 jobRoute.get(
   "/design-consultation/:id",
   jobController.getDesignConsultationById
 );
-jobRoute.get("/downpayment-request",jobController.getAllDownpaymentRequest);
+jobRoute.get("/:jobId", jobController.getJobById);
 
+jobRoute.patch("/downpayment-status", jobController.updateDownpaymentStatus);
 jobRoute.patch(
   "/:jobId",
   // validate(UpdateJobSchema),

@@ -15,11 +15,17 @@ export class ExpenseRepository {
     return { data: mileage, total };
   };
 
-  getMyMileage = async (userId: string) => {
+  getMyMileage = async (userId: string, query: any) => {
+    const { filter, search, options } = buildDynamicSearch(Mileage, query);
+    const finalFilter = {
+      ...filter,
+      ...search,
+      salesRepId: userId,
+    };
     // Fetch all mileage documents and total count in parallel
     const [mileage, total] = await Promise.all([
-      Mileage.find({ salesRepId: userId }).populate("salesRepId"),
-      Mileage.countDocuments({ salesRepId: userId }),
+      Mileage.find(finalFilter).populate("salesRepId"),
+      Mileage.countDocuments(finalFilter),
     ]);
 
     // Calculate total miles driven and total deduction
@@ -42,13 +48,19 @@ export class ExpenseRepository {
   };
 
   getPendingMileage = async (query: any) => {
-    const { filter, search, options } = buildDynamicSearch(Mileage, {});
+    const { filter, search, options } = buildDynamicSearch(Mileage, query);
+    const finalFilter = {
+      ...filter,
+      ...search,
+      status: "Pending",
+    };
     const [mileage, total] = await Promise.all([
-      Mileage.find({ status: "Pending" }).populate("salesRepId"),
-      Mileage.countDocuments({ status: "Pending" }),
+      Mileage.find(finalFilter).populate("salesRepId"),
+      Mileage.countDocuments(finalFilter),
     ]);
     return { data: mileage, total };
   };
+
   updateMileage = async (mileageId: string, mileageInfo: any) => {
     return await Mileage.findByIdAndUpdate(mileageId, mileageInfo, {
       new: true,

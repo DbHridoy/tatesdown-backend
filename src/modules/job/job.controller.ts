@@ -20,6 +20,7 @@ export class JobController {
       });
     }
   );
+
   updateJobById = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const jobId = req.params.jobId;
@@ -32,6 +33,7 @@ export class JobController {
       });
     }
   );
+
   deleteJobById = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const jobId = req.params.jobId;
@@ -43,6 +45,7 @@ export class JobController {
       });
     }
   );
+
   createJobNote = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const jobNote = req.body;
@@ -57,6 +60,7 @@ export class JobController {
       });
     }
   );
+
   getAllJobs = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const query = req.query;
@@ -69,6 +73,7 @@ export class JobController {
       });
     }
   );
+
   getJobById = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const jobId = req.params.jobId;
@@ -121,6 +126,7 @@ export class JobController {
       });
     }
   );
+
   getAllDownpaymentRequest = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const params = req.query;
@@ -132,6 +138,34 @@ export class JobController {
         message: "All downpayment request fetched successfully",
         data: downpaymentRequest.downpaymentRequest,
         total: downpaymentRequest.total,
+      });
+    }
+  );
+
+  getAllJobCloseApproval = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const params = req.query;
+      const jobCloseApproval = await this.jobService.getAllJobCloseApproval(
+        params
+      );
+      res.status(HttpCodes.Ok).json({
+        success: true,
+        message: "All job close approval fetched successfully",
+        data: jobCloseApproval.jobs,
+        total: jobCloseApproval.total,
+      });
+    }
+  );
+
+  updateDownpaymentStatus = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { id, status } = req.body;
+      logger.info({ id, status }, "JobController.updateDownpaymentStatus");
+      const result = await this.jobService.updateDownpaymentStatus(id, status);
+      res.status(HttpCodes.Ok).json({
+        success: true,
+        message: "Downpayment status updated successfully",
+        data: result,
       });
     }
   );

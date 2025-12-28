@@ -17,10 +17,10 @@ export interface ClientDocument extends Document {
 
 const ClientSchema = new Schema<ClientDocument>(
   {
-    salesRepId:{
-        type:Types.ObjectId,
-        ref:"User",
-        required:true
+    salesRepId: {
+      type: Types.ObjectId,
+      ref: "User",
+      required: true,
     },
     customClientId: { type: String },
     clientName: { type: String, required: true },
@@ -40,7 +40,11 @@ const ClientSchema = new Schema<ClientDocument>(
       default: "Not Called",
     },
   },
-  { toJSON: { virtuals: true }, toObject: { virtuals: true } }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
 
 // Virtuals
@@ -59,7 +63,10 @@ ClientSchema.virtual("notes", {
 // Pre-save hook for sequential ID
 ClientSchema.pre<ClientDocument>("save", async function (this: ClientDocument) {
   if (!this.customClientId) {
-    this.customClientId = await commonService.generateSequentialId("C", "client");
+    this.customClientId = await commonService.generateSequentialId(
+      "C",
+      "client"
+    );
   }
 });
 

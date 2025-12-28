@@ -15,15 +15,19 @@ export class JobService {
   deleteJobById = async (id: string) => {
     return await this.jobRepository.deleteJobById(id);
   };
+
   createJobNote = async (jobNote: any) => {
     return await this.jobRepository.createJobNote(jobNote);
   };
+
   getAllJobs = async (query: any) => {
     return await this.jobRepository.getAllJobs(query);
   };
+
   getJobById = async (id: string) => {
     return await this.jobRepository.getJobById(id);
   };
+
   createNewDesignConsultation = async (designConsultationInfo: any) => {
     const newDesignConsultation = new DesignConsultation(
       designConsultationInfo
@@ -38,7 +42,16 @@ export class JobService {
   getDesignConsultationById = async (id: string) => {
     return await DesignConsultation.findById(id);
   };
+
   getAllDownpaymentRequest = async (query: any) => {
     return await this.jobRepository.getAllDownpaymentRequest(query);
+  };
+
+  getAllJobCloseApproval = async (query: any) => {
+    return await this.jobRepository.getAllJobCloseApproval(query);
+  };
+
+  updateDownpaymentStatus = async (id: string, status: string) => {
+    return await this.jobRepository.updateDownpaymentStatus(id, status);
   };
 }

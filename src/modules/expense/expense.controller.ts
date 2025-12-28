@@ -11,9 +11,9 @@ export class ExpenseController {
       logger.info({ body: req.body }, "Requestbody from expense controller");
       logger.info(req.file, "File from expense controller");
       const { salesRepId, month, year, totalMilesDriven, note } = req.body;
-      const body=req.body
+      const body = req.body;
 
-      logger.info({body},"Requestbody from expense controller");
+      logger.info({ body }, "Requestbody from expense controller");
 
       // uploaded file (from multer)
       const file = req.file?.fileUrl;
@@ -48,10 +48,12 @@ export class ExpenseController {
       });
     }
   );
+
   getMyMileage = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const userId = req.user!.userId;
-      const mileage = await this.expenseService.getMyMileage(userId);
+      const { query } = req;
+      const mileage = await this.expenseService.getMyMileage(userId, query);
       return res.status(200).json({
         success: true,
         message: "Mileage fetched successfully",
@@ -62,6 +64,7 @@ export class ExpenseController {
       });
     }
   );
+
   getMileageById = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const mileageId = req.params.mileageId;
@@ -76,7 +79,9 @@ export class ExpenseController {
 
   getPendingMileage = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
-      const pendingMileage = await this.expenseService.getPendingMileage(req.query);
+      const pendingMileage = await this.expenseService.getPendingMileage(
+        req.query
+      );
       return res.status(200).json({
         success: true,
         message: "Pending mileage fetched successfully",
@@ -85,12 +90,18 @@ export class ExpenseController {
       });
     }
   );
-  updateMileage=asyncHandler(async(req:Request,res:Response,next:NextFunction)=>{
-    const updatedMileage=await this.expenseService.updateMileage(req.params.mileageId,req.body)
-    return res.status(200).json({
-      success:true,
-      message:"Mileage updated successfully",
-      data:updatedMileage
-    })
-  })
+
+  updateMileage = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const updatedMileage = await this.expenseService.updateMileage(
+        req.params.mileageId,
+        req.body
+      );
+      return res.status(200).json({
+        success: true,
+        message: "Mileage updated successfully",
+        data: updatedMileage,
+      });
+    }
+  );
 }
