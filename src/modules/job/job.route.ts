@@ -36,6 +36,8 @@ jobRoute.get(
   "/design-consultation/:id",
   jobController.getDesignConsultationById
 );
+// jobRoute.get("/payment/:salesRepId",jobController.getAllPaymentBySalesRepId)
+jobRoute.get("/sales-rep-jobs/:salesRepId",jobController.getAllJobBySalesRepId)
 jobRoute.get("/:jobId", jobController.getJobById);
 
 jobRoute.patch("/downpayment-status", jobController.updateDownpaymentStatus);

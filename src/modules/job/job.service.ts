@@ -50,6 +50,12 @@ export class JobService {
   getAllJobCloseApproval = async (query: any) => {
     return await this.jobRepository.getAllJobCloseApproval(query);
   };
+  getAllJobBySalesRepId=async(id:string,query:any)=>{
+    return await this.jobRepository.getAllJobBySalesRepId(id,query)
+  }
+  getAllPaymentBySalesRepId=async(id:string,query:any)=>{
+    return await this.jobRepository.getAllPaymentBySalesRepId(id,query)
+  }
 
   updateDownpaymentStatus = async (id: string, status: string) => {
     return await this.jobRepository.updateDownpaymentStatus(id, status);

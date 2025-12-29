@@ -3,6 +3,8 @@ import { Job } from "./job.model";
 import { buildDynamicSearch } from "../../utils/dynamic-search-utils";
 import { logger } from "../../utils/logger";
 import DesignConsultation from "./design-consultation.model";
+import { Types } from "mongoose";
+import Payment from "./payment.model";
 
 export class JobRepository {
   createNewJob = async (jobInfo: any) => {
@@ -131,6 +133,74 @@ export class JobRepository {
 
     return { jobs, total };
   };
+  getAllJobBySalesRepId = async (salesRepId: string, query: any) => {
+    const { filter, search, options } = buildDynamicSearch(Job, query);
+
+    const matchStage = {
+      ...filter,
+      ...search,
+      "client.salesRepId": new Types.ObjectId(salesRepId),
+    };
+
+    const pipeline = [
+      // 🔹 Join Quote
+      {
+        $lookup: {
+          from: "quotes", // ⚠️ collection name (plural!)
+          localField: "quoteId",
+          foreignField: "_id",
+          as: "quote",
+        },
+      },
+      { $unwind: "$quote" },
+
+      // 🔹 Join Client
+      {
+        $lookup: {
+          from: "clients", // ⚠️ collection name (plural!)
+          localField: "quote.clientId",
+          foreignField: "_id",
+          as: "client",
+        },
+      },
+      { $unwind: "$client" },
+
+      // 🔹 Apply ALL filters here
+      {
+        $match: matchStage,
+      },
+
+      // 🔹 Branch pipeline
+      {
+        $facet: {
+          jobs: [
+            { $sort: options.sort },
+            { $skip: options.skip },
+            { $limit: options?.limit || 10 },
+          ],
+
+          totalCount: [{ $count: "total" }],
+
+          totalEstimatedPrice: [
+            {
+              $group: {
+                _id: null,
+                sum: { $sum: "$estimatedPrice" },
+              },
+            },
+          ],
+        },
+      },
+    ];
+
+    const [result] = await Job.aggregate(pipeline);
+
+    return {
+      jobs: result.jobs,
+      total: result.totalCount[0]?.total || 0,
+      totalEstimatedPrice: result.totalEstimatedPrice[0]?.sum || 0,
+    };
+  };
 
   updateDownpaymentStatus = async (id: string, status: string) => {
     return await Job.findByIdAndUpdate(
@@ -139,4 +209,15 @@ export class JobRepository {
       { new: true }
     );
   };
+    getAllPaymentBySalesRepId=async(id:string,query:any)=>{
+        const { filter, search, options } = buildDynamicSearch(Payment, query);
+        const matchStage={
+            ...filter,
+            ...search,
+            salesRepId:new Types.ObjectId(id)
+        }
+       const payment=await Payment.find(matchStage,null,options)
+       const total=await Payment.countDocuments(matchStage)
+       return {payment,total}
+    }
 }

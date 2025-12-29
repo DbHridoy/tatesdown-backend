@@ -77,6 +77,7 @@ export class JobController {
   getJobById = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const jobId = req.params.jobId;
+      logger.info({ jobId }, "JobController.getJobById");
       const job = await this.jobService.getJobById(jobId);
       res.status(HttpCodes.Ok).json({
         success: true,
@@ -156,6 +157,29 @@ export class JobController {
       });
     }
   );
+
+  getAllJobBySalesRepId = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { salesRepId } = req.params;
+      const jobs = await this.jobService.getAllJobBySalesRepId(
+        salesRepId,
+        req.query
+      );
+      res.status(HttpCodes.Ok).json({
+        success: true,
+        message: "All job fetched successfully",
+        data: jobs.jobs,
+        total: jobs.total,
+        totalEarning: jobs.totalEstimatedPrice,
+      });
+    }
+  );
+  // getAllPaymentBySalesRepId = asyncHandler(
+  //   async (req: Request, res: Response, next: NextFunction) => {
+  //       const {salesRepId}=req.params
+  //       const payments=await this.jobService.getAllPaymentBySalesRepId(salesRepId)
+  //   }
+  // );
 
   updateDownpaymentStatus = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {

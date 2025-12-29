@@ -51,6 +51,23 @@ export class UserRepository {
   updateProfile = async (id: string, body: any) => {
     return await User.findByIdAndUpdate(id, body, { new: true });
   };
+  getSalesReps = async (query: any) => {
+    const { filter, search, options } = this.buildDynamicSearch(User, query);
+
+    const baseQuery = {
+      role: { $eq: "sales-rep" },
+      ...filter,
+      ...search,
+    };
+
+    // Run both queries concurrently
+    const [salesReps, total] = await Promise.all([
+      User.find(baseQuery, null, options),
+      User.countDocuments(baseQuery),
+    ]);
+
+    return { data: salesReps, total };
+  };
   updateUser = async (id: string, body: any) => {
     return await User.findByIdAndUpdate(id, body, { new: true });
   };

@@ -53,6 +53,15 @@ export class UserController {
       });
     }
   );
+  getSalesReps=asyncHandler(async(req:Request,res:Response,next:NextFunction)=>{
+    const salesReps=await this.userService.getSalesReps(req.query)
+    res.status(HttpCodes.Ok).json({
+        success:true,
+        message:"Sales reps fetched successfully",
+        data:salesReps.data,
+        total:salesReps.total
+    })
+  })
   deleteUser = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const { id } = req.params;

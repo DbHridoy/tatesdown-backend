@@ -24,6 +24,9 @@ import { QuoteRepository } from "./modules/quote/quote.repository";
 import { QuoteService } from "./modules/quote/quote.service";
 import { QuoteController } from "./modules/quote/quote.controller";
 import { buildDynamicSearch } from "./utils/dynamic-search-utils";
+import { StatsRepository } from "./modules/stats/stats.repository";
+import { StatsService } from "./modules/stats/stats.service";
+import { StatsController } from "./modules/stats/stats.controller";
 
 export const hashUtils = new HashUtils();
 export const jwtUtils = new JwtUtils();
@@ -66,3 +69,7 @@ export const jobController = new JobController(jobService);
 export const quoteRepository = new QuoteRepository();
 export const quoteService = new QuoteService(quoteRepository);
 export const quoteController = new QuoteController(quoteService);
+
+export const statsRepository = new StatsRepository();
+export const statsService = new StatsService(statsRepository);
+export const statsController = new StatsController(statsService);

@@ -51,6 +51,9 @@ updateUser=async(id:string,body:any)=>{
   getUserById=async(id:string)=>{
     return await this.userRepo.findUserById(id)
   }
+  getSalesReps=async(query:any)=>{
+    return await this.userRepo.getSalesReps(query)
+  }
   deleteUser=async(id:string)=>{
     return await this.userRepo.deleteUser(id)
   }
