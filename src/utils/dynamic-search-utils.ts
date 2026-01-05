@@ -14,7 +14,12 @@ export function buildDynamicSearch(model: any, queryParams: any = {}) {
   // --- Filters
   Object.keys(queryParams).forEach((key) => {
     if (["page", "limit", "sort", "search"].includes(key)) return;
-    filter[key] = queryParams[key];
+    const value = queryParams[key];
+    filter[key] = value === "null" ? null
+                  : value === "undefined" ? undefined
+                  : value === "true" ? true
+                  : value === "false" ? false
+                  : value;
   });
 
   // --- Sorting
