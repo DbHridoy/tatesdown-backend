@@ -5,7 +5,7 @@ const ObjectIdSchema = z
   .regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId");
 
 export const CreateClientSchema = z.object({
-  salesRepId: ObjectIdSchema,
+  // salesRepId: ObjectIdSchema,
   clientName: z.string(),
   partnerName: z.string(),
   phoneNumber: z.string(),

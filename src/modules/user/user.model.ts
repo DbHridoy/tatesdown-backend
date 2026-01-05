@@ -19,19 +19,23 @@ const userSchema = new Schema({
   cluster: {
     type: String,
   },
-  profileImage:{
+  profileImage: {
     type: String,
   },
-  phoneNumber:{
-    type:String,
+  phoneNumber: {
+    type: String,
   },
-  address:{
-    type:String,
+  address: {
+    type: String,
   },
   password: {
     type: String,
     required: true,
   },
+  comission: {
+    type: Number,
+    default: null
+  }
 });
 
 const User = model("User", userSchema);
