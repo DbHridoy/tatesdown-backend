@@ -7,6 +7,8 @@ import { createNotification } from "../../utils/create-notification-utils";
 
 export class ClientService {
   constructor(private clientRepository: ClientRepository) { }
+
+  
   createClient = async (clientInfo: createClientInterface) => {
     const existingClient =
       await this.clientRepository.searchClientByPhoneNumber(
@@ -30,6 +32,19 @@ export class ClientService {
     return newClient;
   };
 
+  createClientNote = async (clientNoteData: object) => {
+    const newClientNote =
+      await this.clientRepository.createClientNote(clientNoteData);
+
+    return newClientNote
+  };
+
+  createCallLog = async (callLogData: object) => {
+    const newCallLog = await this.clientRepository.createCallLog(callLogData);
+    return newCallLog
+  };
+
+
   getAllClients = async (query: any) => {
     return await this.clientRepository.getAllClients(query);
   };
@@ -37,10 +52,7 @@ export class ClientService {
   getClientById = async (id: string) => {
     return await this.clientRepository.getClientById(id);
   };
-  createCallLog = async (callLogData: object) => {
-    const newCallLog = await this.clientRepository.createCallLog(callLogData);
-    return newCallLog
-  };
+
   getAllCallLogs = async () => {
     return await this.clientRepository.getAllCallLogs();
   };
@@ -48,22 +60,19 @@ export class ClientService {
   getCallLogByClientId = async (id: string) => {
     return await this.clientRepository.getCallLogByClientId(id);
   };
-
-  createClientNote = async (clientNoteData: object) => {
-    const newClientNote =
-      await this.clientRepository.createClientNote(clientNoteData);
-
-    return newClientNote
-  };
+  
   getAllClientNote = async () => {
     return await this.clientRepository.getAllClientNote();
   };
+  
   getClientNoteByClientId = async (clientId: string) => {
     return await this.clientRepository.getClientNoteByClientId(clientId);
   };
+
   updateClient = async (clientId: string, clientInfo: object) => {
     return await this.clientRepository.updateClient(clientId, clientInfo);
   };
+
   deleteClient = async (clientId: string) => {
     return await this.clientRepository.deleteClient(clientId);
   };

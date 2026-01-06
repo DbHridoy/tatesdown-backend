@@ -8,16 +8,14 @@ export class JobService {
     return await this.jobRepository.createNewJob(jobInfo);
   };
 
-  updateJobById = async (id: string, jobInfo: any) => {
-    return await this.jobRepository.updateJobById(id, jobInfo);
-  };
-
-  deleteJobById = async (id: string) => {
-    return await this.jobRepository.deleteJobById(id);
-  };
-
   createJobNote = async (jobNote: any) => {
     return await this.jobRepository.createJobNote(jobNote);
+  };
+  createNewDesignConsultation = async (designConsultationInfo: any) => {
+    const newDesignConsultation = new DesignConsultation(
+      designConsultationInfo
+    );
+    return await newDesignConsultation.save();
   };
 
   getAllJobs = async (query: any) => {
@@ -26,13 +24,6 @@ export class JobService {
 
   getJobById = async (id: string) => {
     return await this.jobRepository.getJobById(id);
-  };
-
-  createNewDesignConsultation = async (designConsultationInfo: any) => {
-    const newDesignConsultation = new DesignConsultation(
-      designConsultationInfo
-    );
-    return await newDesignConsultation.save();
   };
 
   getAllDesignConsultation = async () => {
@@ -50,14 +41,21 @@ export class JobService {
   getAllJobCloseApproval = async (query: any) => {
     return await this.jobRepository.getAllJobCloseApproval(query);
   };
-  getAllJobBySalesRepId=async(id:string,query:any)=>{
-    return await this.jobRepository.getAllJobBySalesRepId(id,query)
-  }
-  getAllPaymentBySalesRepId=async(id:string,query:any)=>{
-    return await this.jobRepository.getAllPaymentBySalesRepId(id,query)
-  }
+  getAllJobBySalesRepId = async (id: string, query: any) => {
+    return await this.jobRepository.getAllJobBySalesRepId(id, query);
+  };
+  getAllPaymentBySalesRepId = async (id: string, query: any) => {
+    return await this.jobRepository.getAllPaymentBySalesRepId(id, query);
+  };
 
+  updateJobById = async (id: string, jobInfo: any) => {
+    return await this.jobRepository.updateJobById(id, jobInfo);
+  };
   updateDownpaymentStatus = async (id: string, status: string) => {
     return await this.jobRepository.updateDownpaymentStatus(id, status);
+  };
+
+  deleteJobById = async (id: string) => {
+    return await this.jobRepository.deleteJobById(id);
   };
 }

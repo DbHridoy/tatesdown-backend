@@ -40,7 +40,7 @@ export class ClientController {
         body.file = req.file.fileUrl;
       }
 
-      logger.info({body},"ClientController.createClientNote");
+      // logger.info({body},"ClientController.createClientNote");
 
       const newNote = await this.clientService.createClientNote(body);
 
@@ -117,6 +117,7 @@ export class ClientController {
       const clientNotes = this.clientService.getClientNoteByClientId;
     }
   );
+
   updateClient = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const clientId = req.params.clientId;
@@ -132,6 +133,7 @@ export class ClientController {
       });
     }
   );
+
   deleteClient = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const clientId = req.params.clientId;

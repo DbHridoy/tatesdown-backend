@@ -14,12 +14,26 @@ export function buildDynamicSearch(model: any, queryParams: any = {}) {
   // --- Filters
   Object.keys(queryParams).forEach((key) => {
     if (["page", "limit", "sort", "search"].includes(key)) return;
+
     const value = queryParams[key];
-    filter[key] = value === "null" ? null
-                  : value === "undefined" ? undefined
-                  : value === "true" ? true
-                  : value === "false" ? false
-                  : value;
+
+    if (typeof value === "string" && value.includes(",")) {
+      // Handle OR logic: e.g., "nullor12345"
+      const values = value.split(",").map(v => 
+        v === "null" ? null :
+        v === "undefined" ? undefined :
+        v === "true" ? true :
+        v === "false" ? false :
+        v
+      );
+      filter[key] = { $in: values };
+    } else {
+      filter[key] = value === "null" ? null
+                    : value === "undefined" ? undefined
+                    : value === "true" ? true
+                    : value === "false" ? false
+                    : value;
+    }
   });
 
   // --- Sorting
@@ -43,7 +57,7 @@ export function buildDynamicSearch(model: any, queryParams: any = {}) {
     options.limit = limit;
   } else {
     options.skip = 0;
-    options.limit = 0; // no limit, return all documents
+    options.limit = 0; // no limit
   }
 
   return { filter, search, options };

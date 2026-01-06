@@ -1,4 +1,3 @@
-import { Types } from "mongoose";
 import { Client } from "./client.model";
 import Call from "./call-log.model";
 import clientNote from "./client-note.model";
@@ -14,6 +13,16 @@ export class ClientRepository {
     return await newClient.save();
   };
 
+  createCallLog = async (callLogData: object) => {
+    const newCallLog = new Call(callLogData);
+    return await newCallLog.save();
+  };
+
+  createClientNote = async (clientNoteData: object) => {
+    const newClientNote = new clientNote(clientNoteData);
+    return await newClientNote.save();
+  };
+
   getAllClients = async (query: any) => {
     const { filter, search, options } = buildDynamicSearch(Client, query);
     const [clients, total] = await Promise.all([
@@ -27,22 +36,12 @@ export class ClientRepository {
     return await Client.findById(id).populate("callLogs").populate("notes");
   };
 
-  createCallLog = async (callLogData: object) => {
-    const newCallLog = new Call(callLogData);
-    return await newCallLog.save();
-  };
-
   getAllCallLogs = async () => {
     return await Call.find();
   };
 
   getCallLogByClientId = async (clientId: string) => {
     return await Call.find({ clientId });
-  };
-
-  createClientNote = async (clientNoteData: object) => {
-    const newClientNote = new clientNote(clientNoteData);
-    return await newClientNote.save();
   };
 
   getAllClientNote = async () => {
@@ -52,9 +51,11 @@ export class ClientRepository {
   getClientNoteByClientId = async (clientId: string) => {
     return await clientNote.findById(clientId);
   };
+
   updateClient = async (clientId: string, clientInfo: object) => {
     return await Client.findByIdAndUpdate(clientId, clientInfo, { new: true });
   };
+
   deleteClient = async (clientId: string) => {
     return await Client.findByIdAndDelete(clientId);
   };
