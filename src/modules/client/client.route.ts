@@ -10,6 +10,8 @@ import { uploadFile } from "../../middlewares/uploadLocal.middleware";
 
 const clientRoute = Router();
 
+//---------------------post------------------------//
+
 clientRoute.post(
   "/",
   validate(CreateClientSchema),
@@ -30,6 +32,8 @@ clientRoute.post(
   clientController.createClientNote
 );
 
+//---------------------get------------------------//
+
 clientRoute.get("/", clientController.getAllClients);
 clientRoute.get(
   "/:clientId",
@@ -41,7 +45,11 @@ clientRoute.get(
   clientController.getCallLogsByClientId
 );
 
+//---------------------patch------------------------//
+
 clientRoute.patch("/update-client/:clientId", clientController.updateClient);
+
+//---------------------delete------------------------//
 
 clientRoute.delete("/:clientId", clientController.deleteClient);
 

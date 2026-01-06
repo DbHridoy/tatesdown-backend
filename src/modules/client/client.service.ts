@@ -3,9 +3,10 @@ import { ClientRepository } from "./client.repository";
 import { apiError } from "../../errors/api-error";
 import { Errors } from "../../constants/error-codes";
 import { createClientInterface } from "./client.interface";
+import { createNotification } from "../../utils/create-notification-utils";
 
 export class ClientService {
-  constructor(private clientRepository: ClientRepository) {}
+  constructor(private clientRepository: ClientRepository) { }
   createClient = async (clientInfo: createClientInterface) => {
     const existingClient =
       await this.clientRepository.searchClientByPhoneNumber(
@@ -19,11 +20,17 @@ export class ClientService {
       );
     }
     const newClient = this.clientRepository.createClient(clientInfo);
+    const newNotification = {
+      type: "client",
+      message: "New client added",
+      forUserRole: "admin"
+    }
+    createNotification(newNotification)
 
     return newClient;
   };
 
-  getAllClients = async (query:any) => {
+  getAllClients = async (query: any) => {
     return await this.clientRepository.getAllClients(query);
   };
 
@@ -31,7 +38,7 @@ export class ClientService {
     return await this.clientRepository.getClientById(id);
   };
   createCallLog = async (callLogData: object) => {
-    const newCallLog =await this.clientRepository.createCallLog(callLogData);
+    const newCallLog = await this.clientRepository.createCallLog(callLogData);
     return newCallLog
   };
   getAllCallLogs = async () => {
@@ -46,7 +53,7 @@ export class ClientService {
     const newClientNote =
       await this.clientRepository.createClientNote(clientNoteData);
 
-      return newClientNote
+    return newClientNote
   };
   getAllClientNote = async () => {
     return await this.clientRepository.getAllClientNote();

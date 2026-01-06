@@ -1,4 +1,6 @@
+import { buildDynamicSearch } from "../../utils/dynamic-search-utils";
 import Counter from "./counter.model";
+import { Notification } from "./notification.model";
 import { Variable } from "./variable.model";
 
 export class CommonRepository {
@@ -27,4 +29,10 @@ export class CommonRepository {
   getVariable = async () => {
     return Variable.findOne();
   };
+
+  getNotification=async(query:{})=>{
+    const {filter,search,options}=buildDynamicSearch(Notification,query);
+    const notifications=await Notification.find({...filter,...search},null,options)
+    return notifications
+  }
 }

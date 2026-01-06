@@ -1,9 +1,10 @@
 import { CommonService } from "./common.service";
 import { asyncHandler } from "../../utils/async-handler";
 import { Request, Response, NextFunction } from "express";
+import { HttpCodes } from "../../constants/status-codes";
 
 export class CommonController {
-  constructor(private commonService: CommonService) {}
+  constructor(private commonService: CommonService) { }
   generateSequentialId = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const { prefix, counterName } = req.body;
@@ -30,4 +31,16 @@ export class CommonController {
       return res.status(200).json({ success: true, data: variable });
     }
   );
+
+  getNotification = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const q = req.query
+      const notifications = await this.commonService.getNotification(q)
+      res.status(HttpCodes.Ok).send({
+        success: true,
+        message: "Notification fetched successfully",
+        data: notifications
+      })
+    }
+  )
 }

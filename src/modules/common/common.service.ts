@@ -19,5 +19,10 @@ export class CommonService {
   upsertVariable = async (variables: any) => {
     return this.commonRepository.upsertVariable(variables);
   };
+
+  getNotification=async(query:any)=>{
+    const notifications=await this.commonRepository.getNotification(query)
+    return notifications
+  }
   
 }

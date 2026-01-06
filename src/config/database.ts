@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { logger } from "../utils/logger";
 
 const connectDB = async (url: string) => {
-  logger.info({ url }, "Db URL");
+  // logger.info({ url }, "Db URL");
   try {
     await mongoose.connect(url);
     logger.info("MongoDB connected");

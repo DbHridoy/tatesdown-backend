@@ -9,10 +9,10 @@ export class JwtUtils {
   private refreshExpiry = env.JWT_REFRESH_EXPIRY;
 
   constructor() {
-    console.log("Access Secret:", this.accessSecret);
-    console.log("Refresh Secret:", this.refreshSecret);
-    console.log("Access Expiry:", this.accessExpiry);
-    console.log("Refresh Expiry:", this.refreshExpiry);
+    // console.log("Access Secret:", this.accessSecret);
+    // console.log("Refresh Secret:", this.refreshSecret);
+    // console.log("Access Expiry:", this.accessExpiry);
+    // console.log("Refresh Expiry:", this.refreshExpiry);
   }
 
   generateAccessToken = async (payload: object): Promise<string> => {
