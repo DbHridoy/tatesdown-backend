@@ -5,7 +5,7 @@ import { HttpCodes } from "../../constants/status-codes";
 import { logger } from "../../utils/logger";
 
 export class JobController {
-  constructor(private readonly jobService: JobService) {}
+  constructor(private readonly jobService: JobService) { }
 
   createNewJob = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
@@ -50,6 +50,7 @@ export class JobController {
     async (req: Request, res: Response, next: NextFunction) => {
       const jobNote = req.body;
       if (req.file) {
+        logger.info({ file: req.file }, "Jobcontroller.createJobNote")
         jobNote.file = req.file.fileUrl;
       }
       const job = await this.jobService.createJobNote(jobNote);
@@ -77,7 +78,7 @@ export class JobController {
   getJobById = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const jobId = req.params.jobId;
-      logger.info({ jobId }, "JobController.getJobById");
+      // logger.info({ jobId }, "JobController.getJobById");
       const job = await this.jobService.getJobById(jobId);
       res.status(HttpCodes.Ok).json({
         success: true,

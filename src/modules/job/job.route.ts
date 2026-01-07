@@ -6,7 +6,7 @@ import {
   UpdateJobSchema,
 } from "./job.schema";
 import { jobController } from "../../container";
-import { uploadFile } from "../../middlewares/uploadLocal.middleware";
+import { uploadFile } from "../../middlewares/upload.middleware";
 
 const jobRoute = Router();
 
