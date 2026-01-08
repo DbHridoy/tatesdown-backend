@@ -16,26 +16,10 @@ const userSchema = new Schema({
     required: true,
     enum: ["admin", "sales-rep", "production-manager"],
   },
-  cluster: {
-    type: String,
-  },
-  profileImage: {
-    type: String,
-  },
-  phoneNumber: {
-    type: String,
-  },
-  address: {
-    type: String,
-  },
   password: {
     type: String,
     required: true,
   },
-  comission: {
-    type: Number,
-    default: null
-  }
 });
 
 const User = model("User", userSchema);
