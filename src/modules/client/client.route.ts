@@ -18,12 +18,12 @@ clientRoute.post(
   clientController.createClient
 );
 clientRoute.post(
-  "/call-log",
+  "/:clientId/call-log",
   validate(CreateCallLogSchema),
   clientController.createCallLog
 );
 clientRoute.post(
-  "/client-note",
+  "/:clientId/client-note",
   uploadFile({
     fieldName: "file",
     uploadType: "single",
@@ -41,13 +41,13 @@ clientRoute.get(
 );
 clientRoute.get("/call-log", clientController.getAllCallLogs);
 clientRoute.get(
-  "/call-log/:clientId",
+  "/:clientId/call-log",
   clientController.getCallLogsByClientId
 );
 
 //---------------------patch------------------------//
 
-clientRoute.patch("/update-client/:clientId", clientController.updateClient);
+clientRoute.patch("/:clientId", clientController.updateClient);
 
 //---------------------delete------------------------//
 

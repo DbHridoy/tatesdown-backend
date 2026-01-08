@@ -18,12 +18,12 @@ const CallLogSchema = new Schema({
       "Picked-Up: No Appointment",
       "No Pickup",
     ],
-    default: "Not Called",
-    required: true,
+  },
+  reason: {
+    type: String,
   },
   note: {
     type: String,
-    required: true,
   },
 });
 

@@ -6,7 +6,7 @@ const ClientNoteSchema = new Schema({
     ref: "Client",
     required: true,
   },
-  text: {
+  note: {
     type: String,
   },
   file: {

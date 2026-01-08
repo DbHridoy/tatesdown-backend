@@ -11,8 +11,8 @@ export interface ClientDocument extends Document {
   email: string;
   address: string;
   leadSource: "Door" | "Inbound" | "Social";
+  leadStatus: "Not quoted" | "Quoted" | "Job";
   rating: number;
-  callStatus: "Not Called" | "Picked-Up Yes" | "Picked-Up No" | "No Pickup";
 }
 
 const ClientSchema = new Schema<ClientDocument>(
@@ -20,7 +20,7 @@ const ClientSchema = new Schema<ClientDocument>(
     salesRepId: {
       type: Types.ObjectId,
       ref: "User",
-      default: null
+      default: null,
     },
     customClientId: { type: String },
     clientName: { type: String, required: true },
@@ -33,12 +33,12 @@ const ClientSchema = new Schema<ClientDocument>(
       enum: ["Door", "Inbound", "Social"],
       required: true,
     },
-    rating: { type: Number, required: true },
-    callStatus: {
+    leadStatus: {
       type: String,
-      enum: ["Not Called", "Picked-Up Yes", "Picked-Up No", "No Pickup"],
-      default: "Not Called",
+      enum: ["Not quoted", "Quoted", "Job"],
+      default: "Not quoted",
     },
+    rating: { type: Number, required: true },
   },
   {
     timestamps: true,
