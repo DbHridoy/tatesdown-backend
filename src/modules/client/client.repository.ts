@@ -8,17 +8,17 @@ export class ClientRepository {
     return await Client.findOne({ phoneNumber });
   };
 
-  createClient = async (clientInfo: object) => {
+  createClient = async (clientInfo: any) => {
     const newClient = new Client(clientInfo);
     return await newClient.save();
   };
 
-  createCallLog = async (callLogData: object) => {
+  createCallLog = async (callLogData: any) => {
     const newCallLog = new Call(callLogData);
     return await newCallLog.save();
   };
 
-  createClientNote = async (clientNoteData: object) => {
+  createClientNote = async (clientNoteData: any) => {
     const newClientNote = new clientNote(clientNoteData);
     return await newClientNote.save();
   };
@@ -33,7 +33,18 @@ export class ClientRepository {
   };
 
   getClientById = async (id: string) => {
-    return await Client.findById(id).populate("callLogs").populate("notes");
+    return await Client.findById(id)
+      .populate({
+        path: "salesRepId",
+        select: "userId",
+        populate: {
+          path: "userId",
+          select: "-password -__v -createdAt -updatedAt",
+        },
+      })
+      .populate("createdBy")
+      .populate("callLogs")
+      .populate("notes");
   };
 
   getAllCallLogs = async () => {
@@ -52,7 +63,7 @@ export class ClientRepository {
     return await clientNote.findById(clientId);
   };
 
-  updateClient = async (clientId: string, clientInfo: object) => {
+  updateClient = async (clientId: string, clientInfo: any) => {
     return await Client.findByIdAndUpdate(clientId, clientInfo, { new: true });
   };
 

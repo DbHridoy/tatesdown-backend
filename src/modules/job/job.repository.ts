@@ -2,16 +2,16 @@ import JobNote from "./job-note.model";
 import { Job } from "./job.model";
 import { buildDynamicSearch } from "../../utils/dynamic-search-utils";
 import { logger } from "../../utils/logger";
-import DesignConsultation from "./design-consultation.model";
+import { DesignConsultation } from "./design-consultation.model";
 import { Types } from "mongoose";
 import Payment from "./payment.model";
 
 export class JobRepository {
-  createNewJob = async (jobInfo: any) => {
-    logger.info({ jobInfo }, "JobRepository.createNewJob");
-    const newJob = new Job(jobInfo);
-    return await newJob.save();
-  };
+    createNewJob = async (jobInfo: any) => {
+      logger.info({ jobInfo }, "JobRepository.createNewJob");
+      const newJob = new Job(jobInfo);
+      return await newJob.save();
+    };
 
   updateJobById = async (id: string, jobInfo: any) => {
     const updatedJob = await Job.findByIdAndUpdate(id, jobInfo, { new: true });
@@ -32,22 +32,14 @@ export class JobRepository {
     const { filter, search, options } = buildDynamicSearch(Job, query);
     const [jobs, total] = await Promise.all([
       Job.find({ ...filter, ...search }, null, options)
-        .populate({
-          path: "quoteId",
-          populate: {
-            path: "clientId",
-            populate: {
-              path: "salesRepId",
-            },
-          },
-        })
+        .populate("clientId salesRepId quoteId")
         .populate({
           path: "notes",
           populate: {
             path: "authorId",
           },
         })
-        .populate("designConsultaion"),
+        .populate("designConsultation"),
       Job.countDocuments({ ...filter, ...search }),
     ]);
     return { jobs, total };
@@ -55,22 +47,14 @@ export class JobRepository {
 
   getJobById = async (id: string) => {
     return await Job.findById(id)
-      .populate({
-        path: "quoteId",
-        populate: {
-          path: "clientId",
-          populate: {
-            path: "salesRepId",
-          },
-        },
-      })
+      .populate("clientId salesRepId quoteId")
       .populate({
         path: "notes",
         populate: {
           path: "authorId",
         },
       })
-      .populate("designConsultaion");
+      .populate("designConsultation");
   };
 
   createNewDesignConsultation = async (designConsultationInfo: any) => {
@@ -209,15 +193,15 @@ export class JobRepository {
       { new: true }
     );
   };
-    getAllPaymentBySalesRepId=async(id:string,query:any)=>{
-        const { filter, search, options } = buildDynamicSearch(Payment, query);
-        const matchStage={
-            ...filter,
-            ...search,
-            salesRepId:new Types.ObjectId(id)
-        }
-       const payment=await Payment.find(matchStage,null,options)
-       const total=await Payment.countDocuments(matchStage)
-       return {payment,total}
-    }
+  getAllPaymentBySalesRepId = async (id: string, query: any) => {
+    const { filter, search, options } = buildDynamicSearch(Payment, query);
+    const matchStage = {
+      ...filter,
+      ...search,
+      salesRepId: new Types.ObjectId(id),
+    };
+    const payment = await Payment.find(matchStage, null, options);
+    const total = await Payment.countDocuments(matchStage);
+    return { payment, total };
+  };
 }

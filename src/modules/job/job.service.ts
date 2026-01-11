@@ -1,10 +1,11 @@
-import DesignConsultation from "./design-consultation.model";
+import { DesignConsultation } from "./design-consultation.model";
 import { JobRepository } from "./job.repository";
 
 export class JobService {
   constructor(private readonly jobRepository: JobRepository) {}
 
   createNewJob = async (jobInfo: any) => {
+   
     return await this.jobRepository.createNewJob(jobInfo);
   };
 

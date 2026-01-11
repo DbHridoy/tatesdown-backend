@@ -6,7 +6,6 @@ const quoteSchema = new Schema(
       type: Types.ObjectId,
       ref: "SalesRep",
       required: true,
-      index: true,
     },
 
     clientId: {
@@ -15,19 +14,38 @@ const quoteSchema = new Schema(
       required: true,
     },
 
-    estimatedPrice: Number,
-    bidSheet: String,
-    bookedOnSpot: String,
+    estimatedPrice: {
+      type: Number,
+      min: 0,
+      required: true,
+    },
+
+    bidSheet: {
+      type: String, // URL or file path
+      trim: true,
+    },
+
+    bookedOnSpot: {
+      type: Boolean,
+      default: false,
+    },
 
     status: {
       type: String,
-      enum: ["pending", "approved", "rejected"],
-      default: "pending",
+      enum: ["Pending", "Approved", "Rejected"],
+      default: "Pending",
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    strict: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
 
+// Indexes
 quoteSchema.index({ createdAt: -1 });
+quoteSchema.index({ salesRepId: 1, status: 1 });
 
 export const Quote = model("Quote", quoteSchema);

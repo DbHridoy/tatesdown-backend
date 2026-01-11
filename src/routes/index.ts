@@ -16,23 +16,23 @@ const moduleRoutes = [
     router: authRoute,
   },
   {
-    path: "/user",
+    path: "/users",
     router: userRoute,
   },
   {
-    path: "/client",
+    path: "/clients",
     router: clientRoute,
   },
   {
-    path: "/quote",
+    path: "/quotes",
     router: quoteRoute,
   },
   {
-    path: "/job",
+    path: "/jobs",
     router: jobRoute,
   },
   {
-    path: "/expense",
+    path: "/expenses",
     router: expenseRoute,
   },
   {
@@ -40,9 +40,9 @@ const moduleRoutes = [
     router: commonRoute,
   },
   {
-    path:"/stats",
-    router:statsRoute
-  }
+    path: "/stats",
+    router: statsRoute,
+  },
 ];
 
 moduleRoutes.forEach((route) => appRouter.use(route.path, route.router));

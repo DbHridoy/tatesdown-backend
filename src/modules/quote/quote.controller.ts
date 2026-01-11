@@ -3,6 +3,7 @@ import { HttpCodes } from "../../constants/status-codes";
 import { QuoteService } from "./quote.service";
 import { logger } from "../../utils/logger";
 import { SalesRep } from "../user/sales-rep.model";
+import { Client } from "../client/client.model";
 
 export class QuoteController {
   constructor(private readonly quoteService: QuoteService) {}
@@ -22,6 +23,10 @@ export class QuoteController {
       bidSheet,
     };
     const quote = await this.quoteService.createQuote(newQuote);
+
+    // Update the client leadStatus to "Quoted"
+    await Client.findByIdAndUpdate(quote.clientId, { leadStatus: "Quoted" });
+
     res.status(HttpCodes.Ok).json({
       success: true,
       data: quote,

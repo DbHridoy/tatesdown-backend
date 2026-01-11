@@ -7,8 +7,6 @@ export interface ClientNoteDocument extends Document {
   clientId: Types.ObjectId;
   note?: string;
   file?: string;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 /**

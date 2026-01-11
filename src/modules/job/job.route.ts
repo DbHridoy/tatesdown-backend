@@ -5,10 +5,12 @@ import {
   CreateJobSchema,
   UpdateJobSchema,
 } from "./job.schema";
-import { jobController } from "../../container";
+import { authMiddleware, jobController } from "../../container";
 import { uploadFile } from "../../middlewares/upload.middleware";
 
 const jobRoute = Router();
+
+jobRoute.use(authMiddleware.authenticate);
 
 jobRoute.post("/", jobController.createNewJob);
 jobRoute.post(
@@ -37,7 +39,10 @@ jobRoute.get(
   jobController.getDesignConsultationById
 );
 // jobRoute.get("/payment/:salesRepId",jobController.getAllPaymentBySalesRepId)
-jobRoute.get("/sales-rep-jobs/:salesRepId",jobController.getAllJobBySalesRepId)
+jobRoute.get(
+  "/sales-rep-jobs/:salesRepId",
+  jobController.getAllJobBySalesRepId
+);
 jobRoute.get("/:jobId", jobController.getJobById);
 
 jobRoute.patch("/downpayment-status", jobController.updateDownpaymentStatus);
