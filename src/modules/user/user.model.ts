@@ -17,6 +17,9 @@ const userSchema = new Schema(
       required: true,
       enum: ["Admin", "Sales Rep", "Production Manager"],
     },
+    profileImage: {
+      type: String,
+    },
     password: {
       type: String,
       required: true,

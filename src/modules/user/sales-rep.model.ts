@@ -10,7 +10,6 @@ const salesRepSchema = new Schema(
     },
 
     cluster: String,
-    profileImage: String,
 
     commissionRate: { type: Number, default: 0 },
 

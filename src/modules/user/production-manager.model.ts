@@ -8,9 +8,6 @@ const productionManagerSchema = new Schema({
     cluster: {
         type: String,
     },
-    profileImage: {
-        type: String,
-    },
     phoneNumber: {
         type: String,
     },
