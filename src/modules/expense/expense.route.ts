@@ -7,7 +7,7 @@ import { authMiddleware, expenseController } from "../../container";
 const expenseRoute = Router();
 
 expenseRoute.post(
-  "/create-mileage",
+  "/mileage",
   uploadFile({
     fieldName: "file",
     uploadType: "single",
@@ -16,14 +16,14 @@ expenseRoute.post(
   expenseController.createNewMileage
 );
 
-expenseRoute.get("/get-pending-mileage", expenseController.getPendingMileage);
+expenseRoute.get("/pending-mileage", expenseController.getPendingMileage);
 expenseRoute.get(
-  "/get-my-mileage",
+  "/my-mileage",
   authMiddleware.authenticate,
   expenseController.getMyMileage
 );
-expenseRoute.get("/get-all-mileage", expenseController.getAllMileage);
-expenseRoute.get("/get-mileage/:mileageId", expenseController.getMileageById);
+expenseRoute.get("/all-mileage", expenseController.getAllMileage);
+expenseRoute.get("/mileage/:mileageId", expenseController.getMileageById);
 
 expenseRoute.patch("/:mileageId", expenseController.updateMileage);
 

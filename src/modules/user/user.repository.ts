@@ -44,7 +44,7 @@ export class UserRepository {
 
     // Run both queries concurrently
     const [users, total] = await Promise.all([
-      User.find(baseQuery, null, options),
+      User.find(baseQuery, null, options).populate("salesRep").populate("productionManager"),
       User.countDocuments(baseQuery),
     ]);
 
@@ -56,11 +56,11 @@ export class UserRepository {
   };
 
   findUserById = async (id: string) => {
-    return await User.findById(id);
+    return await User.findById(id).populate("salesRep").populate("productionManager");
   };
 
   findUserByEmail = async (email: string) => {
-    return await User.findOne({ email });
+    return await User.findOne({ email }).populate("salesRep").populate("productionManager");
   };
 
   updateUserPassword = async (id: Types.ObjectId, hashedPassword: string) => {
