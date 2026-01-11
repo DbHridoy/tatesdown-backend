@@ -1,10 +1,12 @@
 import { Router } from "express";
 import { validate } from "../../middlewares/validate.middleware";
 import { CreateQuoteSchema, UpdateQuoteSchema } from "./quote.schema";
-import { quoteController } from "../../container";
+import { authMiddleware, quoteController } from "../../container";
 import { uploadFile } from "../../middlewares/uploadLocal.middleware";
 
 const quoteRoute = Router();
+
+quoteRoute.use(authMiddleware.authenticate);
 
 quoteRoute.post(
   "/",
@@ -12,7 +14,7 @@ quoteRoute.post(
     fieldName: "bidSheet",
     uploadType: "single",
   }),
-  validate(CreateQuoteSchema),
+  // validate(CreateQuoteSchema),
   quoteController.createQuote
 );
 

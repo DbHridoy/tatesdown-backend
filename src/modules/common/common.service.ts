@@ -11,6 +11,11 @@ export class CommonService {
     return id;
   };
 
+  createCluster = async (clusterName: string) => {
+    const cluster = await this.commonRepository.createCluster(clusterName);
+    return cluster;
+  };
+
   getVariable = async () => {
     const variable = await this.commonRepository.getVariable();
     return variable;
@@ -18,6 +23,11 @@ export class CommonService {
 
   upsertVariable = async (variables: any) => {
     return this.commonRepository.upsertVariable(variables);
+  };
+
+  getCluster = async () => {
+    const clusters = await this.commonRepository.getCluster();
+    return clusters;
   };
 
   getNotification=async(query:any)=>{

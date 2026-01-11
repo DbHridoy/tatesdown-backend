@@ -2,12 +2,35 @@ import { Types } from "mongoose";
 import User from "./user.model";
 import { apiError } from "../../errors/api-error";
 import { Errors } from "../../constants/error-codes";
+import { logger } from "../../utils/logger";
+import { SalesRep } from "./sales-rep.model";
+import ProductionManager from "./production-manager.model";
+import Admin from "./admin.model";
 
 export class UserRepository {
   constructor(private buildDynamicSearch: any) {}
   createUser = async (userBody: any) => {
+    logger.info({ userBody }, "UserRepository - createUser");
+
     const newUser = new User(userBody);
-    return await newUser.save();
+    await newUser.save();
+
+    if (userBody.role === "Sales Rep") {
+      await SalesRep.create({
+        userId: newUser._id,
+        cluster: userBody.cluster,
+      });
+    } else if (userBody.role === "Production Manager") {
+      await ProductionManager.create({
+        userId: newUser._id,
+      });
+    } else {
+      await Admin.create({
+        userId: newUser._id,
+      });
+    }
+
+    return newUser;
   };
 
   getAllUsers = async (query: any) => {
@@ -55,7 +78,7 @@ export class UserRepository {
     const { filter, search, options } = this.buildDynamicSearch(User, query);
 
     const baseQuery = {
-      role: { $eq: "sales-rep" },
+      role: { $eq: "Sales Rep" },
       ...filter,
       ...search,
     };

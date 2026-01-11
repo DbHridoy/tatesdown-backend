@@ -1,66 +1,33 @@
-import { model, Schema, Types } from "mongoose";
-import { commonService } from "../../container";
+import { Schema, model, Types } from "mongoose";
 
-export interface QuoteDocument {
-  customQuoteId: string;
-  clientId: Types.ObjectId;
-  salesRepId: Types.ObjectId;
-  estimatedPrice: number;
-  bidSheet: string;
-  bookedOnSpot: string;
-  expiryDate: Date;
-  notes?: string;
-  status?: string;
-}
-
-const QuoteSchema = new Schema<QuoteDocument>(
+const quoteSchema = new Schema(
   {
-    customQuoteId: {
-      type: String,
+    salesRepId: {
+      type: Types.ObjectId,
+      ref: "SalesRep",
+      required: true,
+      index: true,
     },
+
     clientId: {
       type: Types.ObjectId,
       ref: "Client",
       required: true,
     },
-    estimatedPrice: {
-      type: Number,
-      required: true,
-    },
-    bidSheet: {
-      type: String,
-      required: true,
-    },
-    bookedOnSpot: {
-      type: String,
-      required: true,
-    },
-    expiryDate: {
-      type: Date,
-      required: true,
-    },
-    notes: {
-      type: String,
-    },
+
+    estimatedPrice: Number,
+    bidSheet: String,
+    bookedOnSpot: String,
+
     status: {
       type: String,
+      enum: ["pending", "approved", "rejected"],
       default: "pending",
     },
   },
-  {
-    timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
-  }
+  { timestamps: true }
 );
 
-// Pre-save hook
-QuoteSchema.pre("save", async function () {
-  if (!this.customQuoteId) {
-    this.customQuoteId = await commonService.generateSequentialId("Q", "quote");
-  }
-});
+quoteSchema.index({ createdAt: -1 });
 
-QuoteSchema.index({createdAt:-1})
-
-export const Quote = model<QuoteDocument>("Quote", QuoteSchema);
+export const Quote = model("Quote", quoteSchema);

@@ -1,25 +1,23 @@
 import { Router } from "express";
 import { validate } from "../../middlewares/validate.middleware";
-import {
-  CreateCallLogSchema,
-  CreateClientNoteSchema,
-  CreateClientSchema,
-} from "./client.schema";
-import { clientController } from "../../container";
+import { CallLogSchema, ClientSchema } from "./client.schema";
+import { authMiddleware, clientController } from "../../container";
 import { uploadFile } from "../../middlewares/uploadLocal.middleware";
 
 const clientRoute = Router();
+
+clientRoute.use(authMiddleware.authenticate);
 
 //---------------------post------------------------//
 
 clientRoute.post(
   "/",
-  validate(CreateClientSchema),
+  // validate(ClientSchema),
   clientController.createClient
 );
 clientRoute.post(
   "/:clientId/call-log",
-  validate(CreateCallLogSchema),
+  validate(CallLogSchema),
   clientController.createCallLog
 );
 clientRoute.post(
@@ -28,22 +26,16 @@ clientRoute.post(
     fieldName: "file",
     uploadType: "single",
   }),
-  validate(CreateClientNoteSchema),
+  // validate(CreateClientNoteSchema),
   clientController.createClientNote
 );
 
 //---------------------get------------------------//
 
 clientRoute.get("/", clientController.getAllClients);
-clientRoute.get(
-  "/:clientId",
-  clientController.getSingleClient
-);
+clientRoute.get("/:clientId", clientController.getSingleClient);
 clientRoute.get("/call-log", clientController.getAllCallLogs);
-clientRoute.get(
-  "/:clientId/call-log",
-  clientController.getCallLogsByClientId
-);
+clientRoute.get("/:clientId/call-log", clientController.getCallLogsByClientId);
 
 //---------------------patch------------------------//
 

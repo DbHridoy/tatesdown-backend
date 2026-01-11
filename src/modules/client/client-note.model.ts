@@ -1,19 +1,46 @@
-import { model, Schema, Types } from "mongoose";
+import { model, Schema, Types, Document } from "mongoose";
 
-const ClientNoteSchema = new Schema({
-  clientId: {
-    type: Types.ObjectId,
-    ref: "Client",
-    required: true,
-  },
-  note: {
-    type: String,
-  },
-  file: {
-    type: String,
-  },
-});
+/**
+ * Client Note Interface
+ */
+export interface ClientNoteDocument extends Document {
+  clientId: Types.ObjectId;
+  note?: string;
+  file?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
-const clientNote = model("ClientNote", ClientNoteSchema);
+/**
+ * Client Note Schema
+ */
+const ClientNoteSchema = new Schema<ClientNoteDocument>(
+  {
+    clientId: {
+      type: Types.ObjectId,
+      ref: "Client",
+      required: true,
+      index: true,
+    },
+    note: {
+      type: String,
+      trim: true,
+    },
+    file: {
+      type: String,
+      trim: true,
+    },
+  },
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
+);
 
-export default clientNote;
+/**
+ * ClientNote Model
+ */
+const ClientNote = model<ClientNoteDocument>("ClientNote", ClientNoteSchema);
+
+export default ClientNote;

@@ -2,6 +2,7 @@ import { buildDynamicSearch } from "../../utils/dynamic-search-utils";
 import Counter from "./counter.model";
 import { Notification } from "./notification.model";
 import { Variable } from "./variable.model";
+import { Cluster } from "./cluster.model";
 
 export class CommonRepository {
   generateSequentialId = async (prefix: string, counterName: string) => {
@@ -12,6 +13,11 @@ export class CommonRepository {
     );
 
     return `${prefix}${counter.seq}`;
+  };
+
+  createCluster = async (clusterName: string) => {
+    const cluster = await Cluster.create({ clusterName });
+    return cluster;
   };
 
   upsertVariable = async (variables: any) => {
@@ -26,13 +32,21 @@ export class CommonRepository {
     );
   };
 
+  getCluster = async () => {
+    return Cluster.find();
+  };
+
   getVariable = async () => {
     return Variable.findOne();
   };
 
-  getNotification=async(query:{})=>{
-    const {filter,search,options}=buildDynamicSearch(Notification,query);
-    const notifications=await Notification.find({...filter,...search},null,options)
-    return notifications
-  }
+  getNotification = async (query: {}) => {
+    const { filter, search, options } = buildDynamicSearch(Notification, query);
+    const notifications = await Notification.find(
+      { ...filter, ...search },
+      null,
+      options
+    );
+    return notifications;
+  };
 }

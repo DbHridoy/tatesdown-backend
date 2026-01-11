@@ -1,117 +1,37 @@
-import { model, Schema, Document, Types } from "mongoose";
-import { commonService } from "../../container";
+import { Schema, model, Types } from "mongoose";
 
-export interface JobDocument extends Document {
-  customJobId: string;
-  quoteId: Types.ObjectId;
-  title: string;
-  description?: string;
-  estimatedPrice: number;
-  downPayment: number;
-  budgetSpent: number;
-  downPaymentStatus: "Approved" | "Rejected" | "Pending";
-  startDate: Date;
-  status:
-    | "Pending"
-    | "Pending Close"
-    | "Scheduled"
-    | "In Progress"
-    | "On Hold"
-    | "Completed"
-    | "Cancelled";
-}
-
-const JobSchema = new Schema<JobDocument>(
+const jobSchema = new Schema(
   {
-    customJobId: {
-      type: String,
-      unique: true, // 🔐 Prevent duplicates
-      index: true,
+    salesRepId: {
+      type: Types.ObjectId,
+      ref: "SalesRep",
+      required: true,
+    },
+
+    clientId: {
+      type: Types.ObjectId,
+      ref: "Client",
+      required: true,
     },
 
     quoteId: {
-      type: Schema.Types.ObjectId,
+      type: Types.ObjectId,
       ref: "Quote",
       required: true,
-      unique: true, // 🔒 One Job per Quote
     },
 
-    title: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    description: {
-      type: String,
-      trim: true,
-    },
-
-    estimatedPrice: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-
-    budgetSpent: {
-      type: Number,
-      min: 0,
-    },
-
-    downPayment: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-
-    downPaymentStatus: {
-      type: String,
-      enum: ["Approved", "Rejected", "Pending"],
-      default: "Pending",
-    },
-
-    startDate: {
-      type: Date,
-      required: true,
-    },
+    budgetSpent: Number,
+    downPayment: Number,
 
     status: {
       type: String,
-      enum: [
-        "Pending",
-        "Pending Close",
-        "Scheduled",
-        "In Progress",
-        "On Hold",
-        "Completed",
-        "Cancelled",
-      ],
+      enum: ["Pending", "In Progress", "Completed", "Cancelled"],
       default: "Pending",
     },
   },
-  {
-    timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
-  }
+  { timestamps: true }
 );
 
-JobSchema.virtual("notes", {
-  ref: "JobNote",
-  localField: "_id",
-  foreignField: "jobId",
-});
+jobSchema.index({ salesRepId: 1 });
 
-JobSchema.virtual("designConsultaion", {
-  ref: "DesignConsultation",
-  localField: "_id",
-  foreignField: "jobId",
-});
-
-JobSchema.pre<JobDocument>("save", async function (next) {
-  if (!this.customJobId) {
-    this.customJobId = await commonService.generateSequentialId("J", "job");
-  }
-});
-
-export const Job = model<JobDocument>("Job", JobSchema);
+export const Job = model("Job", jobSchema);

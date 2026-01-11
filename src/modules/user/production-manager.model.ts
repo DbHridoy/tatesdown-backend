@@ -1,6 +1,6 @@
 import { Schema, Types, model } from "mongoose";
 
-const userSchema = new Schema({
+const productionManagerSchema = new Schema({
     userId: {
         type: Types.ObjectId,
         ref: "User"
@@ -19,6 +19,6 @@ const userSchema = new Schema({
     },
 });
 
-const User = model("User", userSchema);
+const ProductionManager = model("ProductionManager", productionManagerSchema);
 
-export default User;
+export default ProductionManager;

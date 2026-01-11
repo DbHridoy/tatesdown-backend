@@ -3,14 +3,26 @@ import { asyncHandler } from "../../utils/async-handler";
 import { ClientService } from "./client.service";
 import { HttpCodes } from "../../constants/status-codes";
 import { logger } from "../../utils/logger";
+import { SalesRep } from "../user/sales-rep.model";
 
 export class ClientController {
   constructor(private clientService: ClientService) {}
   createClient = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const { body } = req;
-      logger.info({body},"ClientController.createClient")
-      const newClient = await this.clientService.createClient(body);
+      logger.info({ body }, "ClientController.createClient");
+
+      const userId = req.user?.userId;
+      logger.info({ reqUser: req.user }, "ClientController.createClient");
+      const salesRepId = await SalesRep.findOne({ userId });
+      if (!salesRepId) {
+        throw new Error("Sales rep not found");
+      }
+      const client = {
+        ...body,
+        salesRepId: salesRepId._id,
+      };
+      const newClient = await this.clientService.createClient(client);
       res.status(HttpCodes.Ok).json({
         success: true,
         message: "Client created successfully",
@@ -22,7 +34,11 @@ export class ClientController {
   createCallLog = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const { body } = req;
-      const newCallLog = await this.clientService.createCallLog(body);
+      const clientId = req.params.clientId;
+      const newCallLog = await this.clientService.createCallLog({
+        ...body,
+        clientId,
+      });
       res.status(HttpCodes.Ok).json({
         success: true,
         message: "Call log created successfully",
@@ -34,6 +50,7 @@ export class ClientController {
   createClientNote = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const body = req.body;
+      const clientId = req.params.clientId;
 
       // Add file URL if uploaded
       if (req.file?.fileUrl) {
@@ -42,7 +59,10 @@ export class ClientController {
 
       // logger.info({body},"ClientController.createClientNote");
 
-      const newNote = await this.clientService.createClientNote(body);
+      const newNote = await this.clientService.createClientNote({
+        ...body,
+        clientId,
+      });
 
       res.status(HttpCodes.Ok).json({
         success: true,

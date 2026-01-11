@@ -1,30 +1,16 @@
 import z from "zod";
 
-const ObjectIdSchema = z
-  .string()
-  .regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId");
-
-export const CreateClientSchema = z.object({
-  // salesRepId: ObjectIdSchema,
+export const ClientSchema = z.object({
   clientName: z.string(),
   partnerName: z.string(),
   phoneNumber: z.string(),
-  email: z.string().email(),
+  email: z.email(),
   address: z.string(),
   leadSource: z.string(),
   rating: z.number(),
-  callStatus: z.enum([
-    "Not Called",
-    "Picked-Up Yes",
-    "Picked-Up No",
-    "No Pickup",
-  ]),
-  callLogs: z.array(ObjectIdSchema).optional(),
-  note: z.array(ObjectIdSchema).optional(),
 });
 
-export const CreateCallLogSchema = z.object({
-  clientId: ObjectIdSchema,
+export const CallLogSchema = z.object({
   callAt: z.coerce.date(),
   status: z.enum([
     "Not Called",
@@ -32,12 +18,12 @@ export const CreateCallLogSchema = z.object({
     "Picked-Up: No Appointment",
     "No Pickup",
   ]),
-  note: z.string(),
+  reason: z.string().optional(),
+  note: z.string().optional(),
 });
 
-export const CreateClientNoteSchema = z
+export const ClientNoteSchema = z
   .object({
-    clientId: ObjectIdSchema,
     text: z.string(),
   })
   .optional();
