@@ -7,6 +7,7 @@ import { SalesRep } from "../user/sales-rep.model";
 import { Quote } from "../quote/quote.model";
 import { Job } from "./job.model";
 import { Client } from "../client/client.model";
+import { DesignConsultation } from "./design-consultation.model";
 
 export class JobController {
   constructor(private readonly jobService: JobService) {}
@@ -133,21 +134,62 @@ export class JobController {
     }
   );
 
-  createNewDesignConsultation = asyncHandler(
-    async (req: Request, res: Response, next: NextFunction) => {
-      const consultationBody = req.body;
-      if (req.file) {
-        consultationBody.file = req.file.fileUrl;
-      }
-      const newDesignConsultation =
-        await this.jobService.createNewDesignConsultation(consultationBody);
-      res.status(HttpCodes.Ok).json({
-        success: true,
-        message: "Design Consultation created successfully",
-        data: newDesignConsultation,
-      });
+  createDesignConsultation = async (req: Request, res: Response) => {
+    const {
+      jobId,
+      product,
+      colorCode,
+      estimatedGallons,
+      upsellDescription,
+      upsellItem,
+      addedHours,
+      estimatedStartDate,
+    } = req.body;
+
+    // 1️⃣ Create Design Consultation
+    const designConsultation = await DesignConsultation.create({
+      jobId,
+      product,
+      colorCode,
+      estimatedGallons,
+      upsellDescription,
+      upsellItem,
+      addedHours,
+      estimatedStartDate,
+      file: req.file?.path,
+    });
+
+    // 2️⃣ Update Job totals
+    const job = await Job.findById(jobId);
+
+    if (!job) {
+      throw new Error("Job not found");
     }
-  );
+
+    // Add hours if upsell hours exist
+    if (addedHours) {
+      job.labourHours += Number(addedHours);
+      job.totalHours += Number(addedHours);
+    }
+
+    // OPTIONAL: if gallons affect budget later
+    if (estimatedGallons) {
+      // Example logic — adjust if you calculate paint cost elsewhere
+      // job.budgetSpent += estimatedGallons * PAINT_COST_PER_GALLON;
+    }
+
+    // Optional: update job status
+    if (job.status === "Ready for DC") {
+      job.status = "Ready to Schedule";
+    }
+
+    await job.save();
+
+    res.status(201).json({
+      success: true,
+      data: designConsultation,
+    });
+  };
 
   getAllDesignConsultation = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {

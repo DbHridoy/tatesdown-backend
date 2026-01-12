@@ -2,28 +2,50 @@ import { model, Schema, Types, Document } from "mongoose";
 
 export interface DesignConsultationDocument extends Document {
   jobId: Types.ObjectId;
-  products?: string[]; // assuming multiple products
-  colorCodes?: string;
-  estimatedGallons?: number; // corrected type
+
+  // Product details
+  product?: string;
+  colorCode?: string;
+  estimatedGallons?: number;
+
+  // Upsell
   upsellDescription?: string;
-  upsellValue?: number; // corrected type
+  upsellItem?: string;
   addedHours?: number;
+
+  // Scheduling
   estimatedStartDate?: Date;
+
+  // Contract file
   file?: string;
+
   createdAt?: Date;
   updatedAt?: Date;
 }
 
 const DesignConsultationSchema = new Schema<DesignConsultationDocument>(
   {
-    jobId: { type: Types.ObjectId, ref: "Job", required: true },
-    products: { type: [String], default: [] },
-    colorCodes: { type: String },
+    jobId: {
+      type: Types.ObjectId,
+      ref: "Job",
+      required: true,
+      index: true,
+    },
+
+    /* ---------- Product ---------- */
+    product: { type: String },
+    colorCode: { type: String },
     estimatedGallons: { type: Number },
+
+    /* ---------- Upsell ---------- */
     upsellDescription: { type: String },
-    upsellValue: { type: Number },
+    upsellItem: { type: String },
     addedHours: { type: Number },
+
+    /* ---------- Scheduling ---------- */
     estimatedStartDate: { type: Date },
+
+    /* ---------- File ---------- */
     file: { type: String },
   },
   {
@@ -32,9 +54,6 @@ const DesignConsultationSchema = new Schema<DesignConsultationDocument>(
     toObject: { virtuals: true },
   }
 );
-
-// Index for faster lookups by jobId
-DesignConsultationSchema.index({ jobId: 1 });
 
 export const DesignConsultation = model<DesignConsultationDocument>(
   "DesignConsultation",

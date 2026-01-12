@@ -27,7 +27,7 @@ jobRoute.post(
     fieldName: "file",
     uploadType: "single",
   }),
-  jobController.createNewDesignConsultation
+  jobController.createDesignConsultation
 );
 
 jobRoute.get("/", jobController.getAllJobs);

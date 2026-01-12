@@ -36,6 +36,10 @@ export class ClientController {
 
     const newClient = await this.clientService.createClient(clientPayload);
 
+    await SalesRep.findByIdAndUpdate(salesRepId, {
+      $inc: { totalClients: 1 },
+    });
+
     res.status(HttpCodes.Ok).json({
       success: true,
       message: "Client created successfully",
@@ -64,7 +68,7 @@ export class ClientController {
       const body = req.body;
       const clientId = req.params.clientId;
 
-      logger.info({body},"ClientController.createClientNote");
+      logger.info({ body }, "ClientController.createClientNote");
 
       // Add file URL if uploaded
       if (req.file?.fileUrl) {
