@@ -9,7 +9,7 @@ export interface JobDocument extends Document {
   quoteId: Types.ObjectId;
   title: string;
   description?: string;
-  estimatedPrice: number;
+  price: number;
   downPayment: number;
   budgetSpent: number;
   downPaymentStatus: "Approved" | "Rejected" | "Pending";
@@ -39,7 +39,7 @@ const jobSchema = new Schema<JobDocument>(
     customJobId: { type: String, unique: true },
     title: { type: String, required: true },
     description: { type: String },
-    estimatedPrice: { type: Number, required: true },
+    price: { type: Number, required: true },
     downPayment: { type: Number, required: true },
     budgetSpent: { type: Number, default: 0 },
     downPaymentStatus: {

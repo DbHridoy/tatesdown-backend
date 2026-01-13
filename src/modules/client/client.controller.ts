@@ -3,41 +3,19 @@ import { asyncHandler } from "../../utils/async-handler";
 import { ClientService } from "./client.service";
 import { HttpCodes } from "../../constants/status-codes";
 import { logger } from "../../utils/logger";
-import { SalesRep } from "../user/sales-rep.model";
+import { SalesRep } from "../sales-rep/sales-rep.model";
 import { Types } from "mongoose";
 
 export class ClientController {
   constructor(private clientService: ClientService) {}
+
   createClient = asyncHandler(async (req: Request, res: Response) => {
-    const body = req.body;
     const user = req.user!;
+    const body = req.body;
 
-    logger.info({ body }, "ClientController.createClient");
-    logger.info({ reqUser: user }, "ClientController.createClient");
-
-    let salesRepId: Types.ObjectId | null = null;
-
-    // If the user is a Sales Rep, resolve SalesRep._id
-    if (user.role === "Sales Rep") {
-      const salesRep = await SalesRep.findOne({ userId: user.userId });
-
-      if (!salesRep) {
-        throw new Error("Sales rep profile not found");
-      }
-
-      salesRepId = salesRep._id;
-    }
-
-    const clientPayload = {
-      ...body,
-      salesRepId,
-      createdBy: user.userId, // audit field
-    };
-
-    const newClient = await this.clientService.createClient(clientPayload);
-
-    await SalesRep.findByIdAndUpdate(salesRepId, {
-      $inc: { totalClients: 1 },
+    const newClient = await this.clientService.createClient({
+      body,
+      user,
     });
 
     res.status(HttpCodes.Ok).json({
@@ -51,10 +29,12 @@ export class ClientController {
     async (req: Request, res: Response, next: NextFunction) => {
       const { body } = req;
       const clientId = req.params.clientId;
-      const newCallLog = await this.clientService.createCallLog({
-        ...body,
+      const user = req.user!;
+      const newCallLog = await this.clientService.createCallLog(
+        body,
         clientId,
-      });
+        user
+      );
       res.status(HttpCodes.Ok).json({
         success: true,
         message: "Call log created successfully",
@@ -67,6 +47,7 @@ export class ClientController {
     async (req: Request, res: Response, next: NextFunction) => {
       const body = req.body;
       const clientId = req.params.clientId;
+      const user = req.user!;
 
       logger.info({ body }, "ClientController.createClientNote");
 
@@ -77,10 +58,11 @@ export class ClientController {
 
       // logger.info({body},"ClientController.createClientNote");
 
-      const newNote = await this.clientService.createClientNote({
-        ...body,
+      const newNote = await this.clientService.createClientNote(
+        body,
         clientId,
-      });
+        user
+      );
 
       res.status(HttpCodes.Ok).json({
         success: true,

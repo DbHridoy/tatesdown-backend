@@ -3,7 +3,7 @@ import { asyncHandler } from "../../utils/async-handler";
 import { JobService } from "./job.service";
 import { HttpCodes } from "../../constants/status-codes";
 import { logger } from "../../utils/logger";
-import { SalesRep } from "../user/sales-rep.model";
+import { SalesRep } from "../sales-rep/sales-rep.model";
 import { Quote } from "../quote/quote.model";
 import { Job } from "./job.model";
 import { Client } from "../client/client.model";
@@ -16,49 +16,14 @@ export class JobController {
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const jobInfo = req.body;
-        const userId = req.user!.userId;
+        const user = req.user!;
 
-        // Find the sales rep
-        const salesRep = await SalesRep.findOne({ userId });
-        if (!salesRep) {
-          return res.status(HttpCodes.NotFound).json({
-            success: false,
-            message: "Sales rep not found",
-          });
-        }
-
-        // Attach salesRepId to the job
-        const jobData = { ...jobInfo, salesRepId: salesRep._id };
-        logger.info({ jobData }, "JobController.createNewJob");
-
-        // Create the job
-        const job = await Job.create(jobData);
-
-        // If the job is based on a quote, update quote and client status
-        if (jobInfo.quoteId) {
-          const quote = await Quote.findByIdAndUpdate(
-            jobInfo.quoteId,
-            { status: "Approved" },
-            { new: true }
-          );
-
-          if (quote?.clientId) {
-            await Client.findByIdAndUpdate(quote.clientId, {
-              leadStatus: "Job",
-            });
-            logger.info(
-              { clientId: quote.clientId },
-              "Client leadStatus updated to Job"
-            );
-          }
-
-          logger.info({ quoteId: jobInfo.quoteId }, "Quote marked as Approved");
-        }
+        const newJob = await this.jobService.createNewJob(jobInfo, user);
 
         res.status(HttpCodes.Ok).json({
           success: true,
           message: "Job created successfully",
-          data: job,
+          data: newJob,
         });
       } catch (error) {
         logger.error(error, "JobController.createNewJob error");

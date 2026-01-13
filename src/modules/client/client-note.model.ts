@@ -7,6 +7,7 @@ export interface ClientNoteDocument extends Document {
   clientId: Types.ObjectId;
   note?: string;
   file?: string;
+  addedBy: Types.ObjectId;
 }
 
 /**
@@ -27,6 +28,11 @@ const ClientNoteSchema = new Schema<ClientNoteDocument>(
     file: {
       type: String,
       trim: true,
+    },
+    addedBy: {
+      type: Types.ObjectId,
+      ref: "User",
+      required: true,
     },
   },
   {

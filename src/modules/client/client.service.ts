@@ -3,75 +3,98 @@ import { ClientRepository } from "./client.repository";
 import { apiError } from "../../errors/api-error";
 import { Errors } from "../../constants/error-codes";
 import { createNotification } from "../../utils/create-notification-utils";
+import { SalesRepRepository } from "../sales-rep/sales-rep.repository";
 
 export class ClientService {
-  constructor(private clientRepository: ClientRepository) {}
+  constructor(
+    private clientRepo: ClientRepository,
+    private salesRepRepo: SalesRepRepository
+  ) {}
 
-  createClient = async (clientInfo: any) => {
-    const existingClient =
-      await this.clientRepository.searchClientByPhoneNumber(
-        clientInfo.phoneNumber
-      );
+  createClient = async ({ body, user }: { body: any; user: any }) => {
+    let salesRepId: Types.ObjectId | null = null;
 
-    if (existingClient) {
-      throw new apiError(
-        Errors.AlreadyExists.code,
-        Errors.AlreadyExists.message
-      );
+    // Role-based rule
+    if (user.role !== "Sales Rep") {
+      salesRepId = null;
+    } else {
+      const salesRep = await this.salesRepRepo.findByUserId(user.userId);
+
+      if (!salesRep) {
+        throw new Error("Sales rep profile not found");
+      }
+
+      salesRepId = salesRep._id;
     }
-    const newClient = await this.clientRepository.createClient(clientInfo);
-    const newNotification = {
-      type: "client",
-      message: "New client added",
-      forUserRole: "admin",
+
+    const clientPayload = {
+      ...body,
+      salesRepId,
+      createdBy: user.userId,
     };
-    createNotification(newNotification);
+
+    const newClient = await this.clientRepo.createClient(clientPayload);
+
+    // Side-effect handled in service
+    if (salesRepId) {
+      await this.salesRepRepo.incrementTotalClients(salesRepId);
+    }
 
     return newClient;
   };
 
-  createClientNote = async (clientNoteData: any) => {
-    const newClientNote = await this.clientRepository.createClientNote(
-      clientNoteData
+  createCallLog = async (callLogData: any, clientId: string, user: any) => {
+    const callLogPayload: any = {
+      ...callLogData,
+      clientId,
+      addedBy: user.userId,
+    };
+    const newCallLog = await this.clientRepo.createCallLog(callLogPayload);
+    return newCallLog;
+  };
+
+  createClientNote = async (clientNoteData: any, clientId: string, user: any) => {
+    const clientNotePayload: any = {
+      ...clientNoteData,
+      clientId,
+      addedBy: user.userId,
+    };
+    const newClientNote = await this.clientRepo.createClientNote(
+      clientNotePayload
     );
 
     return newClientNote;
   };
 
-  createCallLog = async (callLogData: any) => {
-    const newCallLog = await this.clientRepository.createCallLog(callLogData);
-    return newCallLog;
-  };
-
   getAllClients = async (query: any) => {
-    return await this.clientRepository.getAllClients(query);
+    return await this.clientRepo.getAllClients(query);
   };
 
   getClientById = async (id: string) => {
-    return await this.clientRepository.getClientById(id);
+    return await this.clientRepo.getClientById(id);
   };
 
   getAllCallLogs = async () => {
-    return await this.clientRepository.getAllCallLogs();
+    return await this.clientRepo.getAllCallLogs();
   };
 
   getCallLogByClientId = async (id: string) => {
-    return await this.clientRepository.getCallLogByClientId(id);
+    return await this.clientRepo.getCallLogByClientId(id);
   };
 
   getAllClientNote = async () => {
-    return await this.clientRepository.getAllClientNote();
+    return await this.clientRepo.getAllClientNote();
   };
 
   getClientNoteByClientId = async (clientId: string) => {
-    return await this.clientRepository.getClientNoteByClientId(clientId);
+    return await this.clientRepo.getClientNoteByClientId(clientId);
   };
 
   updateClient = async (clientId: string, clientInfo: any) => {
-    return await this.clientRepository.updateClient(clientId, clientInfo);
+    return await this.clientRepo.updateClient(clientId, clientInfo);
   };
 
   deleteClient = async (clientId: string) => {
-    return await this.clientRepository.deleteClient(clientId);
+    return await this.clientRepo.deleteClient(clientId);
   };
 }

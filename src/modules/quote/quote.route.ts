@@ -14,7 +14,6 @@ quoteRoute.post(
     fieldName: "bidSheet",
     uploadType: "single",
   }),
-  // validate(CreateQuoteSchema),
   quoteController.createQuote
 );
 

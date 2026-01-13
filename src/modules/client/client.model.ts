@@ -20,7 +20,6 @@ const clientSchema = new Schema(
     salesRepId: {
       type: Types.ObjectId,
       ref: "SalesRep",
-      required: true,
     },
 
     customClientId: String,

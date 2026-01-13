@@ -19,6 +19,7 @@ const salesRepSchema = new Schema(
     totalClients: { type: Number, default: 0 },
     totalQuotes: { type: Number, default: 0 },
     totalJobs: { type: Number, default: 0 },
+    totalDc: { type: Number, default: 0 },
 
     commissionEarned: { type: Number, default: 0 },
     commissionPending: { type: Number, default: 0 },

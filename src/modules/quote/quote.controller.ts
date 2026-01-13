@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { HttpCodes } from "../../constants/status-codes";
 import { QuoteService } from "./quote.service";
 import { logger } from "../../utils/logger";
-import { SalesRep } from "../user/sales-rep.model";
+import { SalesRep } from "../sales-rep/sales-rep.model";
 import { Client } from "../client/client.model";
 
 export class QuoteController {
@@ -10,22 +10,14 @@ export class QuoteController {
 
   createQuote = async (req: Request, res: Response, next: NextFunction) => {
     const quoteInfo = req.body;
-    const userId = req.user?.userId;
-    logger.info({ userId }, "QuoteController.createQuote");
-    const salesRepId = await SalesRep.findOne({ userId });
-    if (!salesRepId) {
-      throw new Error("Sales rep not found");
-    }
+    const user = req.user!;
     const bidSheet = req.file?.fileUrl;
-    const newQuote = {
-      ...quoteInfo,
-      salesRepId: salesRepId._id,
-      bidSheet,
-    };
-    const quote = await this.quoteService.createQuote(newQuote);
 
-    // Update the client leadStatus to "Quoted"
-    await Client.findByIdAndUpdate(quote.clientId, { leadStatus: "Quoted" });
+    const quote = await this.quoteService.createQuote(
+      quoteInfo,
+      bidSheet!,
+      user
+    );
 
     res.status(HttpCodes.Ok).json({
       success: true,

@@ -3,7 +3,7 @@ import User from "./user.model";
 import { apiError } from "../../errors/api-error";
 import { Errors } from "../../constants/error-codes";
 import { logger } from "../../utils/logger";
-import { SalesRep } from "./sales-rep.model";
+import { SalesRep } from "../sales-rep/sales-rep.model";
 import ProductionManager from "./production-manager.model";
 import Admin from "./admin.model";
 
@@ -44,7 +44,9 @@ export class UserRepository {
 
     // Run both queries concurrently
     const [users, total] = await Promise.all([
-      User.find(baseQuery, null, options).populate("salesRep").populate("productionManager"),
+      User.find(baseQuery, null, options).populate(
+        "salesRep productionManager admin"
+      ),
       User.countDocuments(baseQuery),
     ]);
 
@@ -56,11 +58,13 @@ export class UserRepository {
   };
 
   findUserById = async (id: string) => {
-    return await User.findById(id).populate("salesRep").populate("productionManager");
+    return await User.findById(id).populate("salesRep productionManager admin");
   };
 
   findUserByEmail = async (email: string) => {
-    return await User.findOne({ email }).populate("salesRep").populate("productionManager");
+    return await User.findOne({ email }).populate(
+      "salesRep productionManager admin"
+    );
   };
 
   updateUserPassword = async (id: Types.ObjectId, hashedPassword: string) => {
@@ -85,7 +89,9 @@ export class UserRepository {
 
     // Run both queries concurrently
     const [salesReps, total] = await Promise.all([
-      User.find(baseQuery, null, options),
+      User.find(baseQuery, null, options).populate(
+        "salesRep productionManager admin"
+      ),
       User.countDocuments(baseQuery),
     ]);
 

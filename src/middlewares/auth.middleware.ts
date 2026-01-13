@@ -6,11 +6,8 @@ import { UserRepository } from "../modules/user/user.repository";
 import { logger } from "../utils/logger";
 import { JwtUtils } from "../utils/jwt-utils";
 
-
 export class AuthMiddleware {
-constructor(private jwtUtils:JwtUtils,private authRepo:UserRepository){
-    
-}
+  constructor(private jwtUtils: JwtUtils, private authRepo: UserRepository) {}
   // Authenticate middleware
   authenticate = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -45,6 +42,7 @@ constructor(private jwtUtils:JwtUtils,private authRepo:UserRepository){
         email: payload.email,
         role: payload.role,
       };
+      logger.info({ reqUser: req.user }, "Authmiddleware.authenticate");
 
       next();
     } catch (error) {

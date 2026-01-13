@@ -12,7 +12,6 @@ clientRoute.use(authMiddleware.authenticate);
 
 clientRoute.post(
   "/",
-  // validate(ClientSchema),
   clientController.createClient
 );
 clientRoute.post(
@@ -26,7 +25,6 @@ clientRoute.post(
     fieldName: "file",
     uploadType: "single",
   }),
-  // validate(CreateClientNoteSchema),
   clientController.createClientNote
 );
 

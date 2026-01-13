@@ -20,6 +20,12 @@ const userSchema = new Schema(
     profileImage: {
       type: String,
     },
+    phoneNumber: {
+      type: String,
+    },
+    address: {
+      type: String,
+    },
     password: {
       type: String,
       required: true,
@@ -34,11 +40,10 @@ const userSchema = new Schema(
 
 // Virtual for SalesRep
 userSchema.virtual("salesRep", {
-  ref: "SalesRep",         // The model to use
-  localField: "_id",       // Find SalesRep where `userId` equals `_id`
+  ref: "SalesRep", // The model to use
+  localField: "_id", // Find SalesRep where `userId` equals `_id`
   foreignField: "userId",
-  justOne: true,           // Return a single object
-  options: { match: { role: "Sales Rep" } }, // optional, can filter
+  justOne: true, // Return a single object
 });
 
 // Virtual for ProductionManager
@@ -47,7 +52,13 @@ userSchema.virtual("productionManager", {
   localField: "_id",
   foreignField: "userId",
   justOne: true,
-  options: { match: { role: "Production Manager" } },
+});
+
+userSchema.virtual("admin", {
+  ref: "Admin",
+  localField: "_id",
+  foreignField: "userId",
+  justOne: true,
 });
 
 const User = model("User", userSchema);

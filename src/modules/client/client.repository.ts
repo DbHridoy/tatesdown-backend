@@ -67,6 +67,15 @@ export class ClientRepository {
     return await Client.findByIdAndUpdate(clientId, clientInfo, { new: true });
   };
 
+  updateLeadStatus = async (clientId: string, leadStatus: any) => {
+    const updatedClient = await Client.findByIdAndUpdate(
+      clientId,
+      { leadStatus },
+      { new: true }
+    );
+    return updatedClient;
+  };
+
   deleteClient = async (clientId: string) => {
     return await Client.findByIdAndDelete(clientId);
   };

@@ -24,24 +24,21 @@ import { QuoteRepository } from "./modules/quote/quote.repository";
 import { QuoteService } from "./modules/quote/quote.service";
 import { QuoteController } from "./modules/quote/quote.controller";
 import { buildDynamicSearch } from "./utils/dynamic-search-utils";
-import { StatsRepository } from "./modules/stats/stats.repository";
-import { StatsService } from "./modules/stats/stats.service";
-import { StatsController } from "./modules/stats/stats.controller";
+import { SalesRepRepository } from "./modules/sales-rep/sales-rep.repository";
 
 export const hashUtils = new HashUtils();
 export const jwtUtils = new JwtUtils();
 export const mailer = new Mailer();
 
 export const commonRepository = new CommonRepository();
-export const commonService = new CommonService(commonRepository);
-export const commonController = new CommonController(commonService);
 
 export const userRepository = new UserRepository(buildDynamicSearch);
 export const userService = new UserService(userRepository, hashUtils, mailer);
 export const userController = new UserController(userService);
 
-export const clientRepository = new ClientRepository();
-export const clientService = new ClientService(clientRepository);
+export const clientRepo = new ClientRepository();
+export const salesRepRepo = new SalesRepRepository();
+export const clientService = new ClientService(clientRepo, salesRepRepo);
 export const clientController = new ClientController(clientService);
 
 export const authRepo = new AuthRepository();
@@ -56,20 +53,27 @@ export const authMiddleware = new AuthMiddleware(jwtUtils, userRepository);
 export const authController = new AuthController(authService);
 
 export const expenseRepository = new ExpenseRepository();
+
+export const quoteRepository = new QuoteRepository();
+export const jobRepository = new JobRepository();
+export const jobService = new JobService(
+  jobRepository,
+  salesRepRepo,
+  quoteRepository,
+  clientRepo
+);
+export const jobController = new JobController(jobService);
+
+export const quoteService = new QuoteService(
+  quoteRepository,
+  salesRepRepo,
+  clientRepo
+);
+export const commonService = new CommonService(commonRepository, salesRepRepo);
+export const commonController = new CommonController(commonService, commonRepository);
 export const expenseService = new ExpenseService(
   expenseRepository,
   commonService
 );
 export const expenseController = new ExpenseController(expenseService);
-
-export const jobRepository = new JobRepository();
-export const jobService = new JobService(jobRepository);
-export const jobController = new JobController(jobService);
-
-export const quoteRepository = new QuoteRepository();
-export const quoteService = new QuoteService(quoteRepository);
 export const quoteController = new QuoteController(quoteService);
-
-export const statsRepository = new StatsRepository();
-export const statsService = new StatsService(statsRepository);
-export const statsController = new StatsController(statsService);

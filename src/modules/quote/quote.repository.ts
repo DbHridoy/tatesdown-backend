@@ -35,6 +35,12 @@ export class QuoteRepository {
   updateQuoteById = async (id: string, quoteInfo: updateQuoteDetails) => {
     return await Quote.findByIdAndUpdate(id, quoteInfo, { new: true });
   };
+
+
+  updateQuoteStatus = async (id: string, status: string) => {
+    return await Quote.findByIdAndUpdate(id, { status }, { new: true });
+  }
+  
   deleteQuoteById = async (id: string) => {
     return await Quote.findByIdAndDelete(id);
   };

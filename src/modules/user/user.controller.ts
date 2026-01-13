@@ -108,6 +108,8 @@ export class UserController {
       const userId = req.user?.userId;
       const body = req.body;
 
+      logger.info({body},"UserController.updateProfile")
+
       if (!userId) {
         throw new apiError(Errors.NotFound.code, Errors.NotFound.message);
       }

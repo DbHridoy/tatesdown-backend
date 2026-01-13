@@ -11,6 +11,7 @@ export interface CallLogDocument {
     | "No Pickup";
   reason?: string;
   note?: string;
+  addedBy: Types.ObjectId;
 }
 
 const CallLogSchema = new Schema<CallLogDocument>(
@@ -37,6 +38,11 @@ const CallLogSchema = new Schema<CallLogDocument>(
     },
     reason: String,
     note: String,
+    addedBy: {
+      type: Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
   {
     timestamps: true,
