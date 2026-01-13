@@ -98,6 +98,9 @@ export class JobService {
     }
     return await this.jobRepository.updateJobById(id, jobInfo);
   };
+  assignSalesRep=async(jobId:string,salesRepId:string)=>{
+    return await this.jobRepository.assignSalesRep(jobId,salesRepId)
+  }
 
   updateDownpaymentStatus = async (id: string, status: string) => {
     return await this.jobRepository.updateDownpaymentStatus(id, status);

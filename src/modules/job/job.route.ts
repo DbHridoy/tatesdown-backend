@@ -1,10 +1,4 @@
 import { Router } from "express";
-import { validate } from "../../middlewares/validate.middleware";
-import {
-  CreateJobNoteSchema,
-  CreateJobSchema,
-  UpdateJobSchema,
-} from "./job.schema";
 import { authMiddleware, jobController } from "../../container";
 import { uploadFile } from "../../middlewares/upload.middleware";
 
@@ -46,11 +40,8 @@ jobRoute.get(
 jobRoute.get("/:jobId", jobController.getJobById);
 
 jobRoute.patch("/downpayment-status", jobController.updateDownpaymentStatus);
-jobRoute.patch(
-  "/:jobId",
-  // validate(UpdateJobSchema),
-  jobController.updateJobById
-);
+jobRoute.patch("/:jobId", jobController.updateJobById);
+jobRoute.patch("/:jobId/assign-sales-rep", jobController.assignSalesRep);
 
 jobRoute.delete("/:jobId", jobController.deleteJobById);
 

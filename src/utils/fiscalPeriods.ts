@@ -1,5 +1,8 @@
-// utils/fiscalPeriods.ts
+import { logger } from "./logger";
+
+
 export function getFiscalPeriods(date: Date, fiscalYear: any) {
+  logger.info({ date, fiscalYear }, "Utils.getFiscalPeriods");
   const fyStart = new Date(fiscalYear.startDate);
   const diffDays = Math.floor((date.getTime() - fyStart.getTime()) / 86400000);
 

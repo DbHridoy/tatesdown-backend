@@ -113,14 +113,22 @@ export class CommonController {
         isActive: true,
       });
 
-      res.json(fy);
+      res.status(200).json({
+        success: true,
+        message: "Fiscal year created successfully",
+        data: fy,
+      });
     }
   );
 
   getActiveFiscalYear = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const fy = await this.commonRepository.getActiveFiscalYear();
-      res.json(fy);
+      res.status(200).json({
+        success: true,
+        message: "Active fiscal year retrieved successfully",
+        data: fy,
+      });
     }
   );
 
@@ -136,7 +144,11 @@ export class CommonController {
         periodType,
       });
 
-      res.json(data);
+      res.status(200).json({
+        success: true,
+        message: "Stats retrieved successfully",
+        data,
+      });
     }
   );
 }

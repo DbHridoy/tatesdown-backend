@@ -4,11 +4,13 @@ import { apiError } from "../../errors/api-error";
 import { Errors } from "../../constants/error-codes";
 import { createNotification } from "../../utils/create-notification-utils";
 import { SalesRepRepository } from "../sales-rep/sales-rep.repository";
+import { CommonService } from "../common/common.service";
 
 export class ClientService {
   constructor(
     private clientRepo: ClientRepository,
-    private salesRepRepo: SalesRepRepository
+    private salesRepRepo: SalesRepRepository,
+    private commonService: CommonService
   ) {}
 
   createClient = async ({ body, user }: { body: any; user: any }) => {
@@ -39,6 +41,10 @@ export class ClientService {
     if (salesRepId) {
       await this.salesRepRepo.incrementTotalClients(salesRepId);
     }
+
+    await this.commonService.incrementOverview({
+      totalClients: 1,
+    });
 
     return newClient;
   };

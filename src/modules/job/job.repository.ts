@@ -7,15 +7,23 @@ import { Types } from "mongoose";
 import Payment from "./payment.model";
 
 export class JobRepository {
-    createNewJob = async (jobInfo: any) => {
-      logger.info({ jobInfo }, "JobRepository.createNewJob");
-      const newJob = new Job(jobInfo);
-      return await newJob.save();
-    };
+  createNewJob = async (jobInfo: any) => {
+    logger.info({ jobInfo }, "JobRepository.createNewJob");
+    const newJob = new Job(jobInfo);
+    return await newJob.save();
+  };
 
   updateJobById = async (id: string, jobInfo: any) => {
     const updatedJob = await Job.findByIdAndUpdate(id, jobInfo, { new: true });
     return updatedJob;
+  };
+
+  assignSalesRep = async (jobId: string, salesRepId: string) => {
+    return await Job.findByIdAndUpdate(
+      jobId,
+      { salesRepId: salesRepId },
+      { new: true }
+    );
   };
 
   deleteJobById = async (id: string) => {

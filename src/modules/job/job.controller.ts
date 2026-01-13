@@ -45,6 +45,17 @@ export class JobController {
     }
   );
 
+  assignSalesRep=asyncHandler(async(req:Request,res:Response,next:NextFunction)=>{
+    const salesRepId=req.body.salesRepId
+    const jobId=req.params.jobId
+    const updatedJob=await this.jobService.assignSalesRep(salesRepId,jobId)
+    res.status(HttpCodes.Ok).json({
+      success:true,
+      message:"Sales Rep assigned successfully",
+      data:updatedJob
+    })
+  })
+
   deleteJobById = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const jobId = req.params.jobId;
@@ -106,11 +117,11 @@ export class JobController {
       colorCode,
       estimatedGallons,
       upsellDescription,
-      upsellItem,
+      upsellValue,
       addedHours,
       estimatedStartDate,
     } = req.body;
-
+    // logger.info({file:req.file},"JobController.createDesignConsultation")
     // 1️⃣ Create Design Consultation
     const designConsultation = await DesignConsultation.create({
       jobId,
@@ -118,10 +129,10 @@ export class JobController {
       colorCode,
       estimatedGallons,
       upsellDescription,
-      upsellItem,
+      upsellValue,
       addedHours,
       estimatedStartDate,
-      file: req.file?.path,
+      file: req.file?.fileUrl,
     });
 
     // 2️⃣ Update Job totals

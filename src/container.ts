@@ -38,8 +38,6 @@ export const userController = new UserController(userService);
 
 export const clientRepo = new ClientRepository();
 export const salesRepRepo = new SalesRepRepository();
-export const clientService = new ClientService(clientRepo, salesRepRepo);
-export const clientController = new ClientController(clientService);
 
 export const authRepo = new AuthRepository();
 export const authService = new AuthService(
@@ -75,5 +73,7 @@ export const expenseService = new ExpenseService(
   expenseRepository,
   commonService
 );
+export const clientService = new ClientService(clientRepo, salesRepRepo, commonService);
+export const clientController = new ClientController(clientService);
 export const expenseController = new ExpenseController(expenseService);
 export const quoteController = new QuoteController(quoteService);

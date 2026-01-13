@@ -10,7 +10,7 @@ export interface DesignConsultationDocument extends Document {
 
   // Upsell
   upsellDescription?: string;
-  upsellItem?: string;
+  upsellValue?: string;
   addedHours?: number;
 
   // Scheduling
@@ -39,7 +39,7 @@ const DesignConsultationSchema = new Schema<DesignConsultationDocument>(
 
     /* ---------- Upsell ---------- */
     upsellDescription: { type: String },
-    upsellItem: { type: String },
+    upsellValue: { type: String },
     addedHours: { type: Number },
 
     /* ---------- Scheduling ---------- */

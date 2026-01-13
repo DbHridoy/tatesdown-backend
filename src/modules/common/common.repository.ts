@@ -8,8 +8,9 @@ import { Types } from "mongoose";
 import { Client } from "../client/client.model";
 import { Quote } from "../quote/quote.model";
 import { Job } from "../job/job.model";
-import { FiscalYear } from "./fiscalYear.model";
+import { FiscalYear } from "./fiscal-year.model";
 import { Overview } from "./overview.model";
+import { logger } from "../../utils/logger";
 
 export class CommonRepository {
   generateSequentialId = async (prefix: string, counterName: string) => {
@@ -123,6 +124,7 @@ export class CommonRepository {
     periodStart,
     inc,
   }: any) => {
+    logger.info({ fiscalYearId, periodType, periodIndex, periodStart, inc }, "CommonRepository.incrementOverview"); 
     return Overview.updateOne(
       { fiscalYearId, periodType, periodIndex },
       {
