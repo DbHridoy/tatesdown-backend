@@ -2,12 +2,15 @@ import { CommonRepository } from "./common.repository";
 import { SalesRepRepository } from "../sales-rep/sales-rep.repository";
 import { getFiscalPeriods } from "../../utils/fiscalPeriods";
 import { logger } from "../../utils/logger";
+import { Types } from "mongoose";
+import { ProductionManagerRepository } from "../production-manager/production-manager.repository";
 
 export class CommonService {
   constructor(
     private readonly commonRepository: CommonRepository,
-    private readonly salesRepRepo: SalesRepRepository
-  ) {}
+    private readonly salesRepRepo: SalesRepRepository,
+    private readonly productionManagerRepo: ProductionManagerRepository
+  ) { }
 
   generateSequentialId = async (prefix: string, counterName: string) => {
     const id = await this.commonRepository.generateSequentialId(
@@ -55,6 +58,21 @@ export class CommonService {
     const stats = await this.salesRepRepo.getLeaderboard();
     return stats;
   };
+  getMyStats = async (user: any) => {
+    if (user.role === 'Sales Rep') {
+      const salesRep = await this.salesRepRepo.findByUserId(user.userId);
+      if (!salesRep) return null;
+      const stats = await this.salesRepRepo.getSalesRepProfile(salesRep._id);
+      return stats;
+    }
+    else if (user.role === 'Production Manager') {
+      const productionManager = await this.productionManagerRepo.findByUserId(user.userId);
+      if (!productionManager) return null;
+      const profile = await this.productionManagerRepo.getProductionManagerProfile(productionManager._id);
+      return profile;
+    }
+    return null;
+  };
 
   incrementOverview = async (
     inc: Record<string, number>,
@@ -62,7 +80,7 @@ export class CommonService {
   ) => {
 
 
-    logger.info({inc, date}, "CommonService.incrementOverview");
+    logger.info({ inc, date }, "CommonService.incrementOverview");
     const fiscalYear = await this.commonRepository.getActiveFiscalYear();
     logger.info({ fiscalYear }, "CommonService.incrementOverview");
     if (!fiscalYear) throw new Error("No active fiscal year");

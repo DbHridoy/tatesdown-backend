@@ -6,12 +6,14 @@ import { SalesRep } from "../sales-rep/sales-rep.model";
 import { Client } from "../client/client.model";
 
 export class QuoteController {
-  constructor(private readonly quoteService: QuoteService) {}
+  constructor(private readonly quoteService: QuoteService) { }
 
   createQuote = async (req: Request, res: Response, next: NextFunction) => {
     const quoteInfo = req.body;
     const user = req.user!;
     const bidSheet = req.file?.fileUrl;
+
+    logger.info({ quoteInfo, bidSheet }, "QuoteController.createQuote line 16");
 
     const quote = await this.quoteService.createQuote(
       quoteInfo,

@@ -7,8 +7,8 @@ export interface JobDocument extends Document {
   salesRepId: Types.ObjectId;
   clientId: Types.ObjectId;
   quoteId: Types.ObjectId;
+  productionManagerId: Types.ObjectId;
   title: string;
-  description?: string;
   price: number;
   downPayment: number;
   budgetSpent: number;
@@ -16,16 +16,14 @@ export interface JobDocument extends Document {
   totalHours: number;
   setupCleanup: number;
   powerwash: number;
-  labourHours: number;
+  laborHours: number;
   startDate: Date;
   status:
-    | "Ready for DC"
-    | "Ready to Schedule"
-    | "Scheduled"
-    | "In Progress"
-    | "On Hold"
-    | "Completed"
-    | "Cancelled";
+  | "Ready to Schedule"
+  | "Scheduled and Open"
+  | "Pending Close"
+  | "Closed"
+  | "Cancelled";
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -36,9 +34,9 @@ const jobSchema = new Schema<JobDocument>(
     salesRepId: { type: Types.ObjectId, ref: "SalesRep", required: true },
     clientId: { type: Types.ObjectId, ref: "Client", required: true },
     quoteId: { type: Types.ObjectId, ref: "Quote", required: true },
+    productionManagerId: { type: Types.ObjectId, ref: "ProductionManager" },
     customJobId: { type: String, unique: true },
     title: { type: String, required: true },
-    description: { type: String },
     price: { type: Number, required: true },
     downPayment: { type: Number, required: true },
     budgetSpent: { type: Number, default: 0 },
@@ -50,20 +48,18 @@ const jobSchema = new Schema<JobDocument>(
     totalHours: { type: Number, default: 0 },
     setupCleanup: { type: Number, default: 0 },
     powerwash: { type: Number, default: 0 },
-    labourHours: { type: Number, default: 0 },
+    laborHours: { type: Number, default: 0 },
     startDate: { type: Date, required: true },
     status: {
       type: String,
       enum: [
-        "Ready for DC",
         "Ready to Schedule",
-        "Scheduled",
-        "In Progress",
-        "On Hold",
-        "Completed",
+        "Scheduled and Open",
+        "Pending Close",
+        "Closed",
         "Cancelled",
       ],
-      default: "Ready for DC",
+      default: "Ready to Schedule",
     },
   },
   {
@@ -78,7 +74,7 @@ jobSchema.index({ salesRepId: 1 });
 
 // Virtuals
 jobSchema.virtual("notes", {
-  ref: "JobNote",
+  ref: "ClientNote",
   localField: "_id",
   foreignField: "jobId",
 });

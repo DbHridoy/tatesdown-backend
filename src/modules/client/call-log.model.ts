@@ -5,13 +5,13 @@ export interface CallLogDocument {
   clientId: Types.ObjectId;
   callAt: Date;
   status:
-    | "Not Called"
-    | "Picked-Up: Appointment Booked"
-    | "Picked-Up: No Appointment"
-    | "No Pickup";
+  | "Not Called"
+  | "Picked-Up: Appointment Booked"
+  | "Picked-Up: No Appointment"
+  | "No Pickup";
   reason?: string;
   note?: string;
-  addedBy: Types.ObjectId;
+  createdBy: Types.ObjectId;
 }
 
 const CallLogSchema = new Schema<CallLogDocument>(
@@ -38,7 +38,7 @@ const CallLogSchema = new Schema<CallLogDocument>(
     },
     reason: String,
     note: String,
-    addedBy: {
+    createdBy: {
       type: Types.ObjectId,
       ref: "User",
       required: true,

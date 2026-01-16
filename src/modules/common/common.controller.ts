@@ -9,7 +9,7 @@ export class CommonController {
   constructor(
     private commonService: CommonService,
     private commonRepository: CommonRepository
-  ) {}
+  ) { }
 
   generateSequentialId = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
@@ -84,6 +84,18 @@ export class CommonController {
       res.status(200).json({
         success: true,
         message: "Sales rep leaderboard retrieved successfully",
+        data: stats,
+      });
+    }
+  );
+
+  getMyStats = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const user = req.user!;
+      const stats = await this.commonService.getMyStats(user);
+      res.status(200).json({
+        success: true,
+        message: "My stats retrieved successfully",
         data: stats,
       });
     }

@@ -1,6 +1,7 @@
 import { model, Schema, Types, Document } from "mongoose";
 
 export interface DesignConsultationDocument extends Document {
+  clientId: Types.ObjectId;
   jobId: Types.ObjectId;
 
   // Product details
@@ -18,13 +19,16 @@ export interface DesignConsultationDocument extends Document {
 
   // Contract file
   file?: string;
-
-  createdAt?: Date;
-  updatedAt?: Date;
 }
 
 const DesignConsultationSchema = new Schema<DesignConsultationDocument>(
   {
+    clientId: {
+      type: Types.ObjectId,
+      ref: "Client",
+      required: true,
+      index: true,
+    },
     jobId: {
       type: Types.ObjectId,
       ref: "Job",

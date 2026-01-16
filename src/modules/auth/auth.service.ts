@@ -42,13 +42,13 @@ export class AuthService {
 
   loginUser = async (email: string, password: string) => {
     const user = await this.userRepo.findUserByEmail(email);
-    logger.info({ user }, "User from service");
+    logger.info({ user }, "Authservice.loginUser line:45");
     if (!user) {
       throw new apiError(Errors.NotFound.code, Errors.NotFound.message);
     }
 
     const isVerified = bcrypt.compareSync(password, user.password);
-    logger.info({isVerified}, "isVerified");
+    // logger.info({isVerified}, "Authservice.loginUser line:51");
     if (!isVerified) {
       throw new apiError(Errors.Unauthorized.code, Errors.Unauthorized.message);
     }

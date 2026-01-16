@@ -1,7 +1,9 @@
 import { Router } from "express";
-import { commonController } from "../../container";
+import { authMiddleware, commonController } from "../../container";
 
 const commonRoute = Router();
+
+commonRoute.use(authMiddleware.authenticate)
 
 commonRoute.post("/upsert-variable", commonController.upsertVariable);
 commonRoute.post("/cluster", commonController.createCluster);
@@ -14,6 +16,7 @@ commonRoute.get(
   "/salesrep-leaderboard",
   commonController.getSalesRepLeaderboard
 );
+commonRoute.get("/my-stats", commonController.getMyStats);
 commonRoute.post("/fiscal-year", commonController.createFiscalYear);
 commonRoute.get("/active-fiscal-year", commonController.getActiveFiscalYear);
 commonRoute.get("/stats", commonController.getStats);

@@ -2,6 +2,7 @@ import { Client } from "./client.model";
 import Call from "./call-log.model";
 import clientNote from "./client-note.model";
 import { buildDynamicSearch } from "../../utils/dynamic-search-utils";
+import { logger } from "../../utils/logger";
 
 export class ClientRepository {
   searchClientByPhoneNumber = async (phoneNumber: string) => {
@@ -25,6 +26,7 @@ export class ClientRepository {
 
   getAllClients = async (query: any) => {
     const { filter, search, options } = buildDynamicSearch(Client, query);
+    // logger.info({ filter, search, options }, "ClientRepository.getAllClients");
     const [clients, total] = await Promise.all([
       Client.find({ ...filter, ...search }, null, options),
       Client.countDocuments({ ...filter, ...search }),

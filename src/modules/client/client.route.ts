@@ -2,7 +2,7 @@ import { Router } from "express";
 import { validate } from "../../middlewares/validate.middleware";
 import { CallLogSchema, ClientSchema } from "./client.schema";
 import { authMiddleware, clientController } from "../../container";
-import { uploadFile } from "../../middlewares/uploadLocal.middleware";
+import { uploadFile } from "../../middlewares/upload.middleware";
 
 const clientRoute = Router();
 

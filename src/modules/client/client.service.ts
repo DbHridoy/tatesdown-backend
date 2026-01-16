@@ -11,7 +11,7 @@ export class ClientService {
     private clientRepo: ClientRepository,
     private salesRepRepo: SalesRepRepository,
     private commonService: CommonService
-  ) {}
+  ) { }
 
   createClient = async ({ body, user }: { body: any; user: any }) => {
     let salesRepId: Types.ObjectId | null = null;
@@ -29,6 +29,7 @@ export class ClientService {
       salesRepId = salesRep._id;
     }
 
+
     const clientPayload = {
       ...body,
       salesRepId,
@@ -37,14 +38,17 @@ export class ClientService {
 
     const newClient = await this.clientRepo.createClient(clientPayload);
 
-    // Side-effect handled in service
-    if (salesRepId) {
-      await this.salesRepRepo.incrementTotalClients(salesRepId);
+    const clientNote = {
+      clientId: newClient._id,
+      note: body.note,
+      createdBy: user.userId,
     }
+    if (newClient.salesRepId) {
+      await this.salesRepRepo.incrementSalesRepStats('client', newClient.salesRepId);
+    }
+    await this.clientRepo.createClientNote(clientNote);
 
-    await this.commonService.incrementOverview({
-      totalClients: 1,
-    });
+
 
     return newClient;
   };
@@ -53,7 +57,7 @@ export class ClientService {
     const callLogPayload: any = {
       ...callLogData,
       clientId,
-      addedBy: user.userId,
+      createdBy: user.userId,
     };
     const newCallLog = await this.clientRepo.createCallLog(callLogPayload);
     return newCallLog;
@@ -62,8 +66,10 @@ export class ClientService {
   createClientNote = async (clientNoteData: any, clientId: string, user: any) => {
     const clientNotePayload: any = {
       ...clientNoteData,
+      quoteId: clientNoteData.quoteId || null,
+      jobId: clientNoteData.jobId || null,
       clientId,
-      addedBy: user.userId,
+      createdBy: user.userId,
     };
     const newClientNote = await this.clientRepo.createClientNote(
       clientNotePayload

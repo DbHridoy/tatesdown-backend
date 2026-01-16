@@ -10,7 +10,7 @@ import { Client } from "../client/client.model";
 import { DesignConsultation } from "./design-consultation.model";
 
 export class JobController {
-  constructor(private readonly jobService: JobService) {}
+  constructor(private readonly jobService: JobService) { }
 
   createNewJob = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
@@ -26,7 +26,7 @@ export class JobController {
           data: newJob,
         });
       } catch (error) {
-        logger.error(error, "JobController.createNewJob error");
+        logger.error(error, "JobController.createNewJob line 29");
         next(error);
       }
     }
@@ -36,7 +36,9 @@ export class JobController {
     async (req: Request, res: Response, next: NextFunction) => {
       const jobId = req.params.jobId;
       const jobInfo = req.body;
-      const job = await this.jobService.updateJobById(jobId, jobInfo);
+      logger.info(jobInfo, "JobController.updateJobById line 39");
+      const user = req.user!;
+      const job = await this.jobService.updateJobById(jobId, jobInfo, user);
       res.status(HttpCodes.Ok).json({
         success: true,
         message: "Job updated successfully",
@@ -45,14 +47,14 @@ export class JobController {
     }
   );
 
-  assignSalesRep=asyncHandler(async(req:Request,res:Response,next:NextFunction)=>{
-    const salesRepId=req.body.salesRepId
-    const jobId=req.params.jobId
-    const updatedJob=await this.jobService.assignSalesRep(salesRepId,jobId)
+  assignSalesRep = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const salesRepId = req.body.salesRepId
+    const jobId = req.params.jobId
+    const updatedJob = await this.jobService.assignSalesRep(salesRepId, jobId)
     res.status(HttpCodes.Ok).json({
-      success:true,
-      message:"Sales Rep assigned successfully",
-      data:updatedJob
+      success: true,
+      message: "Sales Rep assigned successfully",
+      data: updatedJob
     })
   })
 
@@ -71,11 +73,12 @@ export class JobController {
   createJobNote = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const jobNote = req.body;
+      logger.info({ jobNote }, "JobController.createJobNote line 74");
+      const user = req.user!;
       if (req.file) {
-        logger.info({ file: req.file }, "Jobcontroller.createJobNote");
         jobNote.file = req.file.fileUrl;
       }
-      const job = await this.jobService.createJobNote(jobNote);
+      const job = await this.jobService.createJobNote(jobNote, user);
       res.status(HttpCodes.Ok).json({
         success: true,
         message: "Job note created successfully",
@@ -144,7 +147,7 @@ export class JobController {
 
     // Add hours if upsell hours exist
     if (addedHours) {
-      job.labourHours += Number(addedHours);
+      job.laborHours += Number(addedHours);
       job.totalHours += Number(addedHours);
     }
 
@@ -155,7 +158,7 @@ export class JobController {
     }
 
     // Optional: update job status
-    if (job.status === "Ready for DC") {
+    if (job.status === "Ready to Schedule") {
       job.status = "Ready to Schedule";
     }
 

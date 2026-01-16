@@ -4,6 +4,7 @@ import { apiError } from "../errors/api-error";
 import { formatZodError } from "../errors/zodErrorFormatter";
 import { logger } from "../utils/logger";
 import { TokenExpiredError } from "jsonwebtoken";
+import mongoose from "mongoose";
 
 export const errorHandler = (
   err: Error,
@@ -28,7 +29,13 @@ export const errorHandler = (
     statusCode = 401;
     message = "Token expired";
     return res.status(statusCode).json({ success: false, message });
-  } else {
+  }
+  else if (err instanceof mongoose.Error.ValidationError) {
+    statusCode = 400;
+    message = err.message;
+    return res.status(statusCode).json({ success: false, message });
+  }
+  else {
     return res
       .status(500)
       .json({ success: false, message: "Internal server error" });

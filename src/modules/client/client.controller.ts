@@ -75,6 +75,7 @@ export class ClientController {
   getAllClients = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const query = req.query;
+      // logger.info({ query }, "ClientController.getAllClients");
       const allClients = await this.clientService.getAllClients(query);
       res.status(HttpCodes.Ok).json({
         success: true,

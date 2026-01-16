@@ -4,7 +4,7 @@ import { apiError } from "../../errors/api-error";
 import { Errors } from "../../constants/error-codes";
 import { logger } from "../../utils/logger";
 import { SalesRep } from "../sales-rep/sales-rep.model";
-import ProductionManager from "./production-manager.model";
+import ProductionManager from "../production-manager/production-manager.model";
 import Admin from "./admin.model";
 
 export class UserRepository {

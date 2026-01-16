@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { validate } from "../../middlewares/validate.middleware";
 import { CreateUserSchema, UpdateUserSchemaForOtherRoles } from "./user.schema";
-import { uploadFile } from "../../middlewares/uploadLocal.middleware";
 import { authMiddleware, userController } from "../../container";
+import { uploadFile } from "../../middlewares/upload.middleware";
 
 const userRoute = Router();
 
@@ -16,7 +16,7 @@ userRoute.get(
   authMiddleware.authenticate,
   userController.getUserProfile
 );
-userRoute.get("/sales-reps",userController.getSalesReps)
+userRoute.get("/sales-reps", userController.getSalesReps)
 userRoute.get("/:id", userController.getUserById);
 
 userRoute.patch(

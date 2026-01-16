@@ -5,9 +5,11 @@ import { model, Schema, Types, Document } from "mongoose";
  */
 export interface ClientNoteDocument extends Document {
   clientId: Types.ObjectId;
+  quoteId: Types.ObjectId;
+  jobId: Types.ObjectId;
   note?: string;
   file?: string;
-  addedBy: Types.ObjectId;
+  createdBy: Types.ObjectId;
 }
 
 /**
@@ -21,6 +23,21 @@ const ClientNoteSchema = new Schema<ClientNoteDocument>(
       required: true,
       index: true,
     },
+    quoteId: {
+      type: Types.ObjectId,
+      ref: "Quote",
+      index: true,
+    },
+    jobId: {
+      type: Types.ObjectId,
+      ref: "Job",
+      index: true,
+    },
+    createdBy: {
+      type: Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     note: {
       type: String,
       trim: true,
@@ -28,11 +45,6 @@ const ClientNoteSchema = new Schema<ClientNoteDocument>(
     file: {
       type: String,
       trim: true,
-    },
-    addedBy: {
-      type: Types.ObjectId,
-      ref: "User",
-      required: true,
     },
   },
   {

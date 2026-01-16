@@ -1,8 +1,6 @@
 import { Router } from "express";
-import { validate } from "../../middlewares/validate.middleware";
-import { CreateQuoteSchema, UpdateQuoteSchema } from "./quote.schema";
 import { authMiddleware, quoteController } from "../../container";
-import { uploadFile } from "../../middlewares/uploadLocal.middleware";
+import { uploadFile } from "../../middlewares/upload.middleware";
 
 const quoteRoute = Router();
 
@@ -26,7 +24,6 @@ quoteRoute.patch(
     fieldName: "bidSheet",
     uploadType: "single",
   }),
-  // validate(UpdateQuoteSchema),
   quoteController.updateQuoteById
 );
 

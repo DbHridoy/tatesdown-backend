@@ -21,20 +21,30 @@ export class SalesRepRepository {
       .populate("userId");
   };
 
-  incrementTotalClients = async (salesRepId: Types.ObjectId) => {
-    return SalesRep.findByIdAndUpdate(salesRepId, {
-      $inc: { totalClients: 1 },
-    });
-  };
-  incrementTotalQuotes = async (salesRepId: Types.ObjectId) => {
-    return SalesRep.findByIdAndUpdate(salesRepId, {
-      $inc: { totalQuotes: 1 },
-    });
+  getSalesRepProfile = async (salesRepId: Types.ObjectId) => {
+    return SalesRep.findById(salesRepId).populate("userId");
   };
 
-  incrementJobCount = async (salesRepId: Types.ObjectId) => {
+
+  incrementSalesRepStats = async (eventType: string, salesRepId: Types.ObjectId) => {
+    const updateFields: any = {};
+
+    switch (eventType) {
+      case 'client':
+        updateFields.totalClients = 1;
+        break;
+      case 'quote':
+        updateFields.totalQuotes = 1;
+        break;
+      case 'job':
+        updateFields.totalJobs = 1;
+        break;
+      default:
+        throw new Error(`Invalid event type: ${eventType}`);
+    }
+
     return SalesRep.findByIdAndUpdate(salesRepId, {
-      $inc: { totalJobs: 1 },
+      $inc: updateFields,
     });
   };
 

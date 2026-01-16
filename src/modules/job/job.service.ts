@@ -12,7 +12,7 @@ export class JobService {
     private salesRepRepo: SalesRepRepository,
     private quoteRepo: QuoteRepository,
     private clientRepo: ClientRepository
-  ) {}
+  ) { }
 
   createNewJob = async (jobInfo: any, user: any) => {
     const salesRep = await this.salesRepRepo.findByUserId(user.userId);
@@ -43,12 +43,19 @@ export class JobService {
       salesRepId: salesRep._id,
     };
     const newJob = await this.jobRepository.createNewJob(job);
-    await this.salesRepRepo.incrementJobCount(salesRep._id);
+    await this.salesRepRepo.incrementSalesRepStats("job", salesRep._id);
     return newJob;
   };
 
-  createJobNote = async (jobNote: any) => {
-    return await this.jobRepository.createJobNote(jobNote);
+  createJobNote = async (jobNote: any, user: any) => {
+    const jobNoteData = {
+      jobId: jobNote.jobId,
+      note: jobNote.note,
+      file: jobNote.file,
+      clientId: jobNote.clientId,
+      createdBy: user.userId,
+    };
+    return await this.jobRepository.createJobNote(jobNoteData);
   };
   createNewDesignConsultation = async (designConsultationInfo: any) => {
     const newDesignConsultation = new DesignConsultation(
@@ -87,19 +94,29 @@ export class JobService {
     return await this.jobRepository.getAllPaymentBySalesRepId(id, query);
   };
 
-  updateJobById = async (id: string, jobInfo: any) => {
+  updateJobById = async (id: string, jobInfo: any, user: any) => {
     const job = await this.jobRepository.getJobById(id);
     if (!job) {
       throw new Error("Job not found");
     }
     const status = jobInfo?.status;
-    if (status === "Completed" && job) {
-      await this.salesRepRepo.updateCommissionEarned(job.salesRepId, job.price);
+    if (status === "Scheduled") {
+      if(!jobInfo.productionManagerId){
+        throw new Error("Production manager is required");
+      }
+      await this.jobRepository.updateJobById(id, jobInfo);
+      // TODO: Send notification to client and sales rep
+      return jobInfo;
     }
-    return await this.jobRepository.updateJobById(id, jobInfo);
+    if (status === "Closed" && job) {
+      await this.salesRepRepo.updateCommissionEarned(job.salesRepId, job.price);
+      // TODO: Send notification to client and sales rep
+      return await this.jobRepository.getJobById(id);
+    }
+
   };
-  assignSalesRep=async(jobId:string,salesRepId:string)=>{
-    return await this.jobRepository.assignSalesRep(jobId,salesRepId)
+  assignSalesRep = async (jobId: string, salesRepId: string) => {
+    return await this.jobRepository.assignSalesRep(jobId, salesRepId)
   }
 
   updateDownpaymentStatus = async (id: string, status: string) => {

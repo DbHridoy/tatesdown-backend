@@ -8,7 +8,7 @@ import { env } from "../../config/env";
 import { apiError } from "../../errors/api-error";
 
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   createUser = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
@@ -28,7 +28,6 @@ export class AuthController {
       const body = req.body;
       logger.info(body, "Login body");
       const user = await this.authService.loginUser(body.email, body.password);
-      logger.info(user, "User from login controller");
       const { password, ...safeUser } = user.user.toObject();
 
       const data = {
@@ -36,8 +35,6 @@ export class AuthController {
         accessToken: user.accessToken,
         refreshToken: user.refreshToken,
       };
-
-      // logger.info({ user }, "User from controller");
 
       // Backend cookie (login or refresh)
       res.cookie("refreshToken", user.refreshToken, {
@@ -106,7 +103,7 @@ export class AuthController {
   refreshToken = asyncHandler(
     async (req: Request, res: Response, _next: NextFunction) => {
       const refreshToken = req.cookies?.refreshToken;
-      logger.info(refreshToken, "from auth controller");
+      logger.info(refreshToken, "AuthController.refreshToken line:106");
       if (!refreshToken) {
         throw new apiError(Errors.NoToken.code, "Refresh token is required");
       }
@@ -134,7 +131,7 @@ export class AuthController {
     async (req: Request, res: Response, _next: NextFunction) => {
       logger.info(
         { cookies: req.cookies },
-        "Refresh token from auth controller"
+        "AuthController.logout line:137"
       );
       if (!req.cookies.refreshToken) {
         throw new apiError(Errors.NoToken.code, "Refresh token is required");

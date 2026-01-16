@@ -8,7 +8,7 @@ import { Types } from "mongoose";
 import { Client } from "../client/client.model";
 import { Quote } from "../quote/quote.model";
 import { Job } from "../job/job.model";
-import { FiscalYear } from "./fiscal-year.model";
+import { FiscalYear } from "../../z/fiscal-year.model";
 import { Overview } from "./overview.model";
 import { logger } from "../../utils/logger";
 
@@ -109,6 +109,8 @@ export class CommonRepository {
 
     return totalDeduction;
   };
+
+  
 
   getActiveFiscalYear = () => FiscalYear.findOne({ isActive: true });
 

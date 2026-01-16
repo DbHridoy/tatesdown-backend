@@ -21,32 +21,28 @@ const clientSchema = new Schema(
       type: Types.ObjectId,
       ref: "SalesRep",
     },
-
+    createdBy: {
+      type: Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     customClientId: String,
     clientName: { type: String, required: true },
     partnerName: String,
     phoneNumber: String,
     email: String,
     address: String,
-
     leadSource: {
       type: String,
       enum: ["Door to Door", "Inbound", "Social"],
     },
-
     leadStatus: {
       type: String,
       enum: ["Not quoted", "Quoted", "Job"],
       default: "Not quoted",
     },
-
     rating: Number,
     callStatus: { type: String, default: "Not Called" },
-    createdBy: {
-      type: Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
   },
   {
     timestamps: true,
@@ -66,6 +62,18 @@ clientSchema.virtual("callLogs", {
 
 clientSchema.virtual("notes", {
   ref: "ClientNote",
+  localField: "_id",
+  foreignField: "clientId",
+});
+
+clientSchema.virtual("job", {
+  ref: "Job",
+  localField: "_id",
+  foreignField: "clientId",
+});
+
+clientSchema.virtual("quote", {
+  ref: "Quote",
   localField: "_id",
   foreignField: "clientId",
 });

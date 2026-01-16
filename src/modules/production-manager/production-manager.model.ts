@@ -1,12 +1,9 @@
-import { Schema, model, Types } from "mongoose";
+import { Schema, Types, model } from "mongoose";
 
-const salesRepSchema = new Schema(
-  {
+const productionManagerSchema = new Schema({
     userId: {
-      type: Types.ObjectId,
-      ref: "User",
-      required: true,
-      unique: true,
+        type: Types.ObjectId,
+        ref: "User"
     },
     cluster: String,
 
@@ -19,8 +16,8 @@ const salesRepSchema = new Schema(
     commissionPending: { type: Number, default: 0 },
     totalRevenue: { type: Number, default: 0 },
     totalProducedRevenue: { type: Number, default: 0 },
-  },
-  { timestamps: true }
-);
+});
 
-export const SalesRep = model("SalesRep", salesRepSchema);
+const ProductionManager = model("ProductionManager", productionManagerSchema);
+
+export default ProductionManager;

@@ -20,11 +20,6 @@ const quoteSchema = new Schema(
       required: true,
     },
 
-    bidSheet: {
-      type: String, // URL or file path
-      trim: true,
-    },
-
     bookedOnSpot: {
       type: Boolean,
       default: false,
@@ -48,4 +43,14 @@ const quoteSchema = new Schema(
 quoteSchema.index({ createdAt: -1 });
 quoteSchema.index({ salesRepId: 1, status: 1 });
 
+quoteSchema.virtual("bidSheet", {
+  ref: "BidSheet",
+  localField: "_id",
+  foreignField: "quoteId",
+});
+quoteSchema.virtual("notes", {
+  ref: "ClientNote",
+  localField: "_id",
+  foreignField: "quoteId",
+});
 export const Quote = model("Quote", quoteSchema);
