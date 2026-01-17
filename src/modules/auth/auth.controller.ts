@@ -28,7 +28,7 @@ export class AuthController {
       const body = req.body;
       logger.info(body, "Login body");
       const user = await this.authService.loginUser(body.email, body.password);
-      const { password, ...safeUser } = user.user.toObject();
+      const { password, ...safeUser } = user.user;
 
       const data = {
         user: safeUser,

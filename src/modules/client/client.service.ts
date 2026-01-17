@@ -26,7 +26,7 @@ export class ClientService {
         throw new Error("Sales rep profile not found");
       }
 
-      salesRepId = salesRep._id;
+      salesRepId = user.userId;
     }
 
 
@@ -47,8 +47,6 @@ export class ClientService {
       await this.salesRepRepo.incrementSalesRepStats('client', newClient.salesRepId);
     }
     await this.clientRepo.createClientNote(clientNote);
-
-
 
     return newClient;
   };

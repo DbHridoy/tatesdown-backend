@@ -11,11 +11,11 @@ const VariableSchema = new Schema(
 
     mileageRate: {
       type: Number,
-      default: 0,
+      default: 0.50,
     },
     salesRepCommissionRate: {
       type: Number,
-      default: 0,
+      default: 0.18,
     },
   },
   { timestamps: true }

@@ -19,7 +19,7 @@ const clientSchema = new Schema(
   {
     salesRepId: {
       type: Types.ObjectId,
-      ref: "SalesRep",
+      ref: "User",
     },
     createdBy: {
       type: Types.ObjectId,

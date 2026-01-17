@@ -15,8 +15,6 @@ export class QuoteService {
     bidSheet: string,
     user: any
   ) => {
-    let salesRepId: Types.ObjectId | undefined;
-    const clientId = quoteInfo.clientId;
 
 
 
@@ -26,30 +24,30 @@ export class QuoteService {
       throw new Error("Sales rep profile not found");
     }
 
-    salesRepId = salesRep._id;
+    
 
     const quote = {
       ...quoteInfo,
-      salesRepId
+      salesRepId:user.userId
     };
 
     const newQuote = await this.quoteRepository.createQuote(quote);
     const finalBitSheet = {
       createdBy: user.userId,
-      clientId: clientId,
+      clientId: quoteInfo.clientId,
       bidSheetUrl: bidSheet,
       quoteId: newQuote._id,
     }
     const quoteNote = {
-      clientId: clientId,
+      clientId: quoteInfo.clientId,
       quoteId: newQuote._id,
       note: quoteInfo.notes || "",
       createdBy: user.userId,
     }
     await this.quoteRepository.createBidSheet(finalBitSheet);
     await this.clientRepo.createClientNote(quoteNote);
-    if (salesRepId) {
-      await this.salesRepRepo.incrementSalesRepStats('quote', salesRepId);
+    if (user.userId) {
+      await this.salesRepRepo.incrementSalesRepStats('quote', user.userId);
     }
     await this.clientRepo.updateLeadStatus(
       newQuote.clientId.toString(),
@@ -60,12 +58,6 @@ export class QuoteService {
 
   getAllQuote = async (query: any) => {
     const quoteData = await this.quoteRepository.getAllQuotes(query);
-    // const formattedQuotes=quoteData.map((quote)=>{
-    //     return {
-
-    //     }
-    // })
-    // return formattedQuotes
     return quoteData;
   };
 

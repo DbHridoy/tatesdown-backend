@@ -31,10 +31,10 @@ export interface JobDocument extends Document {
 // Schema
 const jobSchema = new Schema<JobDocument>(
   {
-    salesRepId: { type: Types.ObjectId, ref: "SalesRep", required: true },
+    salesRepId: { type: Types.ObjectId, ref: "User", required: true },
     clientId: { type: Types.ObjectId, ref: "Client", required: true },
     quoteId: { type: Types.ObjectId, ref: "Quote", required: true },
-    productionManagerId: { type: Types.ObjectId, ref: "ProductionManager" },
+    productionManagerId: { type: Types.ObjectId, ref: "User" },
     customJobId: { type: String, unique: true },
     title: { type: String, required: true },
     price: { type: Number, required: true },

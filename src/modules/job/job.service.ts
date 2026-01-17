@@ -30,33 +30,30 @@ export class JobService {
           quote.clientId.toString(),
           "Job"
         );
-        logger.info(
-          { clientId: quote.clientId },
-          "Client leadStatus updated to Job"
-        );
       }
 
-      logger.info({ quoteId: jobInfo.quoteId }, "Quote marked as Approved");
     }
     const job = {
       ...jobInfo,
-      salesRepId: salesRep._id,
+      salesRepId: user.userId
     };
     const newJob = await this.jobRepository.createNewJob(job);
-    await this.salesRepRepo.incrementSalesRepStats("job", salesRep._id);
+    await this.salesRepRepo.incrementSalesRepStats("job", user.userId);
     return newJob;
   };
 
   createJobNote = async (jobNote: any, user: any) => {
     const jobNoteData = {
+      clientId: jobNote.clientId,
+      quoteId: jobNote.quoteId,
       jobId: jobNote.jobId,
       note: jobNote.note,
       file: jobNote.file,
-      clientId: jobNote.clientId,
       createdBy: user.userId,
     };
     return await this.jobRepository.createJobNote(jobNoteData);
   };
+
   createNewDesignConsultation = async (designConsultationInfo: any) => {
     const newDesignConsultation = new DesignConsultation(
       designConsultationInfo
@@ -101,7 +98,7 @@ export class JobService {
     }
     const status = jobInfo?.status;
     if (status === "Scheduled") {
-      if(!jobInfo.productionManagerId){
+      if (!jobInfo.productionManagerId) {
         throw new Error("Production manager is required");
       }
       await this.jobRepository.updateJobById(id, jobInfo);

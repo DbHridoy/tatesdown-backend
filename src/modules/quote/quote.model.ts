@@ -4,7 +4,7 @@ const quoteSchema = new Schema(
   {
     salesRepId: {
       type: Types.ObjectId,
-      ref: "SalesRep",
+      ref: "User",
       required: true,
     },
 

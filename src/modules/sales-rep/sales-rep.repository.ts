@@ -26,8 +26,12 @@ export class SalesRepRepository {
   };
 
 
-  incrementSalesRepStats = async (eventType: string, salesRepId: Types.ObjectId) => {
+  incrementSalesRepStats = async (eventType: string, userId: Types.ObjectId) => {
     const updateFields: any = {};
+    const salesRep = await this.findByUserId(userId);
+    if (!salesRep) {
+      throw new Error("Sales rep profile not found");
+    }
 
     switch (eventType) {
       case 'client':
@@ -43,7 +47,7 @@ export class SalesRepRepository {
         throw new Error(`Invalid event type: ${eventType}`);
     }
 
-    return SalesRep.findByIdAndUpdate(salesRepId, {
+    return SalesRep.findByIdAndUpdate(salesRep._id, {
       $inc: updateFields,
     });
   };

@@ -8,7 +8,7 @@ import ProductionManager from "../production-manager/production-manager.model";
 import Admin from "./admin.model";
 
 export class UserRepository {
-  constructor(private buildDynamicSearch: any) {}
+  constructor(private buildDynamicSearch: any) { }
   createUser = async (userBody: any) => {
     logger.info({ userBody }, "UserRepository - createUser");
 
@@ -58,14 +58,20 @@ export class UserRepository {
   };
 
   findUserById = async (id: string) => {
-    return await User.findById(id).populate("salesRep productionManager admin");
+    return await User.findById(id).populate("salesRep productionManager admin", "_id").lean();
+  };
+  findUserByEmail = async (email: string) => {
+    const user = await User.findOne({ email })
+      .populate([
+        { path: "salesRep", select: "_id -userId" },
+        { path: "productionManager", select: "_id -userId" },
+        { path: "admin", select: "_id -userId" },
+      ])
+      .lean();
+
+    return user;
   };
 
-  findUserByEmail = async (email: string) => {
-    return await User.findOne({ email }).populate(
-      "salesRep productionManager admin"
-    );
-  };
 
   updateUserPassword = async (id: Types.ObjectId, hashedPassword: string) => {
     return await User.findByIdAndUpdate(
