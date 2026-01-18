@@ -17,6 +17,7 @@ export interface JobDocument extends Document {
   setupCleanup: number;
   powerwash: number;
   laborHours: number;
+  estimatedStartDate: Date;
   startDate: Date;
   status:
   | "Ready to Schedule"
@@ -49,7 +50,8 @@ const jobSchema = new Schema<JobDocument>(
     setupCleanup: { type: Number, default: 0 },
     powerwash: { type: Number, default: 0 },
     laborHours: { type: Number, default: 0 },
-    startDate: { type: Date, required: true },
+    estimatedStartDate: { type: Date, required: true },
+    startDate: { type: Date },
     status: {
       type: String,
       enum: [

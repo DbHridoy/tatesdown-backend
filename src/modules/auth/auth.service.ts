@@ -13,7 +13,7 @@ export class AuthService {
 
   constructor(private authRepo: AuthRepository,private userRepo:UserRepository,private hashUtils:HashUtils,private jwtUtils:JwtUtils,private mailerUtils:Mailer) {}
 
-  createUser = async (userBody: createUserType) => {
+  register = async (userBody: createUserType) => {
     const existingUser = await this.userRepo.findUserByEmail(userBody.email);
 
     if (existingUser) {

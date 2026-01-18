@@ -98,46 +98,67 @@ export class CommonRepository {
   };
 
   getAdminStats = async () => {
-    const totalLeads = await Client.countDocuments();
-
-    // Aggregate the total number of quotes
-    const totalQuotes = await Quote.countDocuments();
-
-    // Aggregate the booked jobs
-    const bookedJobs = await Job.countDocuments({ status: "Booked" });
-
-    // Aggregate the ready to schedule jobs (assuming 'Scheduled' status means ready to schedule)
-    const readyToScheduleJobs = await Job.countDocuments({
-      status: "Scheduled",
-    });
-
-    // Aggregate scheduled and open jobs (Scheduled but not approved down payment)
-    const scheduledAndOpenJobs = await Job.countDocuments({
-      status: "Scheduled",
-      downPaymentStatus: { $ne: "Approved" },
-    });
-
-    // Aggregate closed jobs
-    const closedJobs = await Job.countDocuments({ status: "Closed" });
-
-    // Aggregate total estimated amount of closed jobs
-    const totalEstimatedAmountOfClosedJobs = await Job.aggregate([
-      { $match: { status: "Closed" } },
-      { $group: { _id: null, total: { $sum: "$estimatedPrice" } } },
+    const [
+      totalClients,
+      totalQuotes,
+      totalJobs,
+      readyToScheduleCount,
+      scheduledAndOpenCount,
+      pendingCloseCount,
+      closedCount,
+      cancelledCount,
+      readyToScheduleAgg,
+      scheduledAndOpenAgg,
+      pendingCloseAgg,
+      closedAgg,
+      totalRevenueAgg,
+    ] = await Promise.all([
+      Client.countDocuments(),
+      Quote.countDocuments(),
+      Job.countDocuments(),
+      Job.countDocuments({ status: "Ready to Schedule" }),
+      Job.countDocuments({ status: "Scheduled and Open" }),
+      Job.countDocuments({ status: "Pending Close" }),
+      Job.countDocuments({ status: "Closed" }),
+      Job.countDocuments({ status: "Cancelled" }),
+      Job.aggregate([
+        { $match: { status: "Ready to Schedule" } },
+        { $group: { _id: null, total: { $sum: "$price" } } },
+      ]),
+      Job.aggregate([
+        { $match: { status: "Scheduled and Open" } },
+        { $group: { _id: null, total: { $sum: "$price" } } },
+      ]),
+      Job.aggregate([
+        { $match: { status: "Pending Close" } },
+        { $group: { _id: null, total: { $sum: "$price" } } },
+      ]),
+      Job.aggregate([
+        { $match: { status: "Closed" } },
+        { $group: { _id: null, total: { $sum: "$price" } } },
+      ]),
+      Job.aggregate([
+        { $match: { status: { $ne: "Cancelled" } } },
+        { $group: { _id: null, total: { $sum: "$price" } } },
+      ]),
     ]);
 
-    // Prepare stats object
-    const stats = {
-      totalLeads,
+    return {
+      totalClients,
       totalQuotes,
-      bookedJobs,
-      readyToScheduleJobs,
-      scheduledAndOpenJobs,
-      closedJobs,
-      totalEstimatedAmountOfClosedJobs:
-        totalEstimatedAmountOfClosedJobs[0]?.total || 0,
+      totalJobs,
+      readyToScheduleCount,
+      scheduledAndOpenCount,
+      pendingCloseCount,
+      closedCount,
+      cancelledCount,
+      totalRevenueEarned: readyToScheduleAgg[0]?.total || 0,
+      totalRevenuePending:
+        (scheduledAndOpenAgg[0]?.total || 0) +
+        (pendingCloseAgg[0]?.total || 0),
+      totalRevenueProduced: closedAgg[0]?.total || 0,
+      totalRevenue: totalRevenueAgg[0]?.total || 0,
     };
-    return stats;
   };
 
   getSalesRepStats = async (salesRepId: string) => {
@@ -244,32 +265,151 @@ export class CommonRepository {
       totalRevenueProduced: revenueProducedAgg[0]?.total || 0,
     };
   };
-  
 
-
-
-  incrementOverview = async ({
-    fiscalYearId,
-    periodType,
-    periodIndex,
-    periodStart,
-    inc,
-  }: any) => {
-    logger.info({ fiscalYearId, periodType, periodIndex, periodStart, inc }, "CommonRepository.incrementOverview"); 
-    return Overview.updateOne(
-      { fiscalYearId, periodType, periodIndex },
-      {
-        $setOnInsert: {
-          fiscalYearId,
-          periodType,
-          periodIndex,
-          periodStart,
+  getSalesRepPersonalStats = async (userId: string) => {
+    const salesRepObjectId = new Types.ObjectId(userId);
+    const [
+      totalClients,
+      totalQuotes,
+      totalJobs,
+      readyToScheduleAgg,
+      closedAgg,
+      nonCancelledAgg,
+      pendingAgg,
+      variable,
+    ] = await Promise.all([
+      Client.countDocuments({ salesRepId: salesRepObjectId }),
+      Quote.countDocuments({ salesRepId: salesRepObjectId }),
+      Job.countDocuments({ salesRepId: salesRepObjectId }),
+      Job.aggregate([
+        {
+          $match: {
+            salesRepId: salesRepObjectId,
+            status: "Ready to Schedule",
+          },
         },
-        $inc: inc,
-      },
-      { upsert: true }
-    );
+        { $group: { _id: null, total: { $sum: "$price" } } },
+      ]),
+      Job.aggregate([
+        {
+          $match: {
+            salesRepId: salesRepObjectId,
+            status: "Closed",
+          },
+        },
+        { $group: { _id: null, total: { $sum: "$price" } } },
+      ]),
+      Job.aggregate([
+        {
+          $match: {
+            salesRepId: salesRepObjectId,
+            status: { $ne: "Cancelled" },
+          },
+        },
+        { $group: { _id: null, total: { $sum: "$price" } } },
+      ]),
+      Job.aggregate([
+        {
+          $match: {
+            salesRepId: salesRepObjectId,
+            status: { $in: ["Ready to Schedule", "Scheduled and Open", "Pending Close"] },
+          },
+        },
+        { $group: { _id: null, total: { $sum: "$price" } } },
+      ]),
+      Variable.findOne().select("salesRepCommissionRate"),
+    ]);
+
+    const commissionRate = Number(variable?.salesRepCommissionRate || 0);
+    const totalRevenueEarned = readyToScheduleAgg[0]?.total || 0;
+    const totalRevenueProduced = closedAgg[0]?.total || 0;
+    const totalCommissionEarned = (nonCancelledAgg[0]?.total || 0) * commissionRate;
+    const totalCommissionPaid = totalRevenueProduced * commissionRate;
+    const totalCommissionPending = (pendingAgg[0]?.total || 0) * commissionRate;
+
+    return {
+      totalClients,
+      totalQuotes,
+      totalJobs,
+      totalRevenueEarned,
+      totalRevenueProduced,
+      totalCommissionEarned,
+      totalCommissionPaid,
+      totalCommissionPending,
+    };
   };
+
+  getProductionManagerJobStats = async (productionManagerUserId: string) => {
+    const productionManagerObjectId = new Types.ObjectId(
+      productionManagerUserId
+    );
+    const [result] = await Job.aggregate([
+      {
+        $facet: {
+          readyToScheduleCount: [
+            { $match: { status: "Ready to Schedule" } },
+            { $count: "count" },
+          ],
+          scheduledAndOpenCount: [
+            {
+              $match: {
+                productionManagerId: productionManagerObjectId,
+                status: "Scheduled and Open",
+              },
+            },
+            { $count: "count" },
+          ],
+          pendingCloseCount: [
+            {
+              $match: {
+                productionManagerId: productionManagerObjectId,
+                status: "Pending Close",
+              },
+            },
+            { $count: "count" },
+          ],
+          cancelledCount: [
+            {
+              $match: {
+                productionManagerId: productionManagerObjectId,
+                status: "Cancelled",
+              },
+            },
+            { $count: "count" },
+          ],
+          totalRevenue: [
+            {
+              $match: {
+                productionManagerId: productionManagerObjectId,
+                status: "Scheduled and Open",
+              },
+            },
+            { $group: { _id: null, total: { $sum: "$price" } } },
+          ],
+          totalProducedRevenue: [
+            {
+              $match: {
+                productionManagerId: productionManagerObjectId,
+                status: "Closed",
+              },
+            },
+            { $group: { _id: null, total: { $sum: "$price" } } },
+          ],
+        },
+      },
+    ]);
+
+    return {
+      readyToScheduleCount: result?.readyToScheduleCount?.[0]?.count || 0,
+      scheduledAndOpenCount: result?.scheduledAndOpenCount?.[0]?.count || 0,
+      pendingCloseCount: result?.pendingCloseCount?.[0]?.count || 0,
+      cancelledCount: result?.cancelledCount?.[0]?.count || 0,
+      totalRevenue: result?.totalRevenue?.[0]?.total || 0,
+      totalProducedRevenue: result?.totalProducedRevenue?.[0]?.total || 0,
+    };
+  };
+
+
 
   findByPeriod = (query: any) => Overview.find(query).sort({ periodIndex: 1 });
 }

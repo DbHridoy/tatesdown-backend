@@ -12,13 +12,13 @@ import { DesignConsultation } from "./design-consultation.model";
 export class JobController {
   constructor(private readonly jobService: JobService) { }
 
-  createNewJob = asyncHandler(
+  createJob = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const jobInfo = req.body;
         const user = req.user!;
 
-        const newJob = await this.jobService.createNewJob(jobInfo, user);
+        const newJob = await this.jobService.createJob(jobInfo, user);
 
         res.status(HttpCodes.Ok).json({
           success: true,
@@ -29,87 +29,6 @@ export class JobController {
         logger.error(error, "JobController.createNewJob line 29");
         next(error);
       }
-    }
-  );
-
-  updateJobById = asyncHandler(
-    async (req: Request, res: Response, next: NextFunction) => {
-      const jobId = req.params.jobId;
-      const jobInfo = req.body;
-      logger.info(jobInfo, "JobController.updateJobById line 39");
-      const user = req.user!;
-      const job = await this.jobService.updateJobById(jobId, jobInfo, user);
-      res.status(HttpCodes.Ok).json({
-        success: true,
-        message: "Job updated successfully",
-        data: job,
-      });
-    }
-  );
-
-  assignSalesRep = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    const salesRepId = req.body.salesRepId
-    const jobId = req.params.jobId
-    const updatedJob = await this.jobService.assignSalesRep(salesRepId, jobId)
-    res.status(HttpCodes.Ok).json({
-      success: true,
-      message: "Sales Rep assigned successfully",
-      data: updatedJob
-    })
-  })
-
-  deleteJobById = asyncHandler(
-    async (req: Request, res: Response, next: NextFunction) => {
-      const jobId = req.params.jobId;
-      const job = await this.jobService.deleteJobById(jobId);
-      res.status(HttpCodes.Ok).json({
-        success: true,
-        message: "Job deleted successfully",
-        data: job,
-      });
-    }
-  );
-
-  createJobNote = asyncHandler(
-    async (req: Request, res: Response, next: NextFunction) => {
-      const jobNote = req.body;
-      logger.info({ jobNote }, "JobController.createJobNote line 74");
-      const user = req.user!;
-      if (req.file) {
-        jobNote.file = req.file.fileUrl;
-      }
-      const job = await this.jobService.createJobNote(jobNote, user);
-      res.status(HttpCodes.Ok).json({
-        success: true,
-        message: "Job note created successfully",
-        data: job,
-      });
-    }
-  );
-
-  getAllJobs = asyncHandler(
-    async (req: Request, res: Response, next: NextFunction) => {
-      const query = req.query;
-      const job = await this.jobService.getAllJobs(query);
-      res.status(HttpCodes.Ok).json({
-        success: true,
-        message: "Job fetched successfully",
-        data: job.jobs,
-        total: job.total,
-      });
-    }
-  );
-
-  getJobById = asyncHandler(
-    async (req: Request, res: Response, next: NextFunction) => {
-      const jobId = req.params.jobId;
-      // logger.info({ jobId }, "JobController.getJobById");
-      const job = await this.jobService.getJobById(jobId);
-      res.status(HttpCodes.Ok).json({
-        success: true,
-        message: "Job fetched successfully",
-        data: job,
-      });
     }
   );
 
@@ -169,6 +88,51 @@ export class JobController {
       data: designConsultation,
     });
   };
+
+  createJobNote = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const jobNote = req.body;
+      logger.info({ jobNote }, "JobController.createJobNote line 74");
+      const user = req.user!;
+      if (req.file) {
+        jobNote.file = req.file.fileUrl;
+      }
+      const job = await this.jobService.createJobNote(jobNote, user);
+      res.status(HttpCodes.Ok).json({
+        success: true,
+        message: "Job note created successfully",
+        data: job,
+      });
+    }
+  );
+
+  getAllJobs = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const query = req.query;
+      const job = await this.jobService.getAllJobs(query);
+      res.status(HttpCodes.Ok).json({
+        success: true,
+        message: "Job fetched successfully",
+        data: job.jobs,
+        total: job.total,
+      });
+    }
+  );
+
+  getJobById = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const jobId = req.params.jobId;
+      // logger.info({ jobId }, "JobController.getJobById");
+      const job = await this.jobService.getJobById(jobId);
+      res.status(HttpCodes.Ok).json({
+        success: true,
+        message: "Job fetched successfully",
+        data: job,
+      });
+    }
+  );
+
+
 
   getAllDesignConsultation = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
@@ -241,12 +205,51 @@ export class JobController {
       });
     }
   );
+
   // getAllPaymentBySalesRepId = asyncHandler(
   //   async (req: Request, res: Response, next: NextFunction) => {
   //       const {salesRepId}=req.params
   //       const payments=await this.jobService.getAllPaymentBySalesRepId(salesRepId)
   //   }
   // );
+
+  updateJobById = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const jobId = req.params.jobId;
+      const jobInfo = req.body;
+      logger.info(jobInfo, "JobController.updateJobById line 39");
+      const user = req.user!;
+      const job = await this.jobService.updateJobById(jobId, jobInfo, user);
+      res.status(HttpCodes.Ok).json({
+        success: true,
+        message: "Job updated successfully",
+        data: job,
+      });
+    }
+  );
+
+  assignSalesRep = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const salesRepId = req.body.salesRepId
+    const jobId = req.params.jobId
+    const updatedJob = await this.jobService.assignSalesRep(salesRepId, jobId)
+    res.status(HttpCodes.Ok).json({
+      success: true,
+      message: "Sales Rep assigned successfully",
+      data: updatedJob
+    })
+  })
+
+  deleteJobById = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const jobId = req.params.jobId;
+      const job = await this.jobService.deleteJobById(jobId);
+      res.status(HttpCodes.Ok).json({
+        success: true,
+        message: "Job deleted successfully",
+        data: job,
+      });
+    }
+  );
 
   updateDownpaymentStatus = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {

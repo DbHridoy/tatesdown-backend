@@ -24,11 +24,11 @@ export class QuoteService {
       throw new Error("Sales rep profile not found");
     }
 
-    
+
 
     const quote = {
       ...quoteInfo,
-      salesRepId:user.userId
+      salesRepId: user.userId
     };
 
     const newQuote = await this.quoteRepository.createQuote(quote);
@@ -61,13 +61,14 @@ export class QuoteService {
     return quoteData;
   };
 
-  getSingleQuote = async (id: string) => {
-    return await this.quoteRepository.getSingleQuote(id);
+  getQuoteById = async (id: string) => {
+    return await this.quoteRepository.getQuoteById(id);
   };
 
   updateQuoteById = async (id: string, quoteInfo: object) => {
     return await this.quoteRepository.updateQuoteById(id, quoteInfo);
   };
+
   deleteQuoteById = async (id: string) => {
     return await this.quoteRepository.deleteQuoteById(id);
   };

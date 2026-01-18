@@ -9,6 +9,23 @@ import Admin from "./admin.model";
 
 export class UserRepository {
   constructor(private buildDynamicSearch: any) { }
+
+  findUserById = async (id: string) => {
+    return await User.findById(id).populate("salesRep productionManager admin", "_id").lean();
+  };
+
+  findUserByEmail = async (email: string) => {
+    const user = await User.findOne({ email })
+      .populate([
+        { path: "salesRep", select: "_id -userId" },
+        { path: "productionManager", select: "_id -userId" },
+        { path: "admin", select: "_id -userId" },
+      ])
+      .lean();
+
+    return user;
+  };
+
   createUser = async (userBody: any) => {
     logger.info({ userBody }, "UserRepository - createUser");
 
@@ -53,26 +70,6 @@ export class UserRepository {
     return { data: users, total };
   };
 
-  deleteUser = async (id: string) => {
-    return await User.findByIdAndDelete(id);
-  };
-
-  findUserById = async (id: string) => {
-    return await User.findById(id).populate("salesRep productionManager admin", "_id").lean();
-  };
-  findUserByEmail = async (email: string) => {
-    const user = await User.findOne({ email })
-      .populate([
-        { path: "salesRep", select: "_id -userId" },
-        { path: "productionManager", select: "_id -userId" },
-        { path: "admin", select: "_id -userId" },
-      ])
-      .lean();
-
-    return user;
-  };
-
-
   updateUserPassword = async (id: Types.ObjectId, hashedPassword: string) => {
     return await User.findByIdAndUpdate(
       id,
@@ -81,29 +78,35 @@ export class UserRepository {
     );
   };
 
-  updateProfile = async (id: string, body: any) => {
+  updateMyProfile = async (id: string, body: any) => {
     return await User.findByIdAndUpdate(id, body, { new: true });
   };
-  getSalesReps = async (query: any) => {
-    const { filter, search, options } = this.buildDynamicSearch(User, query);
 
-    const baseQuery = {
-      role: { $eq: "Sales Rep" },
-      ...filter,
-      ...search,
-    };
+  // getSalesReps = async (query: any) => {
+  //   const { filter, search, options } = this.buildDynamicSearch(User, query);
 
-    // Run both queries concurrently
-    const [salesReps, total] = await Promise.all([
-      User.find(baseQuery, null, options).populate(
-        "salesRep productionManager admin"
-      ),
-      User.countDocuments(baseQuery),
-    ]);
+  //   const baseQuery = {
+  //     role: { $eq: "Sales Rep" },
+  //     ...filter,
+  //     ...search,
+  //   };
 
-    return { data: salesReps, total };
-  };
+  //   // Run both queries concurrently
+  //   const [salesReps, total] = await Promise.all([
+  //     User.find(baseQuery, null, options).populate(
+  //       "salesRep productionManager admin"
+  //     ),
+  //     User.countDocuments(baseQuery),
+  //   ]);
+
+  //   return { data: salesReps, total };
+  // };
+
   updateUser = async (id: string, body: any) => {
     return await User.findByIdAndUpdate(id, body, { new: true });
+  };
+
+  deleteUser = async (id: string) => {
+    return await User.findByIdAndDelete(id);
   };
 }

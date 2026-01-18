@@ -13,7 +13,7 @@ import {
 import { createUserType } from "./user.type";
 
 export class UserController {
-  constructor(private userService: UserService) {}
+  constructor(private userService: UserService) { }
   createUser = asyncHandler(
     async (
       req: TypedRequestBody<createUserType>,
@@ -30,6 +30,7 @@ export class UserController {
       });
     }
   );
+
   getAllUsers = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const query = req.query;
@@ -42,6 +43,7 @@ export class UserController {
       });
     }
   );
+
   getUserById = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const { id } = req.params;
@@ -53,15 +55,17 @@ export class UserController {
       });
     }
   );
-  getSalesReps=asyncHandler(async(req:Request,res:Response,next:NextFunction)=>{
-    const salesReps=await this.userService.getSalesReps(req.query)
-    res.status(HttpCodes.Ok).json({
-        success:true,
-        message:"Sales reps fetched successfully",
-        data:salesReps.data,
-        total:salesReps.total
-    })
-  })
+
+  // getSalesReps=asyncHandler(async(req:Request,res:Response,next:NextFunction)=>{
+  //   const salesReps=await this.userService.getSalesReps(req.query)
+  //   res.status(HttpCodes.Ok).json({
+  //       success:true,
+  //       message:"Sales reps fetched successfully",
+  //       data:salesReps.data,
+  //       total:salesReps.total
+  //   })
+  // })
+
   deleteUser = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const { id } = req.params;
@@ -73,7 +77,8 @@ export class UserController {
       });
     }
   );
-  getUserProfile = asyncHandler(
+
+  getMyProfile = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const userId = req.user?.userId;
       if (!userId) {
@@ -87,19 +92,21 @@ export class UserController {
       });
     }
   );
+
   updateUser = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
-      const {id}=req.params
-      const body=req.body
-      const user=await this.userService.updateUser(id,body)
+      const { id } = req.params
+      const body = req.body
+      const user = await this.userService.updateUser(id, body)
       res.status(HttpCodes.Ok).json({
-        success:true,
-        message:"User updated successfully",
-        data:user
+        success: true,
+        message: "User updated successfully",
+        data: user
       })
     }
   );
-  updateProfile = asyncHandler(
+
+  updateMyProfile = asyncHandler(
     async (
       req: TypedRequestBodyWithFile<updateOtherRoleUserType>,
       res: Response,
@@ -108,7 +115,7 @@ export class UserController {
       const userId = req.user?.userId;
       const body = req.body;
 
-      logger.info({body},"UserController.updateProfile")
+      logger.info({ body }, "UserController.updateProfile")
 
       if (!userId) {
         throw new apiError(Errors.NotFound.code, Errors.NotFound.message);
@@ -119,11 +126,11 @@ export class UserController {
         body.profileImage = req.file.fileUrl;
       }
 
-      logger.info({body},"UserController.updateProfile")
+      logger.info({ body }, "UserController.updateProfile")
 
       logger.info({ user: req.user, body }, "Updating user profile");
 
-      const updatedUser = await this.userService.updateProfile(userId, body);
+      const updatedUser = await this.userService.updateMyProfile(userId, body);
 
       res.status(HttpCodes.Ok).json({
         success: true,

@@ -14,7 +14,7 @@ export class JobService {
     private clientRepo: ClientRepository
   ) { }
 
-  createNewJob = async (jobInfo: any, user: any) => {
+  createJob = async (jobInfo: any, user: any) => {
     const salesRep = await this.salesRepRepo.findByUserId(user.userId);
     if (!salesRep) {
       throw new Error("Sales rep not found");
@@ -37,7 +37,7 @@ export class JobService {
       ...jobInfo,
       salesRepId: user.userId
     };
-    const newJob = await this.jobRepository.createNewJob(job);
+    const newJob = await this.jobRepository.createJob(job);
     await this.salesRepRepo.incrementSalesRepStats("job", user.userId);
     return newJob;
   };
@@ -84,9 +84,11 @@ export class JobService {
   getAllJobCloseApproval = async (query: any) => {
     return await this.jobRepository.getAllJobCloseApproval(query);
   };
+
   getAllJobBySalesRepId = async (id: string, query: any) => {
     return await this.jobRepository.getAllJobBySalesRepId(id, query);
   };
+
   getAllPaymentBySalesRepId = async (id: string, query: any) => {
     return await this.jobRepository.getAllPaymentBySalesRepId(id, query);
   };
@@ -97,8 +99,8 @@ export class JobService {
       throw new Error("Job not found");
     }
     const status = jobInfo?.status;
-    if (status === "Scheduled") {
-      if (!jobInfo.productionManagerId) {
+    if (status === "Scheduled and Open") {
+      if (!jobInfo?.productionManagerId) {
         throw new Error("Production manager is required");
       }
       await this.jobRepository.updateJobById(id, jobInfo);
@@ -112,6 +114,7 @@ export class JobService {
     }
 
   };
+  
   assignSalesRep = async (jobId: string, salesRepId: string) => {
     return await this.jobRepository.assignSalesRep(jobId, salesRepId)
   }

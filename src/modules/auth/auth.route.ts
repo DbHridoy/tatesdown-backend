@@ -10,7 +10,7 @@ const authRoute = Router();
 authRoute.post(
   "/register",
   validate(createUserSchema),
-  authController.createUser
+  authController.register
 );
 
 authRoute.post("/login", validate(loginUserSchema), authController.loginUser);

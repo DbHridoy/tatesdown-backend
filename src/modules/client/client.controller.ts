@@ -86,7 +86,7 @@ export class ClientController {
     }
   );
 
-  getSingleClient = asyncHandler(
+  getClientById = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const clientId = req.params.clientId;
       const client = await this.clientService.getClientById(clientId);

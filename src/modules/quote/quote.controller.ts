@@ -38,9 +38,10 @@ export class QuoteController {
       total: quote.total,
     });
   };
-  getSingleQuote = async (req: Request, res: Response, next: NextFunction) => {
+
+  getQuoteById = async (req: Request, res: Response, next: NextFunction) => {
     const { quoteId } = req.params;
-    const quote = await this.quoteService.getSingleQuote(quoteId);
+    const quote = await this.quoteService.getQuoteById(quoteId);
     res.status(HttpCodes.Ok).json({
       success: true,
       message: "Quote fetched successfully",

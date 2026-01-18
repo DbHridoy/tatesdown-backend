@@ -5,7 +5,7 @@ export class ExpenseService {
   constructor(
     private readonly expenseRepository: ExpenseRepository,
     private readonly commonService: CommonService
-  ) {}
+  ) { }
 
   createNewMileage = async (mileageInfo: any) => {
     const variable = await this.commonService.getVariable();
@@ -27,10 +27,6 @@ export class ExpenseService {
     return await this.expenseRepository.getPendingMileage(query);
   };
 
-  updateMileage = async (mileageId: string, mileageInfo: any) => {
-    return await this.expenseRepository.updateMileage(mileageId, mileageInfo);
-  };
-
   getMyMileage = async (userId: string, query: any) => {
     return await this.expenseRepository.getMyMileage(userId, query);
   };
@@ -38,4 +34,10 @@ export class ExpenseService {
   getMileageById = async (id: string) => {
     return await this.expenseRepository.getMileageById(id);
   };
+
+  updateMileage = async (mileageId: string, mileageInfo: any) => {
+    return await this.expenseRepository.updateMileage(mileageId, mileageInfo);
+  };
+
+
 }

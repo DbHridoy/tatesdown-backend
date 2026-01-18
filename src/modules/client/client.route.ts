@@ -10,28 +10,14 @@ clientRoute.use(authMiddleware.authenticate);
 
 //---------------------post------------------------//
 
-clientRoute.post(
-  "/",
-  clientController.createClient
-);
-clientRoute.post(
-  "/:clientId/call-log",
-  validate(CallLogSchema),
-  clientController.createCallLog
-);
-clientRoute.post(
-  "/:clientId/client-note",
-  uploadFile({
-    fieldName: "file",
-    uploadType: "single",
-  }),
-  clientController.createClientNote
-);
+clientRoute.post("/", clientController.createClient);
+clientRoute.post("/:clientId/call-log", validate(CallLogSchema), clientController.createCallLog);
+clientRoute.post("/:clientId/client-note", uploadFile({ fieldName: "file", uploadType: "single", }), clientController.createClientNote);
 
 //---------------------get------------------------//
 
 clientRoute.get("/", clientController.getAllClients);
-clientRoute.get("/:clientId", clientController.getSingleClient);
+clientRoute.get("/:clientId", clientController.getClientById);
 clientRoute.get("/call-log", clientController.getAllCallLogs);
 clientRoute.get("/:clientId/call-log", clientController.getCallLogsByClientId);
 

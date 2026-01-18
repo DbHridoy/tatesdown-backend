@@ -13,16 +13,8 @@ export class UserService {
     private userRepo: UserRepository,
     private hashUtils: HashUtils,
     private mailer: Mailer
-  ) {}
-  getUserProfile = async (id: string) => {
-    return await this.userRepo.findUserById(id);
-  };
-  updateProfile = async (id: string, body: any) => {
-    return await this.userRepo.updateProfile(id, body);
-  };
-updateUser=async(id:string,body:any)=>{
-  return await this.userRepo.updateUser(id,body)
-}
+  ) { }
+
   createUser = async (userBody: createUserType) => {
     const existingUser = await this.userRepo.findUserByEmail(userBody.email);
 
@@ -45,16 +37,30 @@ updateUser=async(id:string,body:any)=>{
 
     return newUser;
   };
-  getAllUsers=async(query:any)=>{
+
+  getUserProfile = async (id: string) => {
+    return await this.userRepo.findUserById(id);
+  };
+
+  getAllUsers = async (query: any) => {
     return await this.userRepo.getAllUsers(query)
   }
-  getUserById=async(id:string)=>{
+  getUserById = async (id: string) => {
     return await this.userRepo.findUserById(id)
   }
-  getSalesReps=async(query:any)=>{
-    return await this.userRepo.getSalesReps(query)
+
+  updateMyProfile = async (id: string, body: any) => {
+    return await this.userRepo.updateMyProfile(id, body);
+  };
+
+  updateUser = async (id: string, body: any) => {
+    return await this.userRepo.updateUser(id, body)
   }
-  deleteUser=async(id:string)=>{
+
+  // getSalesReps = async (query: any) => {
+  //   return await this.userRepo.getSalesReps(query)
+  // }
+  deleteUser = async (id: string) => {
     return await this.userRepo.deleteUser(id)
   }
 }

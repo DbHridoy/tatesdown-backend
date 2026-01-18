@@ -8,8 +8,6 @@ export class QuoteRepository {
     return newQuote.save();
   };
 
-
-
   createBidSheet = async (bidSheetInfo: object) => {
     const newBidSheet = new BidSheet(bidSheetInfo);
     return newBidSheet.save();
@@ -29,7 +27,7 @@ export class QuoteRepository {
     return { quote, total };
   };
 
-  getSingleQuote = async (id: string) => {
+  getQuoteById = async (id: string) => {
     return await Quote.findById(id).populate({
       path: "clientId",
       populate: {
@@ -41,7 +39,6 @@ export class QuoteRepository {
   updateQuoteById = async (id: string, quoteInfo: object) => {
     return await Quote.findByIdAndUpdate(id, quoteInfo, { new: true });
   };
-
 
   updateQuoteStatus = async (id: string, status: string) => {
     return await Quote.findByIdAndUpdate(id, { status }, { new: true });

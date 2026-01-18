@@ -74,16 +74,24 @@ export class CommonService {
   
   getMyStats = async (user: any) => {
     if (user.role === 'Sales Rep') {
-      const salesRep = await this.salesRepRepo.findByUserId(user.userId);
-      if (!salesRep) return null;
-      const stats = await this.salesRepRepo.getSalesRepProfile(salesRep._id);
-      return stats;
+      return this.commonRepository.getSalesRepPersonalStats(user.userId);
     }
     else if (user.role === 'Production Manager') {
       const productionManager = await this.productionManagerRepo.findByUserId(user.userId);
       if (!productionManager) return null;
-      const profile = await this.productionManagerRepo.getProductionManagerProfile(productionManager._id);
-      return profile;
+      const [profile, jobStats] = await Promise.all([
+        this.productionManagerRepo.getProductionManagerProfile(
+          productionManager._id
+        ),
+        this.commonRepository.getProductionManagerJobStats(user.userId),
+      ]);
+      return {
+        ...(profile ? profile.toObject() : {}),
+        ...jobStats,
+      };
+    }
+    else if (user.role === 'Admin') {
+      return this.commonRepository.getAdminStats();
     }
     return null;
   };

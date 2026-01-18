@@ -6,39 +6,39 @@ import { uploadFile } from "../../middlewares/upload.middleware";
 
 const userRoute = Router();
 
-// userRoute.use(authMiddleware.authenticate)
+userRoute.use(authMiddleware.authenticate)
 
-userRoute.post("/", validate(CreateUserSchema), userController.createUser);
+userRoute.post("/", authMiddleware.authorize(["Admin"]), validate(CreateUserSchema), userController.createUser);
 
 userRoute.get("/", userController.getAllUsers);
 userRoute.get(
   "/me",
   authMiddleware.authenticate,
-  userController.getUserProfile
+  userController.getMyProfile
 );
-userRoute.get("/sales-reps", userController.getSalesReps)
+// userRoute.get("/sales-reps", userController.getSalesReps)
 userRoute.get("/:id", userController.getUserById);
 
 userRoute.patch(
   "/me",
-  authMiddleware.authenticate, // 1️⃣ auth first
+  authMiddleware.authenticate,
   uploadFile({
     fieldName: "profileImage",
     uploadType: "single",
-  }), // 2️⃣ parse FormData
-  // validate(UpdateUserSchemaForOtherRoles), // 3️⃣ validate text fields
-  authMiddleware.authorize(["Admin", "Sales Rep", "Production Manager"]),
-  userController.updateProfile // 4️⃣ controller
-);
-userRoute.patch(
-  "/:id",
-  uploadFile({
-    fieldName: "profileImage",
-    uploadType: "single",
-  }), // 2️⃣ parse FormData
-  userController.updateUser // 4️⃣ controller
+  }),
+  userController.updateMyProfile
 );
 
-userRoute.delete("/:id", userController.deleteUser);
+userRoute.patch(
+  "/:id",
+  authMiddleware.authorize(["Admin"]),
+  uploadFile({
+    fieldName: "profileImage",
+    uploadType: "single",
+  }),
+  userController.updateUser
+);
+
+userRoute.delete("/:id", authMiddleware.authorize(["Admin"]), userController.deleteUser);
 
 export default userRoute;

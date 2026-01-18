@@ -26,6 +26,9 @@ const userSchema = new Schema(
     address: {
       type: String,
     },
+    cluster: {
+      type: String,
+    },
     password: {
       type: String,
       required: true,

@@ -8,28 +8,10 @@ import Payment from "./payment.model";
 import ClientNote from "../client/client-note.model";
 
 export class JobRepository {
-  createNewJob = async (jobInfo: any) => {
+  createJob = async (jobInfo: any) => {
     logger.info({ jobInfo }, "JobRepository.createNewJob");
     const newJob = new Job(jobInfo);
     return await newJob.save();
-  };
-
-  updateJobById = async (id: string, jobInfo: any) => {
-    const updatedJob = await Job.findByIdAndUpdate(id, jobInfo, { new: true });
-    return updatedJob;
-  };
-
-  assignSalesRep = async (jobId: string, salesRepId: string) => {
-    return await Job.findByIdAndUpdate(
-      jobId,
-      { salesRepId: salesRepId },
-      { new: true }
-    );
-  };
-
-  deleteJobById = async (id: string) => {
-    const deletedJob = await Job.findByIdAndDelete(id);
-    return deletedJob;
   };
 
   createJobNote = async (jobNote: any) => {
@@ -46,10 +28,14 @@ export class JobRepository {
         .populate({
           path: "notes",
           populate: {
-            path: "authorId",
+            path: "createdBy",
           },
         })
-        .populate("designConsultation"),
+        .populate([{
+          path: "designConsultation"
+        }, {
+          path: "productionManagerId"
+        }]),
       Job.countDocuments({ ...filter, ...search }),
     ]);
     return { jobs, total };
@@ -58,13 +44,17 @@ export class JobRepository {
   getJobById = async (id: string) => {
     return await Job.findById(id)
       .populate("clientId salesRepId quoteId")
-      .populate({
+      .populate([{
         path: "notes",
         populate: {
-          path: "authorId",
+          path: "createdBy",
         },
-      })
-      .populate("designConsultation");
+      }, {
+        path: "designConsultation"
+      }, {
+        path: "productionManagerId"
+      }])
+
   };
 
   createNewDesignConsultation = async (designConsultationInfo: any) => {
@@ -127,6 +117,7 @@ export class JobRepository {
 
     return { jobs, total };
   };
+
   getAllJobBySalesRepId = async (salesRepId: string, query: any) => {
     const { filter, search, options } = buildDynamicSearch(Job, query);
 
@@ -203,6 +194,9 @@ export class JobRepository {
       { new: true }
     );
   };
+
+
+
   getAllPaymentBySalesRepId = async (id: string, query: any) => {
     const { filter, search, options } = buildDynamicSearch(Payment, query);
     const matchStage = {
@@ -213,5 +207,23 @@ export class JobRepository {
     const payment = await Payment.find(matchStage, null, options);
     const total = await Payment.countDocuments(matchStage);
     return { payment, total };
+  };
+
+  updateJobById = async (id: string, jobInfo: any) => {
+    const updatedJob = await Job.findByIdAndUpdate(id, jobInfo, { new: true });
+    return updatedJob;
+  };
+
+  assignSalesRep = async (jobId: string, salesRepId: string) => {
+    return await Job.findByIdAndUpdate(
+      jobId,
+      { salesRepId: salesRepId },
+      { new: true }
+    );
+  };
+
+  deleteJobById = async (id: string) => {
+    const deletedJob = await Job.findByIdAndDelete(id);
+    return deletedJob;
   };
 }

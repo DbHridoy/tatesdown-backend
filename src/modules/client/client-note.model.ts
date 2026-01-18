@@ -1,8 +1,5 @@
 import { model, Schema, Types, Document } from "mongoose";
 
-/**
- * Client Note Interface
- */
 export interface ClientNoteDocument extends Document {
   clientId: Types.ObjectId;
   quoteId: Types.ObjectId;
@@ -12,9 +9,6 @@ export interface ClientNoteDocument extends Document {
   createdBy: Types.ObjectId;
 }
 
-/**
- * Client Note Schema
- */
 const ClientNoteSchema = new Schema<ClientNoteDocument>(
   {
     clientId: {
@@ -54,9 +48,6 @@ const ClientNoteSchema = new Schema<ClientNoteDocument>(
   }
 );
 
-/**
- * ClientNote Model
- */
 const ClientNote = model<ClientNoteDocument>("ClientNote", ClientNoteSchema);
 
 export default ClientNote;

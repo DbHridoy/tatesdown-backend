@@ -61,14 +61,16 @@ export class ExpenseRepository {
     return { data: mileage, total };
   };
 
+  getMileageById = async (id: string) => {
+    const mileage = await Mileage.findById(id);
+    return { data: mileage };
+  };
+
   updateMileage = async (mileageId: string, mileageInfo: any) => {
     return await Mileage.findByIdAndUpdate(mileageId, mileageInfo, {
       new: true,
     });
   };
 
-  getMileageById = async (id: string) => {
-    const mileage = await Mileage.findById(id);
-    return { data: mileage };
-  };
+
 }

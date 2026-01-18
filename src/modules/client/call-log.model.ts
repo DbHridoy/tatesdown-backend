@@ -22,6 +22,11 @@ const CallLogSchema = new Schema<CallLogDocument>(
       required: true,
       index: true,
     },
+    createdBy: {
+      type: Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     callAt: {
       type: Date,
       required: true,
@@ -38,11 +43,7 @@ const CallLogSchema = new Schema<CallLogDocument>(
     },
     reason: String,
     note: String,
-    createdBy: {
-      type: Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
+
   },
   {
     timestamps: true,
