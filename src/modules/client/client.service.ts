@@ -80,8 +80,8 @@ export class ClientService {
     return await this.clientRepo.getAllClients(query);
   };
 
-  getClientById = async (id: string) => {
-    return await this.clientRepo.getClientById(id);
+  getClientById = async (clientId: string) => {
+    return await this.clientRepo.getClientById(clientId);
   };
 
   getAllCallLogs = async () => {

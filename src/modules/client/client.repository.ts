@@ -34,17 +34,8 @@ export class ClientRepository {
     return { data: clients, total };
   };
 
-  getClientById = async (id: string) => {
-    return await Client.findById(id)
-      .populate({
-        path: "salesRepId",
-        select: "userId",
-        populate: {
-          path: "userId",
-          select: "-password -__v -createdAt -updatedAt",
-        },
-      })
-      .populate("createdBy")
+  getClientById = async (clientId: string) => {
+    return await Client.findById(clientId)
       .populate("callLogs")
       .populate("notes");
   };

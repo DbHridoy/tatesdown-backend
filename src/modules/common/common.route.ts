@@ -17,8 +17,10 @@ commonRoute.get(
   commonController.getSalesRepLeaderboard
 );
 commonRoute.get("/my-stats", commonController.getMyStats);
-commonRoute.post("/fiscal-year", commonController.createFiscalYear);
-commonRoute.get("/active-fiscal-year", commonController.getActiveFiscalYear);
-commonRoute.get("/stats", commonController.getStats);
+commonRoute.get(
+  "/sales-rep/:userId/stats",
+  commonController.getSalesRepPeriodStats
+);
+
 
 export default commonRoute;

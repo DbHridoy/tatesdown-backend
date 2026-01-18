@@ -8,9 +8,48 @@ import { Types } from "mongoose";
 import { Client } from "../client/client.model";
 import { Quote } from "../quote/quote.model";
 import { Job } from "../job/job.model";
-import { FiscalYear } from "../../z/fiscal-year.model";
 import { Overview } from "./overview.model";
 import { logger } from "../../utils/logger";
+
+const getCalendarPeriodRange = (date: Date, periodType: string) => {
+  const base = new Date(date);
+  if (Number.isNaN(base.getTime())) {
+    throw new Error("Invalid date");
+  }
+
+  let start: Date;
+  let end: Date;
+
+  switch (periodType) {
+    case "day": {
+      start = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+      end = new Date(start);
+      end.setDate(end.getDate() + 1);
+      break;
+    }
+    case "week": {
+      const dayOfWeek = base.getDay();
+      start = new Date(base.getFullYear(), base.getMonth(), base.getDate() - dayOfWeek);
+      end = new Date(start);
+      end.setDate(end.getDate() + 7);
+      break;
+    }
+    case "month": {
+      start = new Date(base.getFullYear(), base.getMonth(), 1);
+      end = new Date(base.getFullYear(), base.getMonth() + 1, 1);
+      break;
+    }
+    case "year": {
+      start = new Date(base.getFullYear(), 0, 1);
+      end = new Date(base.getFullYear() + 1, 0, 1);
+      break;
+    }
+    default:
+      throw new Error("Invalid period type");
+  }
+
+  return { start, end };
+};
 
 export class CommonRepository {
   generateSequentialId = async (prefix: string, counterName: string) => {
@@ -110,14 +149,104 @@ export class CommonRepository {
     return totalDeduction;
   };
 
+  getSalesRepPeriodStats = async (
+    userId: string,
+    periodType: string,
+    date: Date
+  ) => {
+    const { start, end } = getCalendarPeriodRange(date, periodType);
+
+    logger.info({ start, end }, "CommonRepository.getSalesRepPeriodStats line 159");
+    const salesRepObjectId = new Types.ObjectId(userId);
+
+    const [
+      totalClients,
+      totalQuotes,
+      totalJobs,
+      totalSoldAgg,
+      commissionPendingAgg,
+      commissionEarnedAgg,
+      revenueEarnedAgg,
+      revenueProducedAgg,
+    ] = await Promise.all([
+      Client.countDocuments({
+        salesRepId: salesRepObjectId,
+        createdAt: { $gte: start, $lt: end },
+      }),
+      Quote.countDocuments({
+        salesRepId: salesRepObjectId,
+        createdAt: { $gte: start, $lt: end },
+      }),
+      Job.countDocuments({
+        salesRepId: salesRepObjectId,
+        createdAt: { $gte: start, $lt: end },
+      }),
+      Job.aggregate([
+        {
+          $match: {
+            salesRepId: salesRepObjectId,
+            status: { $ne: "Cancelled" },
+            createdAt: { $gte: start, $lt: end },
+          },
+        },
+        { $group: { _id: null, total: { $sum: "$price" } } },
+      ]),
+      Job.aggregate([
+        {
+          $match: {
+            salesRepId: salesRepObjectId,
+            status: { $in: ["Scheduled and Open", "Pending Close"] },
+            startDate: { $gte: start, $lt: end },
+          },
+        },
+        { $group: { _id: null, total: { $sum: "$price" } } },
+      ]),
+      Job.aggregate([
+        {
+          $match: {
+            salesRepId: salesRepObjectId,
+            status: "Closed",
+            updatedAt: { $gte: start, $lt: end },
+          },
+        },
+        { $group: { _id: null, total: { $sum: "$price" } } },
+      ]),
+      Job.aggregate([
+        {
+          $match: {
+            salesRepId: salesRepObjectId,
+            status: { $in: ["Scheduled and Open", "Pending Close"] },
+            startDate: { $gte: start, $lt: end },
+          },
+        },
+        { $group: { _id: null, total: { $sum: "$price" } } },
+      ]),
+      Job.aggregate([
+        {
+          $match: {
+            salesRepId: salesRepObjectId,
+            status: "Closed",
+            updatedAt: { $gte: start, $lt: end },
+          },
+        },
+        { $group: { _id: null, total: { $sum: "$price" } } },
+      ]),
+    ]);
+
+    return {
+      totalSold: totalSoldAgg[0]?.total || 0,
+      totalClients,
+      totalQuotes,
+      totalJobs,
+      totalCommissionPending: commissionPendingAgg[0]?.total || 0,
+      totalCommissionEarned: commissionEarnedAgg[0]?.total || 0,
+      totalRevenueEarned: revenueEarnedAgg[0]?.total || 0,
+      totalRevenueProduced: revenueProducedAgg[0]?.total || 0,
+    };
+  };
   
 
-  getActiveFiscalYear = () => FiscalYear.findOne({ isActive: true });
 
-  deactivateAllFiscalYears = () =>
-    FiscalYear.updateMany({}, { isActive: false });
-
-  createFiscalYear = (data: any) => FiscalYear.create(data);
 
   incrementOverview = async ({
     fiscalYearId,

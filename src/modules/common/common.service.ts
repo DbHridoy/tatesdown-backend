@@ -54,10 +54,24 @@ export class CommonService {
     return stats;
   };
 
+  getSalesRepPeriodStats = async (
+    userId: string,
+    periodType: string,
+    date: Date
+  ) => {
+    const stats = await this.commonRepository.getSalesRepPeriodStats(
+      userId,
+      periodType,
+      date
+    );
+    return stats;
+  };
+
   getSalesRepLeaderboard = async () => {
     const stats = await this.salesRepRepo.getLeaderboard();
     return stats;
   };
+  
   getMyStats = async (user: any) => {
     if (user.role === 'Sales Rep') {
       const salesRep = await this.salesRepRepo.findByUserId(user.userId);
@@ -74,31 +88,4 @@ export class CommonService {
     return null;
   };
 
-  incrementOverview = async (
-    inc: Record<string, number>,
-    date = new Date()
-  ) => {
-
-
-    logger.info({ inc, date }, "CommonService.incrementOverview");
-    const fiscalYear = await this.commonRepository.getActiveFiscalYear();
-    logger.info({ fiscalYear }, "CommonService.incrementOverview");
-    if (!fiscalYear) throw new Error("No active fiscal year");
-
-    if (date < fiscalYear.startDate || date > fiscalYear.endDate) {
-      return; // ignore outside FY
-    }
-
-    const periods = getFiscalPeriods(date, fiscalYear);
-    logger.info({ periods }, "CommonService.incrementOverview");
-    for (const [type, data] of Object.entries(periods)) {
-      await this.commonRepository.incrementOverview({
-        fiscalYearId: fiscalYear._id,
-        periodType: type,
-        periodIndex: data.index,
-        periodStart: data.start,
-        inc,
-      });
-    }
-  };
 }

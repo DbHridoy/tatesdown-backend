@@ -112,55 +112,33 @@ export class CommonController {
     }
   );
 
-  createFiscalYear = asyncHandler(
+  getSalesRepPeriodStats = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
-      const { name, startDate, endDate } = req.body;
+      const { userId } = req.params;
+      const { periodType = "month", date } = req.query;
 
-      await this.commonRepository.deactivateAllFiscalYears();
+      const normalizedPeriod = String(periodType).toLowerCase();
+      if (!["day", "week", "month", "year"].includes(normalizedPeriod)) {
+        return res.status(400).json({ message: "Invalid periodType" });
+      }
 
-      const fy = await this.commonRepository.createFiscalYear({
-        name,
-        startDate,
-        endDate,
-        isActive: true,
-      });
+      const baseDate = date ? new Date(String(date)) : new Date();
+      if (Number.isNaN(baseDate.getTime())) {
+        return res.status(400).json({ message: "Invalid date" });
+      }
 
+      const stats = await this.commonService.getSalesRepPeriodStats(
+        userId,
+        normalizedPeriod,
+        baseDate
+      );
       res.status(200).json({
         success: true,
-        message: "Fiscal year created successfully",
-        data: fy,
+        message: "Sales rep period stats retrieved successfully",
+        data: stats,
       });
     }
   );
 
-  getActiveFiscalYear = asyncHandler(
-    async (req: Request, res: Response, next: NextFunction) => {
-      const fy = await this.commonRepository.getActiveFiscalYear();
-      res.status(200).json({
-        success: true,
-        message: "Active fiscal year retrieved successfully",
-        data: fy,
-      });
-    }
-  );
 
-  getStats = asyncHandler(
-    async (req: Request, res: Response, next: NextFunction) => {
-      const { periodType } = req.query;
-
-      const fiscalYear = await this.commonRepository.getActiveFiscalYear();
-      if (!fiscalYear) return res.status(400).json({ message: "No FY" });
-
-      const data = await this.commonRepository.findByPeriod({
-        fiscalYearId: fiscalYear._id,
-        periodType,
-      });
-
-      res.status(200).json({
-        success: true,
-        message: "Stats retrieved successfully",
-        data,
-      });
-    }
-  );
 }
