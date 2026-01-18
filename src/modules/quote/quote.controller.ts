@@ -52,11 +52,15 @@ export class QuoteController {
   updateQuoteById = async (req: Request, res: Response, next: NextFunction) => {
     const { quoteId } = req.params;
     const { body } = req;
-    if (req.file) {
-      body.bidSheet = req.file.fileUrl;
-    }
+    const bidSheetUrl = req.file?.fileUrl;
+    const user = req.user!;
     logger.info({ body }, "QuoteController.updateQuoteById");
-    const quote = await this.quoteService.updateQuoteById(quoteId, body);
+    const quote = await this.quoteService.updateQuoteById(
+      quoteId,
+      body,
+      bidSheetUrl,
+      user
+    );
     res.status(HttpCodes.Ok).json({ quote });
   };
 

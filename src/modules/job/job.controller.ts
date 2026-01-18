@@ -34,6 +34,7 @@ export class JobController {
 
   createDesignConsultation = async (req: Request, res: Response) => {
     const {
+      clientId,
       jobId,
       product,
       colorCode,
@@ -43,31 +44,51 @@ export class JobController {
       addedHours,
       estimatedStartDate,
     } = req.body;
-    // logger.info({file:req.file},"JobController.createDesignConsultation")
-    // 1️⃣ Create Design Consultation
-    const designConsultation = await DesignConsultation.create({
-      jobId,
-      product,
-      colorCode,
-      estimatedGallons,
-      upsellDescription,
-      upsellValue,
-      addedHours,
-      estimatedStartDate,
-      file: req.file?.fileUrl,
-    });
-
-    // 2️⃣ Update Job totals
     const job = await Job.findById(jobId);
 
     if (!job) {
       throw new Error("Job not found");
     }
 
+    const existingDesignConsultation = await DesignConsultation.findOne({
+      jobId,
+    });
+
+    const updatePayload: any = {
+      clientId: clientId || job.clientId,
+      jobId,
+      product,
+      colorCode,
+      estimatedGallons,
+      upsellDescription,
+      upsellValue,
+      estimatedStartDate,
+    };
+    if (addedHours !== undefined) {
+      const normalizedAddedHours = Number(addedHours);
+      updatePayload.addedHours = Number.isNaN(normalizedAddedHours)
+        ? 0
+        : normalizedAddedHours;
+    }
+    if (req.file?.fileUrl) {
+      updatePayload.file = req.file.fileUrl;
+    }
+
+    const designConsultation = await DesignConsultation.findOneAndUpdate(
+      { jobId },
+      updatePayload,
+      { new: true, upsert: true }
+    );
+
     // Add hours if upsell hours exist
-    if (addedHours) {
-      job.laborHours += Number(addedHours);
-      job.totalHours += Number(addedHours);
+    if (addedHours !== undefined) {
+      const previousAddedHours = Number(existingDesignConsultation?.addedHours || 0);
+      const nextAddedHours = Number(updatePayload.addedHours || 0);
+      const delta = nextAddedHours - previousAddedHours;
+      if (delta !== 0) {
+        job.laborHours += delta;
+        job.totalHours += delta;
+      }
     }
 
     // OPTIONAL: if gallons affect budget later

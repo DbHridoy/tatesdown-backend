@@ -50,7 +50,7 @@ quoteSchema.virtual("bidSheet", {
 });
 quoteSchema.virtual("notes", {
   ref: "ClientNote",
-  localField: "_id",
-  foreignField: "quoteId",
+  localField: "clientId",
+  foreignField: "clientId",
 });
 export const Quote = model("Quote", quoteSchema);

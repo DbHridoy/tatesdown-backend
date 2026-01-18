@@ -7,10 +7,11 @@ export class ExpenseRepository {
     return await newMileage.save();
   };
 
-  getAllMileage = async () => {
+  getAllMileage = async (query: any) => {
+    const { filter, search, options } = buildDynamicSearch(Mileage, query);
     const [mileage, total] = await Promise.all([
-      Mileage.find(),
-      Mileage.countDocuments(),
+      Mileage.find({ ...filter, ...search }, null, options),
+      Mileage.countDocuments({ ...filter, ...search }),
     ]);
     return { data: mileage, total };
   };

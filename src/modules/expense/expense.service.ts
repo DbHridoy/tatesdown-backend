@@ -19,8 +19,8 @@ export class ExpenseService {
     });
   };
 
-  getAllMileage = async () => {
-    return await this.expenseRepository.getAllMileage();
+  getAllMileage = async (query: any) => {
+    return await this.expenseRepository.getAllMileage(query);
   };
 
   getPendingMileage = async (query: any) => {

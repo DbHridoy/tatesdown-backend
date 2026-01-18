@@ -40,7 +40,8 @@ export class ExpenseController {
 
   getAllMileage = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
-      const allMileage = await this.expenseService.getAllMileage();
+      const queries = req.query;
+      const allMileage = await this.expenseService.getAllMileage(queries);
       return res.status(200).json({
         success: true,
         message: "All mileage fetched successfully",

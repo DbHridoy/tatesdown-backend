@@ -13,31 +13,39 @@ export class QuoteRepository {
     return newBidSheet.save();
   };
 
+  deleteBidSheetsByQuoteId = async (quoteId: string) => {
+    return BidSheet.deleteMany({ quoteId });
+  };
+
   getAllQuotes = async (query: any) => {
     const { filter, search, options } = buildDynamicSearch(Quote, query);
     const [quote, total] = await Promise.all([
-      Quote.find({ ...filter, ...search }, null, options).populate({
+      Quote.find({ ...filter, ...search }, null, options).populate([{
         path: "clientId",
         populate: {
           path: "salesRepId"
         },
-      }),
+      }]),
       Quote.countDocuments({ ...filter, ...search }),
     ]);
     return { quote, total };
   };
 
   getQuoteById = async (id: string) => {
-    return await Quote.findById(id).populate({
+    return await Quote.findById(id).populate([{
       path: "clientId",
       populate: {
         path: "salesRepId"
       }
-    });
+    }, {
+      path: "bidSheet"
+    }, {
+      path: "notes"
+    }]);
   };
 
   updateQuoteById = async (id: string, quoteInfo: object) => {
-    return await Quote.findByIdAndUpdate(id, quoteInfo, { new: true });
+    return await Quote.findByIdAndUpdate(id, quoteInfo, { new: true }).populate(["bidSheet", "notes"]);
   };
 
   updateQuoteStatus = async (id: string, status: string) => {

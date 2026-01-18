@@ -65,8 +65,37 @@ export class QuoteService {
     return await this.quoteRepository.getQuoteById(id);
   };
 
-  updateQuoteById = async (id: string, quoteInfo: object) => {
-    return await this.quoteRepository.updateQuoteById(id, quoteInfo);
+  updateQuoteById = async (
+    id: string,
+    quoteInfo: any,
+    bidSheetUrl?: string,
+    user?: any
+  ) => {
+    const { bidSheet, ...updateInfo } = quoteInfo || {};
+    const updatedQuote = await this.quoteRepository.updateQuoteById(
+      id,
+      updateInfo
+    );
+    if (!bidSheetUrl) {
+      return updatedQuote;
+    }
+
+    const quote = await this.quoteRepository.getQuoteById(id);
+    if (!quote) {
+      throw new Error("Quote not found");
+    }
+    if (!user?.userId) {
+      throw new Error("User is required to update bid sheet");
+    }
+
+    await this.quoteRepository.deleteBidSheetsByQuoteId(id);
+    await this.quoteRepository.createBidSheet({
+      createdBy: user.userId,
+      clientId: quote.clientId,
+      bidSheetUrl,
+      quoteId: quote._id,
+    });
+    return this.quoteRepository.getQuoteById(id);
   };
 
   deleteQuoteById = async (id: string) => {
