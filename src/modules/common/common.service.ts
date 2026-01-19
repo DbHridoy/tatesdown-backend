@@ -127,19 +127,70 @@ export class CommonService {
   };
 
   createSalesRepPayment = async (paymentInfo: any) => {
-    return this.commonRepository.createSalesRepPayment(paymentInfo);
+    const payment = await this.commonRepository.createSalesRepPayment(
+      paymentInfo
+    );
+    if (payment?.salesRepId && payment?.amount) {
+      await this.salesRepRepo.updateCommissionPaid(
+        payment.salesRepId,
+        Number(payment.amount || 0)
+      );
+    }
+    return payment;
   };
 
-  getSalesRepPayments = async (query: any) => {
-    return this.commonRepository.getSalesRepPayments(query);
+  getSalesRepPayments = async (salesRepId: string, query: any) => {
+    return this.commonRepository.getSalesRepPayments(salesRepId, query);
   };
 
   deleteSalesRepPayment = async (paymentId: string) => {
-    return this.commonRepository.deleteSalesRepPayment(paymentId);
+    const payment = await this.commonRepository.getSalesRepPaymentById(
+      paymentId
+    );
+    const deleted = await this.commonRepository.deleteSalesRepPayment(
+      paymentId
+    );
+    if (payment?.salesRepId && payment?.amount) {
+      await this.salesRepRepo.updateCommissionPaid(
+        payment.salesRepId,
+        -Number(payment.amount || 0)
+      );
+    }
+    return deleted;
   };
 
   updateSalesRepPayment = async (paymentId: string, paymentInfo: any) => {
-    return this.commonRepository.updateSalesRepPayment(paymentId, paymentInfo);
+    const existing = await this.commonRepository.getSalesRepPaymentById(
+      paymentId
+    );
+    const updated = await this.commonRepository.updateSalesRepPayment(
+      paymentId,
+      paymentInfo
+    );
+    const prevSalesRepId = existing?.salesRepId?.toString();
+    const nextSalesRepId = updated?.salesRepId?.toString();
+    const prevAmount = Number(existing?.amount || 0);
+    const nextAmount = Number(updated?.amount || 0);
+
+    if (prevSalesRepId && nextSalesRepId && prevSalesRepId !== nextSalesRepId) {
+      await this.salesRepRepo.updateCommissionPaid(
+        prevSalesRepId as any,
+        -prevAmount
+      );
+      await this.salesRepRepo.updateCommissionPaid(
+        nextSalesRepId as any,
+        nextAmount
+      );
+    } else if (nextSalesRepId) {
+      const delta = nextAmount - prevAmount;
+      if (delta !== 0) {
+        await this.salesRepRepo.updateCommissionPaid(
+          nextSalesRepId as any,
+          delta
+        );
+      }
+    }
+    return updated;
   };
 
 }

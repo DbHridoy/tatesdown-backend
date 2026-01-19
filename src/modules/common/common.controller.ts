@@ -277,9 +277,20 @@ export class CommonController {
 
   getPayments = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
-      const query = req.query;
+      const user = req.user!;
+      const salesRepId =
+        user.role === "Admin"
+          ? String(req.query.salesRepId || "")
+          : user.userId;
+      if (user.role === "Admin" && !salesRepId) {
+        return res.status(400).json({
+          success: false,
+          message: "salesRepId is required",
+        });
+      }
       const payments = await this.commonService.getSalesRepPayments(
-        query
+        salesRepId,
+        req.query
       );
       res.status(200).json({
         success: true,

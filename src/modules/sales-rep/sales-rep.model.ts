@@ -9,6 +9,12 @@ const salesRepSchema = new Schema(
       unique: true,
     },
     cluster: String,
+    totalClients: { type: Number, default: 0 },
+    totalQuotes: { type: Number, default: 0 },
+    totalJobs: { type: Number, default: 0 },
+    commissionEarned: { type: Number, default: 0 },
+    commissionPaid: { type: Number, default: 0 },
+    commissionRemaining: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

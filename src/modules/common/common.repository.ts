@@ -12,6 +12,7 @@ import { Overview } from "./overview.model";
 import { logger } from "../../utils/logger";
 import User from "../user/user.model";
 import { SalesRepPayment } from "./payment.model";
+import { SalesRep } from "../sales-rep/sales-rep.model";
 
 const getCalendarPeriodRange = (date: Date, periodType: string) => {
   const base = new Date(date);
@@ -342,6 +343,7 @@ export class CommonRepository {
       closedAgg,
       pendingAgg,
       variable,
+      salesRep,
     ] = await Promise.all([
       Client.countDocuments({ salesRepId: salesRepObjectId, ...dateFilter }),
       Quote.countDocuments({ salesRepId: salesRepObjectId, ...dateFilter }),
@@ -377,6 +379,9 @@ export class CommonRepository {
         { $group: { _id: null, total: { $sum: "$price" } } },
       ]),
       Variable.findOne().select("salesRepCommissionRate"),
+      SalesRep.findOne({ userId: salesRepObjectId }).select(
+        "commissionPaid commissionRemaining commissionEarned"
+      ),
     ]);
 
     const commissionRate = Number(variable?.salesRepCommissionRate || 0);
@@ -385,8 +390,10 @@ export class CommonRepository {
     const totalRevenueProduced = closedAgg[0]?.total || 0;
     const totalCommissionEarned =
       (closedAgg[0]?.total || 0) * normalizedCommissionRate;
-    const totalCommissionPaid =
-      totalRevenueProduced * normalizedCommissionRate;
+    const totalCommissionPaid = Number(salesRep?.commissionPaid || 0);
+    const totalCommissionRemaining = Number(
+      salesRep?.commissionRemaining || 0
+    );
     const totalCommissionPending =
       (pendingAgg[0]?.total || 0) * normalizedCommissionRate;
 
@@ -398,6 +405,7 @@ export class CommonRepository {
       totalRevenueProduced,
       totalCommissionEarned,
       totalCommissionPaid,
+      totalCommissionRemaining,
       totalCommissionPending,
     };
   };
@@ -458,7 +466,7 @@ export class CommonRepository {
     return payment.save();
   };
 
-  getSalesRepPayments = async (query: any) => {
+  getSalesRepPayments = async (salesRepId: string, query: any) => {
     const { filter, search, options } = buildDynamicSearch(
       SalesRepPayment,
       query
@@ -466,12 +474,17 @@ export class CommonRepository {
     const finalFilter = {
       ...filter,
       ...search,
+      salesRepId,
     };
     const [payments, total] = await Promise.all([
       SalesRepPayment.find(finalFilter, null, options),
       SalesRepPayment.countDocuments(finalFilter),
     ]);
     return { data: payments, total };
+  };
+
+  getSalesRepPaymentById = async (paymentId: string) => {
+    return SalesRepPayment.findById(paymentId);
   };
 
   deleteSalesRepPayment = async (paymentId: string) => {

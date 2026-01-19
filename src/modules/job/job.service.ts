@@ -236,7 +236,13 @@ export class JobService {
       return updatedJob;
     }
     if (status === "Closed" && job) {
-      await this.salesRepRepo.updateCommissionEarned(job.salesRepId, job.price);
+      const salesRepUserId = this.normalizeObjectId(job.salesRepId);
+      if (salesRepUserId) {
+        await this.salesRepRepo.updateCommissionEarned(
+          salesRepUserId as any,
+          job.price
+        );
+      }
       const productionManagerId = this.normalizeObjectId(
         job.productionManagerId
       );

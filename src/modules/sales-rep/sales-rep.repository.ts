@@ -264,11 +264,35 @@ export class SalesRepRepository {
   };
 
   updateCommissionEarned = async (
-    salesRepId: Types.ObjectId,
+    salesRepId: Types.ObjectId | string,
     amount: number
   ) => {
-    return SalesRep.findByIdAndUpdate(salesRepId, {
-      $inc: { commissionEarned: amount },
-    });
+    const variable = await Variable.findOne().select("salesRepCommissionRate");
+    const commissionRate = Number(variable?.salesRepCommissionRate || 0);
+    const commissionAmount = (amount || 0) * (commissionRate / 100);
+    return SalesRep.findOneAndUpdate(
+      { userId: salesRepId },
+      {
+        $inc: {
+          commissionEarned: commissionAmount,
+          commissionRemaining: commissionAmount,
+        },
+      }
+    );
+  };
+
+  updateCommissionPaid = async (
+    salesRepId: Types.ObjectId | string,
+    amount: number
+  ) => {
+    return SalesRep.findOneAndUpdate(
+      { userId: salesRepId },
+      {
+        $inc: {
+          commissionPaid: amount || 0,
+          commissionRemaining: -(amount || 0),
+        },
+      }
+    );
   };
 }
