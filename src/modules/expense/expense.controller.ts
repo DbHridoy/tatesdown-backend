@@ -45,7 +45,8 @@ export class ExpenseController {
       return res.status(200).json({
         success: true,
         message: "All mileage fetched successfully",
-        data: allMileage,
+        data: allMileage.data,
+        total: allMileage.total,
       });
     }
   );

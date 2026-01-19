@@ -18,6 +18,22 @@ export class JobService {
     private clientRepo: ClientRepository
   ) { }
 
+  private normalizeObjectId = (value: any) => {
+    if (!value) {
+      return null;
+    }
+    if (typeof value === "string") {
+      return value;
+    }
+    if (value instanceof Types.ObjectId) {
+      return value.toString();
+    }
+    if (value._id) {
+      return value._id.toString();
+    }
+    return value.toString();
+  };
+
   private applyDesignConsultationAdjustments = (job: any) => {
     if (!job) {
       return job;
@@ -104,9 +120,12 @@ export class JobService {
     });
     if (jobNoteData.jobId) {
       const job = await this.jobRepository.getJobById(jobNoteData.jobId);
-      if (job?.productionManagerId) {
+      const productionManagerId = this.normalizeObjectId(
+        job?.productionManagerId
+      );
+      if (productionManagerId) {
         await createNotification({
-          forUser: job.productionManagerId.toString(),
+          forUser: productionManagerId,
           type: "note_added",
           message: "A note was added to one of your jobs",
         });
@@ -164,8 +183,12 @@ export class JobService {
     if (!job) {
       throw new Error("Job not found");
     }
-    const previousProductionManagerId = job.productionManagerId?.toString();
-    const nextProductionManagerId = jobInfo?.productionManagerId?.toString();
+    const previousProductionManagerId = this.normalizeObjectId(
+      job.productionManagerId
+    );
+    const nextProductionManagerId = this.normalizeObjectId(
+      jobInfo?.productionManagerId
+    );
     let notifiedProductionManagerChange = false;
     if (nextProductionManagerId && nextProductionManagerId !== previousProductionManagerId) {
       if (previousProductionManagerId) {
@@ -193,8 +216,11 @@ export class JobService {
         message: "A job was marked as Scheduled and Open",
       });
       if (!notifiedProductionManagerChange) {
+        const productionManagerId = this.normalizeObjectId(
+          jobInfo.productionManagerId
+        );
         await createNotification({
-          forUser: jobInfo.productionManagerId.toString(),
+          forUser: productionManagerId,
           type: "job_assigned",
           message: "A new job has been assigned to you",
         });
@@ -211,9 +237,12 @@ export class JobService {
     }
     if (status === "Closed" && job) {
       await this.salesRepRepo.updateCommissionEarned(job.salesRepId, job.price);
-      if (job.productionManagerId) {
+      const productionManagerId = this.normalizeObjectId(
+        job.productionManagerId
+      );
+      if (productionManagerId) {
         await createNotification({
-          forUser: job.productionManagerId.toString(),
+          forUser: productionManagerId,
           type: "job_status_closed",
           message: "A job assigned to you was marked as Closed",
         });
