@@ -16,9 +16,6 @@ export interface DesignConsultationDocument extends Document {
 
   // Scheduling
   estimatedStartDate?: Date;
-
-  // Contract file
-  file?: string;
 }
 
 const DesignConsultationSchema = new Schema<DesignConsultationDocument>(
@@ -49,8 +46,6 @@ const DesignConsultationSchema = new Schema<DesignConsultationDocument>(
     /* ---------- Scheduling ---------- */
     estimatedStartDate: { type: Date },
 
-    /* ---------- File ---------- */
-    file: { type: String },
   },
   {
     timestamps: true,
@@ -58,6 +53,12 @@ const DesignConsultationSchema = new Schema<DesignConsultationDocument>(
     toObject: { virtuals: true },
   }
 );
+
+DesignConsultationSchema.virtual("contract", {
+  ref: "Contract",
+  localField: "_id",
+  foreignField: "designConsultationId",
+})
 
 export const DesignConsultation = model<DesignConsultationDocument>(
   "DesignConsultation",

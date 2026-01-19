@@ -48,13 +48,21 @@ export class CommonService {
     return this.commonRepository.markNotificationRead(notificationId, userId);
   };
 
-  getAdminStats = async () => {
-    const stats = await this.commonRepository.getAdminStats();
+  getAdminStats = async (periodType?: string, date?: Date) => {
+    const stats = await this.commonRepository.getAdminStats(periodType, date);
     return stats;
   };
 
-  getSalesRepStats = async (id: string) => {
-    const stats = await this.commonRepository.getSalesRepStats(id);
+  getSalesRepStats = async (
+    id: string,
+    periodType?: string,
+    date?: Date
+  ) => {
+    const stats = await this.commonRepository.getSalesRepStats(
+      id,
+      periodType,
+      date
+    );
     return stats;
   };
 
@@ -71,14 +79,18 @@ export class CommonService {
     return stats;
   };
 
-  getSalesRepLeaderboard = async () => {
-    const stats = await this.salesRepRepo.getLeaderboard();
+  getSalesRepLeaderboard = async (periodType?: string, date?: Date) => {
+    const stats = await this.salesRepRepo.getLeaderboard(periodType, date);
     return stats;
   };
 
-  getMyStats = async (user: any) => {
+  getMyStats = async (user: any, periodType?: string, date?: Date) => {
     if (user.role === 'Sales Rep') {
-      return this.commonRepository.getSalesRepPersonalStats(user.userId);
+      return this.commonRepository.getSalesRepPersonalStats(
+        user.userId,
+        periodType,
+        date
+      );
     }
     else if (user.role === 'Production Manager') {
       logger.info({ user }, "CommonService.getMyStats")
@@ -89,7 +101,11 @@ export class CommonService {
         this.productionManagerRepo.getProductionManagerProfile(
           productionManager._id
         ),
-        this.commonRepository.getProductionManagerJobStats(user.userId),
+        this.commonRepository.getProductionManagerJobStats(
+          user.userId,
+          periodType,
+          date
+        ),
       ]);
       return {
         ...(profile ? profile.toObject() : {}),
@@ -97,13 +113,29 @@ export class CommonService {
       };
     }
     else if (user.role === 'Admin') {
-      return this.commonRepository.getAdminStats();
+      return this.commonRepository.getAdminStats(periodType, date);
     }
     return null;
   };
 
-  getUserStatsById = async (userId: string) => {
-    return this.commonRepository.getUserStatsById(userId);
+  getUserStatsById = async (userId: string, periodType?: string, date?: Date) => {
+    return this.commonRepository.getUserStatsById(userId, periodType, date);
+  };
+
+  createSalesRepPayment = async (paymentInfo: any) => {
+    return this.commonRepository.createSalesRepPayment(paymentInfo);
+  };
+
+  getSalesRepPayments = async (query: any) => {
+    return this.commonRepository.getSalesRepPayments(query);
+  };
+
+  deleteSalesRepPayment = async (paymentId: string) => {
+    return this.commonRepository.deleteSalesRepPayment(paymentId);
+  };
+
+  updateSalesRepPayment = async (paymentId: string, paymentInfo: any) => {
+    return this.commonRepository.updateSalesRepPayment(paymentId, paymentInfo);
   };
 
 }

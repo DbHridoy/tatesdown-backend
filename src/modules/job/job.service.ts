@@ -18,7 +18,36 @@ export class JobService {
     private clientRepo: ClientRepository
   ) { }
 
-  createJob = async (jobInfo: any, user: any) => {
+  private applyDesignConsultationAdjustments = (job: any) => {
+    if (!job) {
+      return job;
+    }
+    const base = job.toObject ? job.toObject() : { ...job };
+    const dc = Array.isArray(base.designConsultation)
+      ? base.designConsultation[0]
+      : base.designConsultation;
+    const addedHours = Number(dc?.addedHours || 0);
+    const estimatedGallons = Number(dc?.estimatedGallons || 0);
+    const upsellValue = Number(dc?.upsellValue || 0);
+    const totalHours = Number(base.totalHours || 0) + addedHours;
+    const totalEstimatedGallons =
+      Number(base.estimatedGallons || 0) + estimatedGallons;
+    const totalPrice = Number(base.price || 0) + upsellValue;
+    const laborHours =
+      totalHours -
+      Number(base.powerwash || 0) -
+      Number(base.setupCleanup || 0);
+
+    return {
+      ...base,
+      totalHours,
+      estimatedGallons: totalEstimatedGallons,
+      price: totalPrice,
+      laborHours,
+    };
+  };
+
+  createJob = async (jobInfo: any, contractUrl: string | undefined, user: any) => {
     const salesRep = await this.salesRepRepo.findByUserId(user.userId);
     if (!salesRep) {
       throw new Error("Sales rep not found");
@@ -42,6 +71,15 @@ export class JobService {
       salesRepId: user.userId
     };
     const newJob = await this.jobRepository.createJob(job);
+    if (contractUrl) {
+      const contract = {
+        createdBy: user.userId,
+        clientId: jobInfo.clientId,
+        contractUrl,
+        jobId: newJob._id,
+      };
+      await this.jobRepository.createContract(contract);
+    }
     await this.salesRepRepo.incrementSalesRepStats("job", user.userId);
     await createNotificationsForRole("Admin", {
       type: "quote_converted_job",
@@ -85,11 +123,16 @@ export class JobService {
   };
 
   getAllJobs = async (query: any) => {
-    return await this.jobRepository.getAllJobs(query);
+    const result = await this.jobRepository.getAllJobs(query);
+    return {
+      ...result,
+      jobs: result.jobs.map(this.applyDesignConsultationAdjustments),
+    };
   };
 
   getJobById = async (id: string) => {
-    return await this.jobRepository.getJobById(id);
+    const job = await this.jobRepository.getJobById(id);
+    return this.applyDesignConsultationAdjustments(job);
   };
 
   getAllDesignConsultation = async () => {

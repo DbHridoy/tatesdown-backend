@@ -15,7 +15,7 @@ const VariableSchema = new Schema(
     },
     salesRepCommissionRate: {
       type: Number,
-      default: 0.18,
+      default: 18,
     },
   },
   { timestamps: true }

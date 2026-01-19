@@ -64,6 +64,12 @@ userSchema.virtual("admin", {
   justOne: true,
 });
 
+userSchema.virtual("payments", {
+  ref: "SalesRepPayment",
+  localField: "_id",
+  foreignField: "salesRepId",
+});
+
 const User = model("User", userSchema);
 
 export default User;

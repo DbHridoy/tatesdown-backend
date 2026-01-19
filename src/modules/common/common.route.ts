@@ -26,6 +26,26 @@ commonRoute.get(
   commonController.getSalesRepLeaderboard
 );
 commonRoute.get("/my-stats", commonController.getMyStats);
+commonRoute.post(
+  "/payments",
+  authMiddleware.authorize(["Admin"]),
+  commonController.addPayment
+);
+commonRoute.get(
+  "/payments",
+  // authMiddleware.authorize(["Admin"]),
+  commonController.getPayments
+);
+commonRoute.delete(
+  "/payments/:paymentId",
+  authMiddleware.authorize(["Admin"]),
+  commonController.deletePayment
+);
+commonRoute.patch(
+  "/payments/:paymentId",
+  authMiddleware.authorize(["Admin"]),
+  commonController.updatePayment
+);
 
 
 export default commonRoute;

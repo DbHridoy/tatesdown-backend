@@ -8,6 +8,7 @@ import { Quote } from "../quote/quote.model";
 import { Job } from "./job.model";
 import { Client } from "../client/client.model";
 import { DesignConsultation } from "./design-consultation.model";
+import { Contract } from "./contract.model";
 
 export class JobController {
   constructor(private readonly jobService: JobService) { }
@@ -17,8 +18,13 @@ export class JobController {
       try {
         const jobInfo = req.body;
         const user = req.user!;
+        const contractUrl = req.file?.fileUrl;
 
-        const newJob = await this.jobService.createJob(jobInfo, user);
+        const newJob = await this.jobService.createJob(
+          jobInfo,
+          contractUrl,
+          user
+        );
 
         res.status(HttpCodes.Ok).json({
           success: true,
@@ -45,14 +51,16 @@ export class JobController {
       estimatedStartDate,
     } = req.body;
     const job = await Job.findById(jobId);
+    const user = req.user!;
 
     if (!job) {
       throw new Error("Job not found");
     }
 
-    const existingDesignConsultation = await DesignConsultation.findOne({
-      jobId,
-    });
+    const normalizeNumber = (value: unknown) => {
+      const parsed = Number(value);
+      return Number.isNaN(parsed) ? 0 : parsed;
+    };
 
     const updatePayload: any = {
       clientId: clientId || job.clientId,
@@ -65,13 +73,13 @@ export class JobController {
       estimatedStartDate,
     };
     if (addedHours !== undefined) {
-      const normalizedAddedHours = Number(addedHours);
-      updatePayload.addedHours = Number.isNaN(normalizedAddedHours)
-        ? 0
-        : normalizedAddedHours;
+      updatePayload.addedHours = normalizeNumber(addedHours);
     }
-    if (req.file?.fileUrl) {
-      updatePayload.file = req.file.fileUrl;
+    if (estimatedGallons !== undefined) {
+      updatePayload.estimatedGallons = normalizeNumber(estimatedGallons);
+    }
+    if (upsellValue !== undefined) {
+      updatePayload.upsellValue = String(upsellValue);
     }
 
     const designConsultation = await DesignConsultation.findOneAndUpdate(
@@ -80,35 +88,101 @@ export class JobController {
       { new: true, upsert: true }
     );
 
-    // Add hours if upsell hours exist
-    if (addedHours !== undefined) {
-      const previousAddedHours = Number(existingDesignConsultation?.addedHours || 0);
-      const nextAddedHours = Number(updatePayload.addedHours || 0);
-      const delta = nextAddedHours - previousAddedHours;
-      if (delta !== 0) {
-        job.laborHours += delta;
-        job.totalHours += delta;
-      }
+    if (req.file?.fileUrl) {
+      await Contract.findOneAndUpdate(
+        { designConsultationId: designConsultation._id },
+        {
+          createdBy: user.userId,
+          clientId: job.clientId,
+          contractUrl: req.file.fileUrl,
+          jobId,
+          designConsultationId: designConsultation._id,
+        },
+        { new: true, upsert: true }
+      );
     }
-
-    // OPTIONAL: if gallons affect budget later
-    if (estimatedGallons) {
-      // Example logic — adjust if you calculate paint cost elsewhere
-      // job.budgetSpent += estimatedGallons * PAINT_COST_PER_GALLON;
-    }
-
-    // Optional: update job status
-    if (job.status === "Ready to Schedule") {
-      job.status = "Ready to Schedule";
-    }
-
-    await job.save();
 
     res.status(201).json({
       success: true,
       data: designConsultation,
     });
   };
+
+  updateDesignConsultation = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { id } = req.params;
+      const existingDesignConsultation = await DesignConsultation.findById(id);
+      if (!existingDesignConsultation) {
+        throw new Error("Design consultation not found");
+      }
+
+      const job = await Job.findById(existingDesignConsultation.jobId);
+      if (!job) {
+        throw new Error("Job not found");
+      }
+
+      const user = req.user!;
+      const {
+        clientId,
+        product,
+        colorCode,
+        estimatedGallons,
+        upsellDescription,
+        upsellValue,
+        addedHours,
+        estimatedStartDate,
+      } = req.body;
+
+      const normalizeNumber = (value: unknown) => {
+        const parsed = Number(value);
+        return Number.isNaN(parsed) ? 0 : parsed;
+      };
+
+      const updatePayload: any = {
+        clientId: clientId || job.clientId,
+        jobId: job._id,
+        product,
+        colorCode,
+        upsellDescription,
+        estimatedStartDate,
+      };
+
+      if (addedHours !== undefined) {
+        updatePayload.addedHours = normalizeNumber(addedHours);
+      }
+      if (estimatedGallons !== undefined) {
+        updatePayload.estimatedGallons = normalizeNumber(estimatedGallons);
+      }
+      if (upsellValue !== undefined) {
+        updatePayload.upsellValue = String(upsellValue);
+      }
+
+      const designConsultation = await DesignConsultation.findByIdAndUpdate(
+        id,
+        updatePayload,
+        { new: true }
+      );
+
+      if (req.file?.fileUrl) {
+        await Contract.findOneAndUpdate(
+          { designConsultationId: existingDesignConsultation._id },
+          {
+            createdBy: user.userId,
+            clientId: job.clientId,
+            contractUrl: req.file.fileUrl,
+            jobId: job._id,
+            designConsultationId: existingDesignConsultation._id,
+          },
+          { new: true, upsert: true }
+        );
+      }
+
+      res.status(200).json({
+        success: true,
+        data: designConsultation,
+      });
+    }
+  );
 
   createJobNote = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {

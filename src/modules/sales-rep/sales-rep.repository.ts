@@ -4,15 +4,60 @@ import { SalesRep } from "./sales-rep.model";
 import { logger } from "../../utils/logger";
 import { Variable } from "../common/variable.model";
 
+const getCalendarPeriodRange = (date: Date, periodType: string) => {
+  const base = new Date(date);
+  if (Number.isNaN(base.getTime())) {
+    throw new Error("Invalid date");
+  }
+
+  let start: Date;
+  let end: Date;
+
+  switch (periodType) {
+    case "day": {
+      start = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+      end = new Date(start);
+      end.setDate(end.getDate() + 1);
+      break;
+    }
+    case "week": {
+      const dayOfWeek = base.getDay();
+      start = new Date(base.getFullYear(), base.getMonth(), base.getDate() - dayOfWeek);
+      end = new Date(start);
+      end.setDate(end.getDate() + 7);
+      break;
+    }
+    case "month": {
+      start = new Date(base.getFullYear(), base.getMonth(), 1);
+      end = new Date(base.getFullYear(), base.getMonth() + 1, 1);
+      break;
+    }
+    case "year": {
+      start = new Date(base.getFullYear(), 0, 1);
+      end = new Date(base.getFullYear() + 1, 0, 1);
+      break;
+    }
+    default:
+      throw new Error("Invalid period type");
+  }
+
+  return { start, end };
+};
+
 export class SalesRepRepository {
   findByUserId = async (userId: Types.ObjectId) => {
     logger.info({ userId }, "SalesRepRepository.findByUserId");
     return SalesRep.findOne({ userId });
   };
 
-  getLeaderboard = async () => {
+  getLeaderboard = async (periodType?: string, date?: Date) => {
     const variable = await Variable.findOne().select("salesRepCommissionRate");
     const commissionRate = Number(variable?.salesRepCommissionRate || 0);
+    const normalizedCommissionRate = commissionRate / 100;
+    const range = periodType && date ? getCalendarPeriodRange(date, periodType) : null;
+    const dateFilter = range
+      ? { createdAt: { $gte: range.start, $lt: range.end } }
+      : {};
 
     return SalesRep.aggregate([
       {
@@ -29,7 +74,12 @@ export class SalesRepRepository {
           from: "clients",
           let: { userId: "$userId" },
           pipeline: [
-            { $match: { $expr: { $eq: ["$salesRepId", "$$userId"] } } },
+            {
+              $match: {
+                $expr: { $eq: ["$salesRepId", "$$userId"] },
+                ...dateFilter,
+              },
+            },
             { $count: "count" },
           ],
           as: "clientAgg",
@@ -40,7 +90,12 @@ export class SalesRepRepository {
           from: "quotes",
           let: { userId: "$userId" },
           pipeline: [
-            { $match: { $expr: { $eq: ["$salesRepId", "$$userId"] } } },
+            {
+              $match: {
+                $expr: { $eq: ["$salesRepId", "$$userId"] },
+                ...dateFilter,
+              },
+            },
             { $count: "count" },
           ],
           as: "quoteAgg",
@@ -51,12 +106,17 @@ export class SalesRepRepository {
           from: "jobs",
           let: { userId: "$userId" },
           pipeline: [
-            { $match: { $expr: { $eq: ["$salesRepId", "$$userId"] } } },
+            {
+              $match: {
+                $expr: { $eq: ["$salesRepId", "$$userId"] },
+                ...dateFilter,
+              },
+            },
             {
               $group: {
                 _id: null,
                 totalJobs: { $sum: 1 },
-                totalRevenueEarned: {
+                totalRevenueSold: {
                   $sum: {
                     $cond: [
                       { $eq: ["$status", "Ready to Schedule"] },
@@ -108,8 +168,8 @@ export class SalesRepRepository {
           totalJobs: {
             $ifNull: [{ $arrayElemAt: ["$jobAgg.totalJobs", 0] }, 0],
           },
-          totalRevenueEarned: {
-            $ifNull: [{ $arrayElemAt: ["$jobAgg.totalRevenueEarned", 0] }, 0],
+          totalRevenueSold: {
+            $ifNull: [{ $arrayElemAt: ["$jobAgg.totalRevenueSold", 0] }, 0],
           },
           totalRevenueProduced: {
             $ifNull: [
@@ -125,7 +185,7 @@ export class SalesRepRepository {
                   0,
                 ],
               },
-              commissionRate,
+              normalizedCommissionRate,
             ],
           },
           totalCommissionPaid: {
@@ -136,7 +196,7 @@ export class SalesRepRepository {
                   0,
                 ],
               },
-              commissionRate,
+              normalizedCommissionRate,
             ],
           },
           totalCommissionPending: {
@@ -147,7 +207,7 @@ export class SalesRepRepository {
                   0,
                 ],
               },
-              commissionRate,
+              normalizedCommissionRate,
             ],
           },
         },
@@ -162,7 +222,7 @@ export class SalesRepRepository {
       {
         $sort: {
           totalRevenueProduced: -1,
-          totalRevenueEarned: -1,
+          totalRevenueSold: -1,
           totalJobs: -1,
           totalQuotes: -1,
           totalClients: -1,

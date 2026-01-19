@@ -6,6 +6,7 @@ import { DesignConsultation } from "./design-consultation.model";
 import { Types } from "mongoose";
 import Payment from "./payment.model";
 import ClientNote from "../client/client-note.model";
+import { Contract } from "./contract.model";
 
 export class JobRepository {
   createJob = async (jobInfo: any) => {
@@ -18,6 +19,11 @@ export class JobRepository {
     logger.info({ jobNote }, "JobRepository.createJobNote line 36");
     const newJobNote = new ClientNote(jobNote);
     return newJobNote.save();
+  };
+
+  createContract = async (contractInfo: any) => {
+    const newContract = new Contract(contractInfo);
+    return newContract.save();
   };
 
   getAllJobs = async (query: any) => {

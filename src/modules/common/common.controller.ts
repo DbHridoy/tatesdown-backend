@@ -5,6 +5,27 @@ import { HttpCodes } from "../../constants/status-codes";
 import { logger } from "../../utils/logger";
 import { CommonRepository } from "./common.repository";
 
+const getPeriodParams = (query: any) => {
+  const { periodType, date } = query || {};
+  const normalizedPeriod = periodType
+    ? String(periodType).toLowerCase()
+    : undefined;
+  if (
+    normalizedPeriod &&
+    !["day", "week", "month", "year"].includes(normalizedPeriod)
+  ) {
+    return { error: "Invalid periodType" };
+  }
+  const baseDate = date ? new Date(String(date)) : new Date();
+  if (normalizedPeriod && Number.isNaN(baseDate.getTime())) {
+    return { error: "Invalid date" };
+  }
+  return {
+    periodType: normalizedPeriod,
+    date: normalizedPeriod ? baseDate : undefined,
+  };
+};
+
 export class CommonController {
   constructor(
     private commonService: CommonService,
@@ -99,7 +120,11 @@ export class CommonController {
   );
   getAdminStats = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
-      const stats = await this.commonService.getAdminStats();
+      const { error, periodType, date } = getPeriodParams(req.query);
+      if (error) {
+        return res.status(400).json({ message: error });
+      }
+      const stats = await this.commonService.getAdminStats(periodType, date);
       res.status(200).json({
         success: true,
         message: "Admin stats retrieved successfully",
@@ -109,7 +134,26 @@ export class CommonController {
   );
   getSalesRepLeaderboard = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
-      const stats = await this.commonService.getSalesRepLeaderboard();
+      const { periodType, date } = req.query;
+      const normalizedPeriod = periodType
+        ? String(periodType).toLowerCase()
+        : undefined;
+      if (
+        normalizedPeriod &&
+        !["day", "week", "month", "year"].includes(normalizedPeriod)
+      ) {
+        return res.status(400).json({ message: "Invalid periodType" });
+      }
+
+      const baseDate = date ? new Date(String(date)) : new Date();
+      if (normalizedPeriod && Number.isNaN(baseDate.getTime())) {
+        return res.status(400).json({ message: "Invalid date" });
+      }
+
+      const stats = await this.commonService.getSalesRepLeaderboard(
+        normalizedPeriod,
+        normalizedPeriod ? baseDate : undefined
+      );
       res.status(200).json({
         success: true,
         message: "Sales rep leaderboard retrieved successfully",
@@ -121,7 +165,15 @@ export class CommonController {
   getMyStats = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const user = req.user!;
-      const stats = await this.commonService.getMyStats(user);
+      const { error, periodType, date } = getPeriodParams(req.query);
+      if (error) {
+        return res.status(400).json({ message: error });
+      }
+      const stats = await this.commonService.getMyStats(
+        user,
+        periodType,
+        date
+      );
       res.status(200).json({
         success: true,
         message: "My stats retrieved successfully",
@@ -133,7 +185,15 @@ export class CommonController {
   getUserStatsById = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const { userId } = req.params;
-      const stats = await this.commonService.getUserStatsById(userId);
+      const { error, periodType, date } = getPeriodParams(req.query);
+      if (error) {
+        return res.status(400).json({ message: error });
+      }
+      const stats = await this.commonService.getUserStatsById(
+        userId,
+        periodType,
+        date
+      );
       res.status(200).json({
         success: true,
         message: "User stats retrieved successfully",
@@ -144,7 +204,15 @@ export class CommonController {
   getSalesRepStats = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const { salesRepId } = req.params;
-      const stats = await this.commonService.getSalesRepStats(salesRepId);
+      const { error, periodType, date } = getPeriodParams(req.query);
+      if (error) {
+        return res.status(400).json({ message: error });
+      }
+      const stats = await this.commonService.getSalesRepStats(
+        salesRepId,
+        periodType,
+        date
+      );
       res.status(200).json({
         success: true,
         message: "Sales rep stats retrieved successfully",
@@ -177,6 +245,59 @@ export class CommonController {
         success: true,
         message: "Sales rep period stats retrieved successfully",
         data: stats,
+      });
+    }
+  );
+
+  addPayment = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const payment = await this.commonService.createSalesRepPayment(req.body);
+      res.status(201).json({
+        success: true,
+        message: "Payment created successfully",
+        data: payment,
+      });
+    }
+  );
+
+  getPayments = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const query = req.query;
+      const payments = await this.commonService.getSalesRepPayments(
+        query
+      );
+      res.status(200).json({
+        success: true,
+        message: "Payments fetched successfully",
+        data: payments.data,
+        total: payments.total,
+      });
+    }
+  );
+
+  deletePayment = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { paymentId } = req.params;
+      const payment = await this.commonService.deleteSalesRepPayment(paymentId);
+      res.status(200).json({
+        success: true,
+        message: "Payment deleted successfully",
+        data: payment,
+      });
+    }
+  );
+
+  updatePayment = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { paymentId } = req.params;
+      const payment = await this.commonService.updateSalesRepPayment(
+        paymentId,
+        req.body
+      );
+      res.status(200).json({
+        success: true,
+        message: "Payment updated successfully",
+        data: payment,
       });
     }
   );

@@ -6,9 +6,18 @@ const jobRoute = Router();
 
 jobRoute.use(authMiddleware.authenticate);
 
-jobRoute.post("/", jobController.createJob);
+jobRoute.post(
+  "/",
+  uploadFile({ fieldName: "contract", uploadType: "single" }),
+  jobController.createJob
+);
 // jobRoute.post("/job-note", uploadFile({ fieldName: "file", uploadType: "single" }), jobController.createJobNote);
 jobRoute.post("/design-consultation", uploadFile({ fieldName: "file", uploadType: "single" }), jobController.createDesignConsultation);
+jobRoute.patch(
+  "/design-consultation/:id",
+  uploadFile({ fieldName: "file", uploadType: "single" }),
+  jobController.updateDesignConsultation
+);
 
 jobRoute.get("/", jobController.getAllJobs);
 jobRoute.get("/design-consultation", jobController.getAllDesignConsultation);

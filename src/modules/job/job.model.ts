@@ -18,6 +18,7 @@ export interface JobDocument extends Document {
   powerwash: number;
   laborHours: number;
   estimatedStartDate: Date;
+  estimatedGallons: number;
   startDate: Date;
   status:
   | "Ready to Schedule"
@@ -51,6 +52,7 @@ const jobSchema = new Schema<JobDocument>(
     powerwash: { type: Number, default: 0 },
     laborHours: { type: Number, default: 0 },
     estimatedStartDate: { type: Date, required: true },
+    estimatedGallons: { type: Number, default: 0 },
     startDate: { type: Date },
     status: {
       type: String,
@@ -87,8 +89,18 @@ jobSchema.virtual("designConsultation", {
   foreignField: "jobId",
 });
 
+jobSchema.virtual("contract", {
+  ref: "Contract",
+  localField: "_id",
+  foreignField: "jobId",
+});
+
 // Pre-save hook to generate customJobId
 jobSchema.pre<JobDocument>("save", async function (next) {
+  this.laborHours =
+    (this.totalHours || 0) -
+    (this.powerwash || 0) -
+    (this.setupCleanup || 0);
   if (!this.customJobId) {
     this.customJobId = await commonService.generateSequentialId("J", "job");
   }

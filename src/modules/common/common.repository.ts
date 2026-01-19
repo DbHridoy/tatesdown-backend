@@ -11,6 +11,7 @@ import { Job } from "../job/job.model";
 import { Overview } from "./overview.model";
 import { logger } from "../../utils/logger";
 import User from "../user/user.model";
+import { SalesRepPayment } from "./payment.model";
 
 const getCalendarPeriodRange = (date: Date, periodType: string) => {
   const base = new Date(date);
@@ -50,6 +51,14 @@ const getCalendarPeriodRange = (date: Date, periodType: string) => {
   }
 
   return { start, end };
+};
+
+const buildDateFilter = (periodType?: string, date?: Date) => {
+  if (!periodType || !date) {
+    return {};
+  }
+  const { start, end } = getCalendarPeriodRange(date, periodType);
+  return { createdAt: { $gte: start, $lt: end } };
 };
 
 export class CommonRepository {
@@ -110,7 +119,8 @@ export class CommonRepository {
     return Notification.findOne({ _id: notificationId, forUser: userId });
   };
 
-  getAdminStats = async () => {
+  getAdminStats = async (periodType?: string, date?: Date) => {
+    const dateFilter = buildDateFilter(periodType, date);
     const [
       totalClients,
       totalQuotes,
@@ -126,32 +136,32 @@ export class CommonRepository {
       closedAgg,
       totalRevenueAgg,
     ] = await Promise.all([
-      Client.countDocuments(),
-      Quote.countDocuments(),
-      Job.countDocuments(),
-      Job.countDocuments({ status: "Ready to Schedule" }),
-      Job.countDocuments({ status: "Scheduled and Open" }),
-      Job.countDocuments({ status: "Pending Close" }),
-      Job.countDocuments({ status: "Closed" }),
-      Job.countDocuments({ status: "Cancelled" }),
+      Client.countDocuments({ ...dateFilter }),
+      Quote.countDocuments({ ...dateFilter }),
+      Job.countDocuments({ ...dateFilter }),
+      Job.countDocuments({ status: "Ready to Schedule", ...dateFilter }),
+      Job.countDocuments({ status: "Scheduled and Open", ...dateFilter }),
+      Job.countDocuments({ status: "Pending Close", ...dateFilter }),
+      Job.countDocuments({ status: "Closed", ...dateFilter }),
+      Job.countDocuments({ status: "Cancelled", ...dateFilter }),
       Job.aggregate([
-        { $match: { status: "Ready to Schedule" } },
+        { $match: { status: "Ready to Schedule", ...dateFilter } },
         { $group: { _id: null, total: { $sum: "$price" } } },
       ]),
       Job.aggregate([
-        { $match: { status: "Scheduled and Open" } },
+        { $match: { status: "Scheduled and Open", ...dateFilter } },
         { $group: { _id: null, total: { $sum: "$price" } } },
       ]),
       Job.aggregate([
-        { $match: { status: "Pending Close" } },
+        { $match: { status: "Pending Close", ...dateFilter } },
         { $group: { _id: null, total: { $sum: "$price" } } },
       ]),
       Job.aggregate([
-        { $match: { status: "Closed" } },
+        { $match: { status: "Closed", ...dateFilter } },
         { $group: { _id: null, total: { $sum: "$price" } } },
       ]),
       Job.aggregate([
-        { $match: { status: { $ne: "Cancelled" } } },
+        { $match: { status: { $ne: "Cancelled" }, ...dateFilter } },
         { $group: { _id: null, total: { $sum: "$price" } } },
       ]),
     ]);
@@ -165,7 +175,7 @@ export class CommonRepository {
       pendingCloseCount,
       closedCount,
       cancelledCount,
-      totalRevenueEarned: readyToScheduleAgg[0]?.total || 0,
+      totalRevenueSold: readyToScheduleAgg[0]?.total || 0,
       totalRevenuePending:
         (scheduledAndOpenAgg[0]?.total || 0) +
         (pendingCloseAgg[0]?.total || 0),
@@ -174,9 +184,19 @@ export class CommonRepository {
     };
   };
 
-  getSalesRepStats = async (salesRepId: string) => {
+  getSalesRepStats = async (
+    salesRepId: string,
+    periodType?: string,
+    date?: Date
+  ) => {
+    const dateFilter = buildDateFilter(periodType, date);
     const totalDeduction = await Mileage.aggregate([
-      { $match: { salesRepId: new Types.ObjectId(salesRepId) } },
+      {
+        $match: {
+          salesRepId: new Types.ObjectId(salesRepId),
+          ...dateFilter,
+        },
+      },
       { $group: { _id: null, totalDeduction: { $sum: "$deduction" } } },
     ]).then((res) => res[0]?.totalDeduction || 0);
 
@@ -274,12 +294,17 @@ export class CommonRepository {
       totalJobs,
       totalCommissionPending: commissionPendingAgg[0]?.total || 0,
       totalCommissionEarned: commissionEarnedAgg[0]?.total || 0,
-      totalRevenueEarned: revenueEarnedAgg[0]?.total || 0,
+      totalRevenueSold: revenueEarnedAgg[0]?.total || 0,
       totalRevenueProduced: revenueProducedAgg[0]?.total || 0,
     };
   };
 
-  getSalesRepPersonalStats = async (userId: string) => {
+  getSalesRepPersonalStats = async (
+    userId: string,
+    periodType?: string,
+    date?: Date
+  ) => {
+    const dateFilter = buildDateFilter(periodType, date);
     const salesRepObjectId = new Types.ObjectId(userId);
     const [
       totalClients,
@@ -290,14 +315,15 @@ export class CommonRepository {
       pendingAgg,
       variable,
     ] = await Promise.all([
-      Client.countDocuments({ salesRepId: salesRepObjectId }),
-      Quote.countDocuments({ salesRepId: salesRepObjectId }),
-      Job.countDocuments({ salesRepId: salesRepObjectId }),
+      Client.countDocuments({ salesRepId: salesRepObjectId, ...dateFilter }),
+      Quote.countDocuments({ salesRepId: salesRepObjectId, ...dateFilter }),
+      Job.countDocuments({ salesRepId: salesRepObjectId, ...dateFilter }),
       Job.aggregate([
         {
           $match: {
             salesRepId: salesRepObjectId,
             status: "Ready to Schedule",
+            ...dateFilter,
           },
         },
         { $group: { _id: null, total: { $sum: "$price" } } },
@@ -307,6 +333,7 @@ export class CommonRepository {
           $match: {
             salesRepId: salesRepObjectId,
             status: "Closed",
+            ...dateFilter,
           },
         },
         { $group: { _id: null, total: { $sum: "$price" } } },
@@ -316,6 +343,7 @@ export class CommonRepository {
           $match: {
             salesRepId: salesRepObjectId,
             status: { $ne: "Closed" },
+            ...dateFilter,
           },
         },
         { $group: { _id: null, total: { $sum: "$price" } } },
@@ -324,17 +352,21 @@ export class CommonRepository {
     ]);
 
     const commissionRate = Number(variable?.salesRepCommissionRate || 0);
-    const totalRevenueEarned = readyToScheduleAgg[0]?.total || 0;
+    const normalizedCommissionRate = commissionRate / 100;
+    const totalRevenueSold = readyToScheduleAgg[0]?.total || 0;
     const totalRevenueProduced = closedAgg[0]?.total || 0;
-    const totalCommissionEarned = (closedAgg[0]?.total || 0) * commissionRate;
-    const totalCommissionPaid = totalRevenueProduced * commissionRate;
-    const totalCommissionPending = (pendingAgg[0]?.total || 0) * commissionRate;
+    const totalCommissionEarned =
+      (closedAgg[0]?.total || 0) * normalizedCommissionRate;
+    const totalCommissionPaid =
+      totalRevenueProduced * normalizedCommissionRate;
+    const totalCommissionPending =
+      (pendingAgg[0]?.total || 0) * normalizedCommissionRate;
 
     return {
       totalClients,
       totalQuotes,
       totalJobs,
-      totalRevenueEarned,
+      totalRevenueSold,
       totalRevenueProduced,
       totalCommissionEarned,
       totalCommissionPaid,
@@ -342,7 +374,11 @@ export class CommonRepository {
     };
   };
 
-  getUserStatsById = async (userId: string) => {
+  getUserStatsById = async (
+    userId: string,
+    periodType?: string,
+    date?: Date
+  ) => {
     const user = await User.findById(userId).select(
       "_id fullName email role"
     );
@@ -352,7 +388,9 @@ export class CommonRepository {
 
     if (user.role === "Sales Rep") {
       const salesRepStats = await this.getSalesRepPersonalStats(
-        user._id.toString()
+        user._id.toString(),
+        periodType,
+        date
       );
       return {
         userId: user._id,
@@ -365,7 +403,9 @@ export class CommonRepository {
 
     if (user.role === "Production Manager") {
       const productionStats = await this.getProductionManagerJobStats(
-        user._id.toString()
+        user._id.toString(),
+        periodType,
+        date
       );
       return {
         userId: user._id,
@@ -385,7 +425,43 @@ export class CommonRepository {
     };
   };
 
-  getProductionManagerJobStats = async (productionManagerUserId: string) => {
+  createSalesRepPayment = async (paymentInfo: any) => {
+    const payment = new SalesRepPayment(paymentInfo);
+    return payment.save();
+  };
+
+  getSalesRepPayments = async (query: any) => {
+    const { filter, search, options } = buildDynamicSearch(
+      SalesRepPayment,
+      query
+    );
+    const finalFilter = {
+      ...filter,
+      ...search,
+    };
+    const [payments, total] = await Promise.all([
+      SalesRepPayment.find(finalFilter, null, options),
+      SalesRepPayment.countDocuments(finalFilter),
+    ]);
+    return { data: payments, total };
+  };
+
+  deleteSalesRepPayment = async (paymentId: string) => {
+    return SalesRepPayment.findByIdAndDelete(paymentId);
+  };
+
+  updateSalesRepPayment = async (paymentId: string, paymentInfo: any) => {
+    return SalesRepPayment.findByIdAndUpdate(paymentId, paymentInfo, {
+      new: true,
+    });
+  };
+
+  getProductionManagerJobStats = async (
+    productionManagerUserId: string,
+    periodType?: string,
+    date?: Date
+  ) => {
+    const dateFilter = buildDateFilter(periodType, date);
     const productionManagerObjectId = new Types.ObjectId(
       productionManagerUserId
     );
@@ -393,7 +469,7 @@ export class CommonRepository {
       {
         $facet: {
           readyToScheduleCount: [
-            { $match: { status: "Ready to Schedule" } },
+            { $match: { status: "Ready to Schedule", ...dateFilter } },
             { $count: "count" },
           ],
           scheduledAndOpenCount: [
@@ -401,6 +477,7 @@ export class CommonRepository {
               $match: {
                 productionManagerId: productionManagerObjectId,
                 status: "Scheduled and Open",
+                ...dateFilter,
               },
             },
             { $count: "count" },
@@ -410,6 +487,7 @@ export class CommonRepository {
               $match: {
                 productionManagerId: productionManagerObjectId,
                 status: "Pending Close",
+                ...dateFilter,
               },
             },
             { $count: "count" },
@@ -419,6 +497,7 @@ export class CommonRepository {
               $match: {
                 productionManagerId: productionManagerObjectId,
                 status: "Cancelled",
+                ...dateFilter,
               },
             },
             { $count: "count" },
@@ -428,6 +507,7 @@ export class CommonRepository {
               $match: {
                 productionManagerId: productionManagerObjectId,
                 status: "Scheduled and Open",
+                ...dateFilter,
               },
             },
             { $group: { _id: null, total: { $sum: "$price" } } },
@@ -437,6 +517,7 @@ export class CommonRepository {
               $match: {
                 productionManagerId: productionManagerObjectId,
                 status: "Closed",
+                ...dateFilter,
               },
             },
             { $group: { _id: null, total: { $sum: "$price" } } },
