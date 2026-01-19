@@ -68,6 +68,35 @@ export class CommonController {
       });
     }
   );
+
+  getMyNotifications = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const user = req.user!;
+      const q = { ...req.query, forUser: user.userId };
+      const notifications = await this.commonService.getNotification(q);
+      res.status(HttpCodes.Ok).send({
+        success: true,
+        message: "My notifications fetched successfully",
+        data: notifications,
+      });
+    }
+  );
+
+  updateNotificationRead = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const user = req.user!;
+      const { notificationId } = req.params;
+      const updatedNotification = await this.commonService.markNotificationRead(
+        notificationId,
+        user.userId
+      );
+      res.status(HttpCodes.Ok).send({
+        success: true,
+        message: "Notification updated successfully",
+        data: updatedNotification,
+      });
+    }
+  );
   getAdminStats = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const stats = await this.commonService.getAdminStats();
@@ -96,6 +125,18 @@ export class CommonController {
       res.status(200).json({
         success: true,
         message: "My stats retrieved successfully",
+        data: stats,
+      });
+    }
+  );
+
+  getUserStatsById = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { userId } = req.params;
+      const stats = await this.commonService.getUserStatsById(userId);
+      res.status(200).json({
+        success: true,
+        message: "User stats retrieved successfully",
         data: stats,
       });
     }

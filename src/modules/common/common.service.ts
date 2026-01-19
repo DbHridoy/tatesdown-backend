@@ -44,6 +44,10 @@ export class CommonService {
     return notifications;
   };
 
+  markNotificationRead = async (notificationId: string, userId: string) => {
+    return this.commonRepository.markNotificationRead(notificationId, userId);
+  };
+
   getAdminStats = async () => {
     const stats = await this.commonRepository.getAdminStats();
     return stats;
@@ -71,13 +75,15 @@ export class CommonService {
     const stats = await this.salesRepRepo.getLeaderboard();
     return stats;
   };
-  
+
   getMyStats = async (user: any) => {
     if (user.role === 'Sales Rep') {
       return this.commonRepository.getSalesRepPersonalStats(user.userId);
     }
     else if (user.role === 'Production Manager') {
+      logger.info({ user }, "CommonService.getMyStats")
       const productionManager = await this.productionManagerRepo.findByUserId(user.userId);
+      logger.info({ productionManager }, "CommonService.getMyStats")
       if (!productionManager) return null;
       const [profile, jobStats] = await Promise.all([
         this.productionManagerRepo.getProductionManagerProfile(
@@ -94,6 +100,10 @@ export class CommonService {
       return this.commonRepository.getAdminStats();
     }
     return null;
+  };
+
+  getUserStatsById = async (userId: string) => {
+    return this.commonRepository.getUserStatsById(userId);
   };
 
 }

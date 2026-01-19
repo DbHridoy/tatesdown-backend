@@ -10,7 +10,17 @@ commonRoute.post("/cluster", commonController.createCluster);
 
 commonRoute.get("/get-variable", commonController.getVariable);
 commonRoute.get("/notification", commonController.getNotification);
+commonRoute.get("/my-notifications", commonController.getMyNotifications);
+commonRoute.patch(
+  "/notification/:notificationId/read",
+  commonController.updateNotificationRead
+);
 commonRoute.get("/cluster", commonController.getCluster);
+commonRoute.get(
+  "/admin/users-stats/:userId",
+  authMiddleware.authorize(["Admin"]),
+  commonController.getUserStatsById
+);
 commonRoute.get(
   "/salesrep-leaderboard",
   commonController.getSalesRepLeaderboard

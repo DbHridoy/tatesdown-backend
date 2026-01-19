@@ -1,11 +1,12 @@
 import { Notification } from "../modules/common/notification.model";
 import { Document } from "mongoose";
+import User from "../modules/user/user.model";
 
 // Define the input type for creating a notification
 interface CreateNotificationInput {
   type: string;
   message: string;
-  forUser?: string; // optional, since your schema doesn’t require it
+  forUser: string;
 }
 
 // Function to create a notification
@@ -16,4 +17,34 @@ export const createNotification = async (
 
   const newNotification = new Notification({ forUser, type, message });
   return await newNotification.save();
+};
+
+interface CreateNotificationsForUsersInput {
+  type: string;
+  message: string;
+  userIds: string[];
+}
+
+export const createNotificationsForUsers = async (
+  input: CreateNotificationsForUsersInput
+) => {
+  const { type, message, userIds } = input;
+  if (!userIds || userIds.length === 0) {
+    return [];
+  }
+  const payload = userIds.map((userId) => ({
+    forUser: userId,
+    type,
+    message,
+  }));
+  return Notification.insertMany(payload);
+};
+
+export const createNotificationsForRole = async (
+  role: "Admin" | "Sales Rep" | "Production Manager",
+  input: Omit<CreateNotificationsForUsersInput, "userIds">
+) => {
+  const users = await User.find({ role }).select("_id");
+  const userIds = users.map((user) => user._id.toString());
+  return createNotificationsForUsers({ ...input, userIds });
 };

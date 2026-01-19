@@ -10,6 +10,7 @@ import { Quote } from "../quote/quote.model";
 import { Job } from "../job/job.model";
 import { Overview } from "./overview.model";
 import { logger } from "../../utils/logger";
+import User from "../user/user.model";
 
 const getCalendarPeriodRange = (date: Date, periodType: string) => {
   const base = new Date(date);
@@ -95,6 +96,18 @@ export class CommonRepository {
       options
     );
     return notifications;
+  };
+
+  markNotificationRead = async (notificationId: string, userId: string) => {
+    const updated = await Notification.findOneAndUpdate(
+      { _id: notificationId, forUser: userId, isRead: false },
+      { isRead: true },
+      { new: true }
+    );
+    if (updated) {
+      return updated;
+    }
+    return Notification.findOne({ _id: notificationId, forUser: userId });
   };
 
   getAdminStats = async () => {
@@ -216,7 +229,7 @@ export class CommonRepository {
         {
           $match: {
             salesRepId: salesRepObjectId,
-            status: { $in: ["Scheduled and Open", "Pending Close"] },
+            status: { $ne: "Closed" },
             startDate: { $gte: start, $lt: end },
           },
         },
@@ -236,7 +249,7 @@ export class CommonRepository {
         {
           $match: {
             salesRepId: salesRepObjectId,
-            status: { $in: ["Scheduled and Open", "Pending Close"] },
+            status: { $ne: "Closed" },
             startDate: { $gte: start, $lt: end },
           },
         },
@@ -274,7 +287,6 @@ export class CommonRepository {
       totalJobs,
       readyToScheduleAgg,
       closedAgg,
-      nonCancelledAgg,
       pendingAgg,
       variable,
     ] = await Promise.all([
@@ -303,16 +315,7 @@ export class CommonRepository {
         {
           $match: {
             salesRepId: salesRepObjectId,
-            status: { $ne: "Cancelled" },
-          },
-        },
-        { $group: { _id: null, total: { $sum: "$price" } } },
-      ]),
-      Job.aggregate([
-        {
-          $match: {
-            salesRepId: salesRepObjectId,
-            status: { $in: ["Ready to Schedule", "Scheduled and Open", "Pending Close"] },
+            status: { $ne: "Closed" },
           },
         },
         { $group: { _id: null, total: { $sum: "$price" } } },
@@ -323,7 +326,7 @@ export class CommonRepository {
     const commissionRate = Number(variable?.salesRepCommissionRate || 0);
     const totalRevenueEarned = readyToScheduleAgg[0]?.total || 0;
     const totalRevenueProduced = closedAgg[0]?.total || 0;
-    const totalCommissionEarned = (nonCancelledAgg[0]?.total || 0) * commissionRate;
+    const totalCommissionEarned = (closedAgg[0]?.total || 0) * commissionRate;
     const totalCommissionPaid = totalRevenueProduced * commissionRate;
     const totalCommissionPending = (pendingAgg[0]?.total || 0) * commissionRate;
 
@@ -336,6 +339,49 @@ export class CommonRepository {
       totalCommissionEarned,
       totalCommissionPaid,
       totalCommissionPending,
+    };
+  };
+
+  getUserStatsById = async (userId: string) => {
+    const user = await User.findById(userId).select(
+      "_id fullName email role"
+    );
+    if (!user) {
+      return null;
+    }
+
+    if (user.role === "Sales Rep") {
+      const salesRepStats = await this.getSalesRepPersonalStats(
+        user._id.toString()
+      );
+      return {
+        userId: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        stats: salesRepStats,
+      };
+    }
+
+    if (user.role === "Production Manager") {
+      const productionStats = await this.getProductionManagerJobStats(
+        user._id.toString()
+      );
+      return {
+        userId: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        stats: productionStats,
+      };
+    }
+
+    return {
+      userId: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+      stats: null,
     };
   };
 

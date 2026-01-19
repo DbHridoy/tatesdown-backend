@@ -2,9 +2,13 @@ import { Types } from "mongoose";
 import { ClientRepository } from "./client.repository";
 import { apiError } from "../../errors/api-error";
 import { Errors } from "../../constants/error-codes";
-import { createNotification } from "../../utils/create-notification-utils";
+import {
+  createNotification,
+  createNotificationsForRole,
+} from "../../utils/create-notification-utils";
 import { SalesRepRepository } from "../sales-rep/sales-rep.repository";
 import { CommonService } from "../common/common.service";
+import { Job } from "../job/job.model";
 
 export class ClientService {
   constructor(
@@ -48,6 +52,18 @@ export class ClientService {
     }
     await this.clientRepo.createClientNote(clientNote);
 
+    await createNotificationsForRole("Admin", {
+      type: "client_created",
+      message: `Client ${newClient.clientName || newClient.customClientId || newClient._id} created`,
+    });
+    if (newClient.salesRepId) {
+      await createNotification({
+        forUser: newClient.salesRepId.toString(),
+        type: "client_assigned",
+        message: `You have been assigned a new client: ${newClient.clientName || newClient.customClientId || newClient._id}`,
+      });
+    }
+
     return newClient;
   };
 
@@ -72,6 +88,23 @@ export class ClientService {
     const newClientNote = await this.clientRepo.createClientNote(
       clientNotePayload
     );
+
+    await createNotificationsForRole("Admin", {
+      type: "note_added",
+      message: "A note was added to a client",
+    });
+    if (clientNotePayload.jobId) {
+      const job = await Job.findById(clientNotePayload.jobId).select(
+        "productionManagerId"
+      );
+      if (job?.productionManagerId) {
+        await createNotification({
+          forUser: job.productionManagerId.toString(),
+          type: "note_added",
+          message: "A note was added to one of your jobs",
+        });
+      }
+    }
 
     return newClientNote;
   };
@@ -101,7 +134,21 @@ export class ClientService {
   };
 
   updateClient = async (clientId: string, clientInfo: any) => {
-    return await this.clientRepo.updateClient(clientId, clientInfo);
+    const existingClient = await this.clientRepo.getClientById(clientId);
+    const updatedClient = await this.clientRepo.updateClient(
+      clientId,
+      clientInfo
+    );
+    const newSalesRepId = updatedClient?.salesRepId?.toString();
+    const previousSalesRepId = existingClient?.salesRepId?.toString();
+    if (newSalesRepId && newSalesRepId !== previousSalesRepId) {
+      await createNotification({
+        forUser: newSalesRepId,
+        type: "client_assigned",
+        message: `You have been assigned a new client: ${updatedClient?.clientName || updatedClient?._id}`,
+      });
+    }
+    return updatedClient;
   };
 
   deleteClient = async (clientId: string) => {

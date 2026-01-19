@@ -25,6 +25,7 @@ import { QuoteService } from "./modules/quote/quote.service";
 import { QuoteController } from "./modules/quote/quote.controller";
 import { buildDynamicSearch } from "./utils/dynamic-search-utils";
 import { SalesRepRepository } from "./modules/sales-rep/sales-rep.repository";
+import { ProductionManagerRepository } from "./modules/production-manager/production-manager.repository";
 
 export const hashUtils = new HashUtils();
 export const jwtUtils = new JwtUtils();
@@ -38,6 +39,7 @@ export const userController = new UserController(userService);
 
 export const clientRepo = new ClientRepository();
 export const salesRepRepo = new SalesRepRepository();
+export const productionManagerRepo = new ProductionManagerRepository();
 
 export const authRepo = new AuthRepository();
 export const authService = new AuthService(
@@ -67,7 +69,11 @@ export const quoteService = new QuoteService(
   salesRepRepo,
   clientRepo
 );
-export const commonService = new CommonService(commonRepository, salesRepRepo);
+export const commonService = new CommonService(
+  commonRepository,
+  salesRepRepo,
+  productionManagerRepo
+);
 export const commonController = new CommonController(commonService, commonRepository);
 export const expenseService = new ExpenseService(
   expenseRepository,

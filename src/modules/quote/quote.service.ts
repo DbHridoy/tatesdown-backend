@@ -2,6 +2,7 @@ import { Types } from "mongoose";
 import { SalesRepRepository } from "../sales-rep/sales-rep.repository";
 import { QuoteRepository } from "./quote.repository";
 import { ClientRepository } from "../client/client.repository";
+import { createNotificationsForRole } from "../../utils/create-notification-utils";
 
 export class QuoteService {
   constructor(
@@ -53,6 +54,16 @@ export class QuoteService {
       newQuote.clientId.toString(),
       "Quoted"
     );
+    if (quoteInfo?.notes) {
+      await createNotificationsForRole("Admin", {
+        type: "note_added",
+        message: "A note was added to a quote",
+      });
+    }
+    await createNotificationsForRole("Admin", {
+      type: "client_converted_quote",
+      message: "A client was converted into a quote",
+    });
     return newQuote;
   };
 
