@@ -42,15 +42,18 @@ export class ClientService {
 
     const newClient = await this.clientRepo.createClient(clientPayload);
 
+    const trimmedNote = typeof body.note === "string" ? body.note.trim() : "";
     const clientNote = {
       clientId: newClient._id,
-      note: body.note,
+      note: trimmedNote,
       createdBy: user.userId,
-    }
+    };
     if (newClient.salesRepId) {
       await this.salesRepRepo.incrementSalesRepStats('client', newClient.salesRepId);
     }
-    await this.clientRepo.createClientNote(clientNote);
+    if (trimmedNote) {
+      await this.clientRepo.createClientNote(clientNote);
+    }
 
     await createNotificationsForRole("Admin", {
       type: "client_created",
@@ -78,8 +81,17 @@ export class ClientService {
   };
 
   createClientNote = async (clientNoteData: any, clientId: string, user: any) => {
+    const trimmedNote =
+      typeof clientNoteData.note === "string"
+        ? clientNoteData.note.trim()
+        : "";
+    const file = clientNoteData.file;
+    if (!trimmedNote && !file) {
+      throw new Error("Note or file is required");
+    }
     const clientNotePayload: any = {
       ...clientNoteData,
+      note: trimmedNote,
       quoteId: clientNoteData.quoteId || null,
       jobId: clientNoteData.jobId || null,
       clientId,
@@ -131,6 +143,10 @@ export class ClientService {
 
   getClientNoteByClientId = async (clientId: string) => {
     return await this.clientRepo.getClientNoteByClientId(clientId);
+  };
+
+  getContractsByClientId = async (clientId: string) => {
+    return await this.clientRepo.getContractsByClientId(clientId);
   };
 
   updateClient = async (clientId: string, clientInfo: any) => {

@@ -3,6 +3,7 @@ import Call from "./call-log.model";
 import clientNote from "./client-note.model";
 import { buildDynamicSearch } from "../../utils/dynamic-search-utils";
 import { logger } from "../../utils/logger";
+import { Contract } from "../job/contract.model";
 
 export class ClientRepository {
   searchClientByPhoneNumber = async (phoneNumber: string) => {
@@ -37,7 +38,8 @@ export class ClientRepository {
   getClientById = async (clientId: string) => {
     return await Client.findById(clientId)
       .populate("callLogs")
-      .populate("notes");
+      .populate("notes")
+      .populate("contracts");
   };
 
   getAllCallLogs = async () => {
@@ -54,6 +56,10 @@ export class ClientRepository {
 
   getClientNoteByClientId = async (clientId: string) => {
     return await clientNote.findById(clientId);
+  };
+
+  getContractsByClientId = async (clientId: string) => {
+    return Contract.find({ clientId });
   };
 
   updateClient = async (clientId: string, clientInfo: any) => {

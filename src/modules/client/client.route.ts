@@ -20,6 +20,7 @@ clientRoute.get("/", clientController.getAllClients);
 clientRoute.get("/:clientId", clientController.getClientById);
 clientRoute.get("/call-log", clientController.getAllCallLogs);
 clientRoute.get("/:clientId/call-log", clientController.getCallLogsByClientId);
+clientRoute.get("/:clientId/contracts", clientController.getContractsByClientId);
 
 //---------------------patch------------------------//
 

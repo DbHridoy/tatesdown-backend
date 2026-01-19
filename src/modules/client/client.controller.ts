@@ -121,6 +121,20 @@ export class ClientController {
     }
   );
 
+  getContractsByClientId = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const clientId = req.params.clientId;
+      const contracts = await this.clientService.getContractsByClientId(
+        clientId
+      );
+      res.status(HttpCodes.Ok).json({
+        success: true,
+        message: "All contracts for this client fetched successfully",
+        data: contracts,
+      });
+    }
+  );
+
   getAllClientNotes = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const allClientNotes = this.clientService.getAllClientNote();
