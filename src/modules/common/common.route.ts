@@ -26,6 +26,11 @@ commonRoute.get(
   commonController.getSalesRepLeaderboard
 );
 commonRoute.get("/my-stats", commonController.getMyStats);
+commonRoute.get(
+  "/summary-stats",
+  authMiddleware.authorize(["Admin"]),
+  commonController.getSummaryStats
+);
 commonRoute.post(
   "/payments",
   authMiddleware.authorize(["Admin"]),

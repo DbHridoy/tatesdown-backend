@@ -184,6 +184,34 @@ export class CommonRepository {
     };
   };
 
+  getSummaryStats = async (periodType?: string, date?: Date) => {
+    const dateFilter = buildDateFilter(periodType, date);
+    const [
+      totalClients,
+      totalQuotes,
+      totalJobs,
+      scheduledJobs,
+      pendingCloseJobs,
+      closedJobs,
+    ] = await Promise.all([
+      Client.countDocuments({ ...dateFilter }),
+      Quote.countDocuments({ ...dateFilter }),
+      Job.countDocuments({ ...dateFilter }),
+      Job.countDocuments({ status: "Scheduled and Open", ...dateFilter }),
+      Job.countDocuments({ status: "Pending Close", ...dateFilter }),
+      Job.countDocuments({ status: "Closed", ...dateFilter }),
+    ]);
+
+    return {
+      totalClients,
+      totalQuotes,
+      totalJobs,
+      scheduledJobs,
+      pendingCloseJobs,
+      closedJobs,
+    };
+  };
+
   getSalesRepStats = async (
     salesRepId: string,
     periodType?: string,

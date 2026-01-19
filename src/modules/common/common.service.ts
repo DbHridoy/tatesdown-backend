@@ -53,6 +53,10 @@ export class CommonService {
     return stats;
   };
 
+  getSummaryStats = async (periodType?: string, date?: Date) => {
+    return this.commonRepository.getSummaryStats(periodType, date);
+  };
+
   getSalesRepStats = async (
     id: string,
     periodType?: string,

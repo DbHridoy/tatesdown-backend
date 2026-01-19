@@ -132,6 +132,21 @@ export class CommonController {
       });
     }
   );
+
+  getSummaryStats = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { error, periodType, date } = getPeriodParams(req.query);
+      if (error) {
+        return res.status(400).json({ message: error });
+      }
+      const stats = await this.commonService.getSummaryStats(periodType, date);
+      res.status(200).json({
+        success: true,
+        message: "Summary stats retrieved successfully",
+        data: stats,
+      });
+    }
+  );
   getSalesRepLeaderboard = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const { periodType, date } = req.query;
