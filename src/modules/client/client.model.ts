@@ -78,12 +78,6 @@ clientSchema.virtual("quote", {
   foreignField: "clientId",
 });
 
-clientSchema.virtual("contracts", {
-  ref: "Contract",
-  localField: "_id",
-  foreignField: "clientId",
-});
-
 // Pre-save hook for sequential ID
 clientSchema.pre<ClientDocument>("save", async function (this: ClientDocument) {
   if (!this.customClientId) {

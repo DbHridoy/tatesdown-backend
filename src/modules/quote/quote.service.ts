@@ -1,4 +1,3 @@
-import { Types } from "mongoose";
 import { SalesRepRepository } from "../sales-rep/sales-rep.repository";
 import { QuoteRepository } from "./quote.repository";
 import { ClientRepository } from "../client/client.repository";
@@ -13,7 +12,7 @@ export class QuoteService {
 
   createQuote = async (
     quoteInfo: any,
-    bidSheet: string,
+    bidSheet?: string,
     user: any
   ) => {
 
@@ -29,23 +28,17 @@ export class QuoteService {
 
     const quote = {
       ...quoteInfo,
+      ...(bidSheet ? { bidSheetUrl: bidSheet } : {}),
       salesRepId: user.userId
     };
 
     const newQuote = await this.quoteRepository.createQuote(quote);
-    const finalBitSheet = {
-      createdBy: user.userId,
-      clientId: quoteInfo.clientId,
-      bidSheetUrl: bidSheet,
-      quoteId: newQuote._id,
-    }
     const quoteNote = {
       clientId: quoteInfo.clientId,
       quoteId: newQuote._id,
       note: quoteInfo.notes || "",
       createdBy: user.userId,
     }
-    await this.quoteRepository.createBidSheet(finalBitSheet);
     await this.clientRepo.createClientNote(quoteNote);
     if (user.userId) {
       await this.salesRepRepo.incrementSalesRepStats('quote', user.userId);
@@ -79,33 +72,21 @@ export class QuoteService {
   updateQuoteById = async (
     id: string,
     quoteInfo: any,
-    bidSheetUrl?: string,
-    user?: any
+    bidSheetUrl?: string
   ) => {
     const { bidSheet, ...updateInfo } = quoteInfo || {};
+    const finalUpdateInfo = {
+      ...updateInfo,
+      ...(bidSheetUrl ? { bidSheetUrl } : {}),
+    };
     const updatedQuote = await this.quoteRepository.updateQuoteById(
       id,
-      updateInfo
+      finalUpdateInfo
     );
     if (!bidSheetUrl) {
       return updatedQuote;
     }
 
-    const quote = await this.quoteRepository.getQuoteById(id);
-    if (!quote) {
-      throw new Error("Quote not found");
-    }
-    if (!user?.userId) {
-      throw new Error("User is required to update bid sheet");
-    }
-
-    await this.quoteRepository.deleteBidSheetsByQuoteId(id);
-    await this.quoteRepository.createBidSheet({
-      createdBy: user.userId,
-      clientId: quote.clientId,
-      bidSheetUrl,
-      quoteId: quote._id,
-    });
     return this.quoteRepository.getQuoteById(id);
   };
 

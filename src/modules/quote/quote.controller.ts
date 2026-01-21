@@ -2,8 +2,6 @@ import { Request, Response, NextFunction } from "express";
 import { HttpCodes } from "../../constants/status-codes";
 import { QuoteService } from "./quote.service";
 import { logger } from "../../utils/logger";
-import { SalesRep } from "../sales-rep/sales-rep.model";
-import { Client } from "../client/client.model";
 
 export class QuoteController {
   constructor(private readonly quoteService: QuoteService) { }
@@ -17,7 +15,7 @@ export class QuoteController {
 
     const quote = await this.quoteService.createQuote(
       quoteInfo,
-      bidSheet!,
+      bidSheet,
       user
     );
 
@@ -53,13 +51,11 @@ export class QuoteController {
     const { quoteId } = req.params;
     const { body } = req;
     const bidSheetUrl = req.file?.fileUrl;
-    const user = req.user!;
     logger.info({ body }, "QuoteController.updateQuoteById");
     const quote = await this.quoteService.updateQuoteById(
       quoteId,
       body,
-      bidSheetUrl,
-      user
+      bidSheetUrl
     );
     res.status(HttpCodes.Ok).json({ quote });
   };

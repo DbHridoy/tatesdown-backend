@@ -129,24 +129,24 @@ export class ClientService {
     return await this.clientRepo.getClientById(clientId);
   };
 
-  getAllCallLogs = async () => {
-    return await this.clientRepo.getAllCallLogs();
+  getAllCallLogs = async (query: any) => {
+    return await this.clientRepo.getAllCallLogs(query);
   };
 
-  getCallLogByClientId = async (id: string) => {
-    return await this.clientRepo.getCallLogByClientId(id);
+  getCallLogByClientId = async (id: string, query: any) => {
+    return await this.clientRepo.getCallLogByClientId(id, query);
   };
 
-  getAllClientNote = async () => {
-    return await this.clientRepo.getAllClientNote();
+  getAllClientNote = async (query: any) => {
+    return await this.clientRepo.getAllClientNote(query);
   };
 
   getClientNoteByClientId = async (clientId: string) => {
     return await this.clientRepo.getClientNoteByClientId(clientId);
   };
 
-  getContractsByClientId = async (clientId: string) => {
-    return await this.clientRepo.getContractsByClientId(clientId);
+  getContractsByClientId = async (clientId: string, query: any) => {
+    return await this.clientRepo.getContractsByClientId(clientId, query);
   };
 
   updateClient = async (clientId: string, clientInfo: any) => {

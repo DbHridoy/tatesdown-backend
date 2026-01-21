@@ -12,7 +12,7 @@ jobRoute.post(
   jobController.createJob
 );
 // jobRoute.post("/job-note", uploadFile({ fieldName: "file", uploadType: "single" }), jobController.createJobNote);
-jobRoute.post("/design-consultation", uploadFile({ fieldName: "file", uploadType: "single" }), jobController.createDesignConsultation);
+jobRoute.post("/design-consultation", uploadFile({ fieldName: "contract", uploadType: "single" }), jobController.createDesignConsultation);
 jobRoute.patch(
   "/design-consultation/:id",
   uploadFile({ fieldName: "file", uploadType: "single" }),

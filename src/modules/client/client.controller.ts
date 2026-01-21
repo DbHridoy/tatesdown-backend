@@ -3,8 +3,6 @@ import { asyncHandler } from "../../utils/async-handler";
 import { ClientService } from "./client.service";
 import { HttpCodes } from "../../constants/status-codes";
 import { logger } from "../../utils/logger";
-import { SalesRep } from "../sales-rep/sales-rep.model";
-import { Types } from "mongoose";
 
 export class ClientController {
   constructor(private clientService: ClientService) {}
@@ -100,11 +98,12 @@ export class ClientController {
 
   getAllCallLogs = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
-      const allCallLogs = this.clientService.getAllCallLogs();
+      const allCallLogs = await this.clientService.getAllCallLogs(req.query);
       res.status(HttpCodes.Ok).json({
         success: true,
         message: "All call logs fetched successfully",
-        data: allCallLogs,
+        data: allCallLogs.data,
+        total: allCallLogs.total,
       });
     }
   );
@@ -112,11 +111,15 @@ export class ClientController {
   getCallLogsByClientId = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const clientId = req.params.clientId;
-      const callLogs = this.clientService.getCallLogByClientId(clientId);
+      const callLogs = await this.clientService.getCallLogByClientId(
+        clientId,
+        req.query
+      );
       res.status(HttpCodes.Ok).json({
         success: true,
         message: "All call logs for this client fetched successfully",
-        data: callLogs,
+        data: callLogs.data,
+        total: callLogs.total,
       });
     }
   );
@@ -125,23 +128,28 @@ export class ClientController {
     async (req: Request, res: Response, next: NextFunction) => {
       const clientId = req.params.clientId;
       const contracts = await this.clientService.getContractsByClientId(
-        clientId
+        clientId,
+        req.query
       );
       res.status(HttpCodes.Ok).json({
         success: true,
         message: "All contracts for this client fetched successfully",
-        data: contracts,
+        data: contracts.data,
+        total: contracts.total,
       });
     }
   );
 
   getAllClientNotes = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
-      const allClientNotes = this.clientService.getAllClientNote();
+      const allClientNotes = await this.clientService.getAllClientNote(
+        req.query
+      );
       res.status(HttpCodes.Ok).json({
         success: true,
         message: "All client notes fetched successfully",
-        data: allClientNotes,
+        data: allClientNotes.data,
+        total: allClientNotes.total,
       });
     }
   );

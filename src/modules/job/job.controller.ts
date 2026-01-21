@@ -3,12 +3,8 @@ import { asyncHandler } from "../../utils/async-handler";
 import { JobService } from "./job.service";
 import { HttpCodes } from "../../constants/status-codes";
 import { logger } from "../../utils/logger";
-import { SalesRep } from "../sales-rep/sales-rep.model";
-import { Quote } from "../quote/quote.model";
 import { Job } from "./job.model";
-import { Client } from "../client/client.model";
 import { DesignConsultation } from "./design-consultation.model";
-import { Contract } from "./contract.model";
 
 export class JobController {
   constructor(private readonly jobService: JobService) { }
@@ -51,8 +47,6 @@ export class JobController {
       estimatedStartDate,
     } = req.body;
     const job = await Job.findById(jobId);
-    const user = req.user!;
-
     if (!job) {
       throw new Error("Job not found");
     }
@@ -81,26 +75,15 @@ export class JobController {
     if (upsellValue !== undefined) {
       updatePayload.upsellValue = String(upsellValue);
     }
+    if (req.file?.fileUrl) {
+      updatePayload.contractUrl = req.file.fileUrl;
+    }
 
     const designConsultation = await DesignConsultation.findOneAndUpdate(
       { jobId },
       updatePayload,
       { new: true, upsert: true }
     );
-
-    if (req.file?.fileUrl) {
-      await Contract.findOneAndUpdate(
-        { designConsultationId: designConsultation._id },
-        {
-          createdBy: user.userId,
-          clientId: job.clientId,
-          contractUrl: req.file.fileUrl,
-          jobId,
-          designConsultationId: designConsultation._id,
-        },
-        { new: true, upsert: true }
-      );
-    }
 
     res.status(201).json({
       success: true,
@@ -121,7 +104,6 @@ export class JobController {
         throw new Error("Job not found");
       }
 
-      const user = req.user!;
       const {
         clientId,
         product,
@@ -156,26 +138,15 @@ export class JobController {
       if (upsellValue !== undefined) {
         updatePayload.upsellValue = String(upsellValue);
       }
+      if (req.file?.fileUrl) {
+        updatePayload.contractUrl = req.file.fileUrl;
+      }
 
       const designConsultation = await DesignConsultation.findByIdAndUpdate(
         id,
         updatePayload,
         { new: true }
       );
-
-      if (req.file?.fileUrl) {
-        await Contract.findOneAndUpdate(
-          { designConsultationId: existingDesignConsultation._id },
-          {
-            createdBy: user.userId,
-            clientId: job.clientId,
-            contractUrl: req.file.fileUrl,
-            jobId: job._id,
-            designConsultationId: existingDesignConsultation._id,
-          },
-          { new: true, upsert: true }
-        );
-      }
 
       res.status(200).json({
         success: true,
@@ -232,11 +203,12 @@ export class JobController {
   getAllDesignConsultation = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const allDesignConsultation =
-        await this.jobService.getAllDesignConsultation();
+        await this.jobService.getAllDesignConsultation(req.query);
       res.status(HttpCodes.Ok).json({
         success: true,
         message: "All Design Consultation fetched successfully",
-        data: allDesignConsultation,
+        data: allDesignConsultation.data,
+        total: allDesignConsultation.total,
       });
     }
   );

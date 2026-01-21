@@ -84,18 +84,10 @@ export class JobService {
     }
     const job = {
       ...jobInfo,
+      ...(contractUrl ? { contractUrl } : {}),
       salesRepId: user.userId
     };
     const newJob = await this.jobRepository.createJob(job);
-    if (contractUrl) {
-      const contract = {
-        createdBy: user.userId,
-        clientId: jobInfo.clientId,
-        contractUrl,
-        jobId: newJob._id,
-      };
-      await this.jobRepository.createContract(contract);
-    }
     await this.salesRepRepo.incrementSalesRepStats("job", user.userId);
     await createNotificationsForRole("Admin", {
       type: "quote_converted_job",
@@ -154,8 +146,8 @@ export class JobService {
     return this.applyDesignConsultationAdjustments(job);
   };
 
-  getAllDesignConsultation = async () => {
-    return await DesignConsultation.find();
+  getAllDesignConsultation = async (query: any) => {
+    return await this.jobRepository.getAllDesignConsultation(query);
   };
 
   getDesignConsultationById = async (id: string) => {

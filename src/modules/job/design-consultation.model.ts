@@ -3,6 +3,7 @@ import { model, Schema, Types, Document } from "mongoose";
 export interface DesignConsultationDocument extends Document {
   clientId: Types.ObjectId;
   jobId: Types.ObjectId;
+  contractUrl?: string;
 
   // Product details
   product?: string;
@@ -32,6 +33,7 @@ const DesignConsultationSchema = new Schema<DesignConsultationDocument>(
       required: true,
       index: true,
     },
+    contractUrl: { type: String, trim: true },
 
     /* ---------- Product ---------- */
     product: { type: String },
@@ -53,12 +55,6 @@ const DesignConsultationSchema = new Schema<DesignConsultationDocument>(
     toObject: { virtuals: true },
   }
 );
-
-DesignConsultationSchema.virtual("contract", {
-  ref: "Contract",
-  localField: "_id",
-  foreignField: "designConsultationId",
-})
 
 export const DesignConsultation = model<DesignConsultationDocument>(
   "DesignConsultation",

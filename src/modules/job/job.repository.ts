@@ -6,7 +6,6 @@ import { DesignConsultation } from "./design-consultation.model";
 import { Types } from "mongoose";
 import Payment from "./payment.model";
 import ClientNote from "../client/client-note.model";
-import { Contract } from "./contract.model";
 
 export class JobRepository {
   createJob = async (jobInfo: any) => {
@@ -19,11 +18,6 @@ export class JobRepository {
     logger.info({ jobNote }, "JobRepository.createJobNote line 36");
     const newJobNote = new ClientNote(jobNote);
     return newJobNote.save();
-  };
-
-  createContract = async (contractInfo: any) => {
-    const newContract = new Contract(contractInfo);
-    return newContract.save();
   };
 
   getAllJobs = async (query: any) => {
@@ -49,17 +43,19 @@ export class JobRepository {
 
   getJobById = async (id: string) => {
     return await Job.findById(id)
-      .populate("clientId salesRepId quoteId")
-      .populate([{
-        path: "notes",
-        populate: {
-          path: "createdBy",
+      .populate("clientId salesRepId productionManagerId")
+      .populate("quoteId")
+      .populate([
+        {
+          path: "notes",
+          populate: {
+            path: "createdBy",
+          },
         },
-      }, {
-        path: "designConsultation"
-      }, {
-        path: "productionManagerId"
-      }])
+        {
+          path: "designConsultation",
+        },
+      ]);
 
   };
 
@@ -70,8 +66,16 @@ export class JobRepository {
     return await newDesignConsultation.save();
   };
 
-  getAllDesignConsultation = async () => {
-    return await DesignConsultation.find();
+  getAllDesignConsultation = async (query: any) => {
+    const { filter, search, options } = buildDynamicSearch(
+      DesignConsultation,
+      query
+    );
+    const [designConsultations, total] = await Promise.all([
+      DesignConsultation.find({ ...filter, ...search }, null, options),
+      DesignConsultation.countDocuments({ ...filter, ...search }),
+    ]);
+    return { data: designConsultations, total };
   };
 
   getDesignConsultationById = async (id: string) => {

@@ -1,20 +1,10 @@
 import { buildDynamicSearch } from "../../utils/dynamic-search-utils";
 import { Quote } from "./quote.model";
-import { BidSheet } from "./bid-sheet.model";
 
 export class QuoteRepository {
   createQuote = async (quoteInfo: object) => {
     const newQuote = new Quote(quoteInfo);
     return newQuote.save();
-  };
-
-  createBidSheet = async (bidSheetInfo: object) => {
-    const newBidSheet = new BidSheet(bidSheetInfo);
-    return newBidSheet.save();
-  };
-
-  deleteBidSheetsByQuoteId = async (quoteId: string) => {
-    return BidSheet.deleteMany({ quoteId });
   };
 
   getAllQuotes = async (query: any) => {
@@ -38,14 +28,12 @@ export class QuoteRepository {
         path: "salesRepId"
       }
     }, {
-      path: "bidSheet"
-    }, {
       path: "notes"
     }]);
   };
 
   updateQuoteById = async (id: string, quoteInfo: object) => {
-    return await Quote.findByIdAndUpdate(id, quoteInfo, { new: true }).populate(["bidSheet", "notes"]);
+    return await Quote.findByIdAndUpdate(id, quoteInfo, { new: true }).populate(["notes"]);
   };
 
   updateQuoteStatus = async (id: string, status: string) => {

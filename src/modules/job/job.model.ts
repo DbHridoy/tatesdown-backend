@@ -8,6 +8,7 @@ export interface JobDocument extends Document {
   clientId: Types.ObjectId;
   quoteId: Types.ObjectId;
   productionManagerId: Types.ObjectId;
+  contractUrl?: string;
   title: string;
   price: number;
   downPayment: number;
@@ -37,6 +38,7 @@ const jobSchema = new Schema<JobDocument>(
     clientId: { type: Types.ObjectId, ref: "Client", required: true },
     quoteId: { type: Types.ObjectId, ref: "Quote", required: true },
     productionManagerId: { type: Types.ObjectId, ref: "User" },
+    contractUrl: { type: String, trim: true },
     customJobId: { type: String, unique: true },
     title: { type: String, required: true },
     price: { type: Number, required: true },
@@ -85,12 +87,6 @@ jobSchema.virtual("notes", {
 
 jobSchema.virtual("designConsultation", {
   ref: "DesignConsultation",
-  localField: "_id",
-  foreignField: "jobId",
-});
-
-jobSchema.virtual("contract", {
-  ref: "Contract",
   localField: "_id",
   foreignField: "jobId",
 });

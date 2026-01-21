@@ -30,6 +30,10 @@ const quoteSchema = new Schema(
       enum: ["Pending", "Approved", "Rejected"],
       default: "Pending",
     },
+    bidSheetUrl: {
+      type: String,
+      trim: true,
+    },
   },
   {
     timestamps: true,
@@ -43,11 +47,6 @@ const quoteSchema = new Schema(
 quoteSchema.index({ createdAt: -1 });
 quoteSchema.index({ salesRepId: 1, status: 1 });
 
-quoteSchema.virtual("bidSheet", {
-  ref: "BidSheet",
-  localField: "_id",
-  foreignField: "quoteId",
-});
 quoteSchema.virtual("notes", {
   ref: "ClientNote",
   localField: "clientId",
