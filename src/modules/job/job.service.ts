@@ -228,6 +228,7 @@ export class JobService {
       return updatedJob;
     }
     if (status === "Closed" && job) {
+      const updatedJob = await this.jobRepository.updateJobById(id, jobInfo);
       const salesRepUserId = this.normalizeObjectId(job.salesRepId);
       if (salesRepUserId) {
         await this.salesRepRepo.updateCommissionEarned(
@@ -245,7 +246,7 @@ export class JobService {
           message: "A job assigned to you was marked as Closed",
         });
       }
-      return await this.jobRepository.getJobById(id);
+      return updatedJob;
     }
 
     const updatedJob = await this.jobRepository.updateJobById(id, jobInfo);

@@ -533,6 +533,16 @@ export class CommonRepository {
             },
             { $count: "count" },
           ],
+          closedCount: [
+            {
+              $match: {
+                productionManagerId: productionManagerObjectId,
+                status: "Closed",
+                ...dateFilter,
+              },
+            },
+            { $count: "count" },
+          ],
           cancelledCount: [
             {
               $match: {
@@ -571,6 +581,7 @@ export class CommonRepository {
       readyToScheduleCount: result?.readyToScheduleCount?.[0]?.count || 0,
       scheduledAndOpenCount: result?.scheduledAndOpenCount?.[0]?.count || 0,
       pendingCloseCount: result?.pendingCloseCount?.[0]?.count || 0,
+      closedCount: result?.closedCount?.[0]?.count || 0,
       cancelledCount: result?.cancelledCount?.[0]?.count || 0,
       totalRevenue: result?.totalRevenue?.[0]?.total || 0,
       totalProducedRevenue: result?.totalProducedRevenue?.[0]?.total || 0,
