@@ -15,8 +15,8 @@ export class QuoteController {
 
     const quote = await this.quoteService.createQuote(
       quoteInfo,
-      bidSheet,
-      user
+      user,
+      bidSheet
     );
 
     res.status(HttpCodes.Ok).json({

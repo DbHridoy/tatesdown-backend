@@ -12,8 +12,8 @@ export class QuoteService {
 
   createQuote = async (
     quoteInfo: any,
-    bidSheet?: string,
-    user: any
+    user: any,
+    bidSheet?: string
   ) => {
 
 
