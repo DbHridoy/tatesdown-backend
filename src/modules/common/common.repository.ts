@@ -246,6 +246,7 @@ export class CommonRepository {
       totalClients,
       totalQuotes,
       totalJobs,
+      closedJobsAgg,
       totalSoldAgg,
       commissionPendingAgg,
       commissionEarnedAgg,
@@ -264,6 +265,16 @@ export class CommonRepository {
         salesRepId: salesRepObjectId,
         createdAt: { $gte: start, $lt: end },
       }),
+      Job.aggregate([
+        {
+          $match: {
+            salesRepId: salesRepObjectId,
+            status: "Closed",
+            updatedAt: { $gte: start, $lt: end },
+          },
+        },
+        { $count: "count" },
+      ]),
       Job.aggregate([
         {
           $match: {
@@ -321,6 +332,7 @@ export class CommonRepository {
       totalClients,
       totalQuotes,
       totalJobs,
+      closedJobs: closedJobsAgg[0]?.count || 0,
       totalCommissionPending: commissionPendingAgg[0]?.total || 0,
       totalCommissionEarned: commissionEarnedAgg[0]?.total || 0,
       totalRevenueSold: revenueEarnedAgg[0]?.total || 0,
@@ -339,6 +351,7 @@ export class CommonRepository {
       totalClients,
       totalQuotes,
       totalJobs,
+      closedJobsAgg,
       readyToScheduleAgg,
       closedAgg,
       pendingAgg,
@@ -348,6 +361,16 @@ export class CommonRepository {
       Client.countDocuments({ salesRepId: salesRepObjectId, ...dateFilter }),
       Quote.countDocuments({ salesRepId: salesRepObjectId, ...dateFilter }),
       Job.countDocuments({ salesRepId: salesRepObjectId, ...dateFilter }),
+      Job.aggregate([
+        {
+          $match: {
+            salesRepId: salesRepObjectId,
+            status: "Closed",
+            ...dateFilter,
+          },
+        },
+        { $count: "count" },
+      ]),
       Job.aggregate([
         {
           $match: {
@@ -401,6 +424,7 @@ export class CommonRepository {
       totalClients,
       totalQuotes,
       totalJobs,
+      closedJobs: closedJobsAgg[0]?.count || 0,
       totalRevenueSold,
       totalRevenueProduced,
       totalCommissionEarned,

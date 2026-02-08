@@ -10,6 +10,9 @@ export interface ClientDocument extends Document {
   phoneNumber: string;
   email: string;
   address: string;
+  city: string;
+  state: string;
+  zipCode: string;
   leadSource: "Door to Door" | "Inbound" | "Social";
   leadStatus: "Not quoted" | "Quoted" | "Job";
   rating: number;
@@ -32,6 +35,9 @@ const clientSchema = new Schema(
     phoneNumber: String,
     email: String,
     address: String,
+    city: String,
+    state: { type: String, default: "Illinois" },
+    zipCode: String,
     leadSource: {
       type: String,
       enum: ["Door to Door", "Inbound", "Social"],

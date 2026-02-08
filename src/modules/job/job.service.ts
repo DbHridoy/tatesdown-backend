@@ -219,6 +219,14 @@ export class JobService {
       }
       return updatedJob;
     }
+    if (status === "Ready to Schedule") {
+      const updatedJob = await this.jobRepository.updateJobById(id, jobInfo);
+      await createNotificationsForRole("Production Manager", {
+        type: "job_status_ready_to_schedule",
+        message: "A job is ready to schedule",
+      });
+      return updatedJob;
+    }
     if (status === "Pending Close") {
       const updatedJob = await this.jobRepository.updateJobById(id, jobInfo);
       await createNotificationsForRole("Admin", {

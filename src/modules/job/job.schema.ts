@@ -11,13 +11,12 @@ export const ObjectIdSchema = z
    Job Status Enum
 ------------------------------------ */
 export const JobStatusEnum = z.enum([
-  "Scheduled",
-  "In Progress",
-  "On Hold",
-  "Completed",
-  "Cancelled",
-  "Pending",
+  "DC Pending",
+  "Ready to Schedule",
+  "Scheduled and Open",
   "Pending Close",
+  "Closed",
+  "Cancelled",
 ]);
 
 /* ------------------------------------

@@ -5,6 +5,7 @@ import { HttpCodes } from "../../constants/status-codes";
 import { logger } from "../../utils/logger";
 import { Job } from "./job.model";
 import { DesignConsultation } from "./design-consultation.model";
+import { createNotificationsForRole } from "../../utils/create-notification-utils";
 
 export class JobController {
   constructor(private readonly jobService: JobService) { }
@@ -15,6 +16,9 @@ export class JobController {
         const jobInfo = req.body;
         const user = req.user!;
         const contractUrl = req.file?.fileUrl;
+        if (!contractUrl) {
+          throw new Error("Job contract is required");
+        }
 
         const newJob = await this.jobService.createJob(
           jobInfo,
@@ -45,6 +49,7 @@ export class JobController {
       upsellValue,
       addedHours,
       estimatedStartDate,
+      status,
     } = req.body;
     const job = await Job.findById(jobId);
     if (!job) {
@@ -65,9 +70,16 @@ export class JobController {
       upsellDescription,
       upsellValue,
       estimatedStartDate,
+      status,
     };
     if (addedHours !== undefined) {
       updatePayload.addedHours = normalizeNumber(addedHours);
+      const baseTotalHours = Number(job.totalHours || 0);
+      const basePowerwash = Number(job.powerwash || 0);
+      const baseSetupCleanup = Number(job.setupCleanup || 0);
+      const nextLaborHours =
+        baseTotalHours - basePowerwash - baseSetupCleanup + updatePayload.addedHours;
+      await Job.findByIdAndUpdate(jobId, { laborHours: nextLaborHours });
     }
     if (estimatedGallons !== undefined) {
       updatePayload.estimatedGallons = normalizeNumber(estimatedGallons);
@@ -77,6 +89,7 @@ export class JobController {
     }
     if (req.file?.fileUrl) {
       updatePayload.contractUrl = req.file.fileUrl;
+      await Job.findByIdAndUpdate(jobId, { contractUrl: req.file.fileUrl });
     }
 
     const designConsultation = await DesignConsultation.findOneAndUpdate(
@@ -84,6 +97,13 @@ export class JobController {
       updatePayload,
       { new: true, upsert: true }
     );
+    if (status === "Approved") {
+      await Job.findByIdAndUpdate(jobId, { status: "Ready to Schedule" });
+      await createNotificationsForRole("Production Manager", {
+        type: "job_status_ready_to_schedule",
+        message: "A job is ready to schedule",
+      });
+    }
 
     res.status(201).json({
       success: true,
@@ -113,6 +133,7 @@ export class JobController {
         upsellValue,
         addedHours,
         estimatedStartDate,
+        status,
       } = req.body;
 
       const normalizeNumber = (value: unknown) => {
@@ -127,10 +148,17 @@ export class JobController {
         colorCode,
         upsellDescription,
         estimatedStartDate,
+        status,
       };
 
       if (addedHours !== undefined) {
         updatePayload.addedHours = normalizeNumber(addedHours);
+        const baseTotalHours = Number(job.totalHours || 0);
+        const basePowerwash = Number(job.powerwash || 0);
+        const baseSetupCleanup = Number(job.setupCleanup || 0);
+        const nextLaborHours =
+          baseTotalHours - basePowerwash - baseSetupCleanup + updatePayload.addedHours;
+        await Job.findByIdAndUpdate(job._id, { laborHours: nextLaborHours });
       }
       if (estimatedGallons !== undefined) {
         updatePayload.estimatedGallons = normalizeNumber(estimatedGallons);
@@ -140,6 +168,7 @@ export class JobController {
       }
       if (req.file?.fileUrl) {
         updatePayload.contractUrl = req.file.fileUrl;
+        await Job.findByIdAndUpdate(job._id, { contractUrl: req.file.fileUrl });
       }
 
       const designConsultation = await DesignConsultation.findByIdAndUpdate(
@@ -147,6 +176,13 @@ export class JobController {
         updatePayload,
         { new: true }
       );
+      if (status === "Approved") {
+        await Job.findByIdAndUpdate(job._id, { status: "Ready to Schedule" });
+        await createNotificationsForRole("Production Manager", {
+          type: "job_status_ready_to_schedule",
+          message: "A job is ready to schedule",
+        });
+      }
 
       res.status(200).json({
         success: true,

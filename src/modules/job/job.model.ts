@@ -8,7 +8,7 @@ export interface JobDocument extends Document {
   clientId: Types.ObjectId;
   quoteId: Types.ObjectId;
   productionManagerId: Types.ObjectId;
-  contractUrl?: string;
+  contractUrl: string;
   title: string;
   price: number;
   downPayment: number;
@@ -22,6 +22,7 @@ export interface JobDocument extends Document {
   estimatedGallons: number;
   startDate: Date;
   status:
+  | "DC Pending"
   | "Ready to Schedule"
   | "Scheduled and Open"
   | "Pending Close"
@@ -38,7 +39,7 @@ const jobSchema = new Schema<JobDocument>(
     clientId: { type: Types.ObjectId, ref: "Client", required: true },
     quoteId: { type: Types.ObjectId, ref: "Quote", required: true },
     productionManagerId: { type: Types.ObjectId, ref: "User" },
-    contractUrl: { type: String, trim: true },
+    contractUrl: { type: String, trim: true, required: true },
     customJobId: { type: String, unique: true },
     title: { type: String, required: true },
     price: { type: Number, required: true },
@@ -59,13 +60,14 @@ const jobSchema = new Schema<JobDocument>(
     status: {
       type: String,
       enum: [
+        "DC Pending",
         "Ready to Schedule",
         "Scheduled and Open",
         "Pending Close",
         "Closed",
         "Cancelled",
       ],
-      default: "Ready to Schedule",
+      default: "DC Pending",
     },
   },
   {
