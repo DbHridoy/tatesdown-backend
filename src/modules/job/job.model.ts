@@ -23,11 +23,14 @@ export interface JobDocument extends Document {
   startDate: Date;
   status:
   | "DC Pending"
+  | "DC Awaiting Approval"
+  | "Downpayment Pending"
   | "Ready to Schedule"
   | "Scheduled and Open"
   | "Pending Close"
   | "Closed"
   | "Cancelled";
+  dcStatus?: "Pending" | "Approved";
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -61,6 +64,8 @@ const jobSchema = new Schema<JobDocument>(
       type: String,
       enum: [
         "DC Pending",
+        "DC Awaiting Approval",
+        "Downpayment Pending",
         "Ready to Schedule",
         "Scheduled and Open",
         "Pending Close",
@@ -68,6 +73,11 @@ const jobSchema = new Schema<JobDocument>(
         "Cancelled",
       ],
       default: "DC Pending",
+    },
+    dcStatus: {
+      type: String,
+      enum: ["Pending", "Approved"],
+      default: "Pending",
     },
   },
   {

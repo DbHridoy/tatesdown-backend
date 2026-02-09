@@ -175,6 +175,41 @@ export class JobService {
     if (!job) {
       throw new Error("Job not found");
     }
+    if (
+      jobInfo?.downPaymentStatus === "Approved" &&
+      job?.dcStatus === "Approved" &&
+      jobInfo?.status !== "Ready to Schedule"
+    ) {
+      jobInfo = {
+        ...jobInfo,
+        status: "Ready to Schedule",
+      };
+    }
+    const resolveStatus = (
+      nextDcStatus: string | undefined,
+      nextDownPaymentStatus: string | undefined
+    ) => {
+      if (nextDcStatus !== "Approved") {
+        return "DC Pending";
+      }
+      if (nextDownPaymentStatus !== "Approved") {
+        return "Downpayment Pending";
+      }
+      return "Ready to Schedule";
+    };
+    const syncDesignConsultationStatus = async () => {
+      if (jobInfo?.dcStatus === "Approved") {
+        await DesignConsultation.findOneAndUpdate(
+          { jobId: id },
+          { status: "Approved" }
+        );
+        const nextStatus = resolveStatus(
+          "Approved",
+          job.downPaymentStatus
+        );
+        await this.jobRepository.updateJobById(id, { status: nextStatus });
+      }
+    };
     const previousProductionManagerId = this.normalizeObjectId(
       job.productionManagerId
     );
@@ -217,6 +252,7 @@ export class JobService {
           message: "A new job has been assigned to you",
         });
       }
+      await syncDesignConsultationStatus();
       return updatedJob;
     }
     if (status === "Ready to Schedule") {
@@ -225,6 +261,7 @@ export class JobService {
         type: "job_status_ready_to_schedule",
         message: "A job is ready to schedule",
       });
+      await syncDesignConsultationStatus();
       return updatedJob;
     }
     if (status === "Pending Close") {
@@ -233,6 +270,7 @@ export class JobService {
         type: "job_status_pending_close",
         message: "A job was marked as Pending Close",
       });
+      await syncDesignConsultationStatus();
       return updatedJob;
     }
     if (status === "Closed" && job) {
@@ -254,10 +292,12 @@ export class JobService {
           message: "A job assigned to you was marked as Closed",
         });
       }
+      await syncDesignConsultationStatus();
       return updatedJob;
     }
 
     const updatedJob = await this.jobRepository.updateJobById(id, jobInfo);
+    await syncDesignConsultationStatus();
     return updatedJob;
   };
   
@@ -271,6 +311,28 @@ export class JobService {
       id,
       status
     );
+    const resolveStatus = (
+      nextDcStatus: string | undefined,
+      nextDownPaymentStatus: string | undefined
+    ) => {
+      if (nextDcStatus !== "Approved") {
+        return "DC Pending";
+      }
+      if (nextDownPaymentStatus !== "Approved") {
+        return "Downpayment Pending";
+      }
+      return "Ready to Schedule";
+    };
+    const nextStatus = resolveStatus(existingJob?.dcStatus, status);
+    if (existingJob && existingJob.status !== nextStatus) {
+      await this.jobRepository.updateJobById(id, { status: nextStatus });
+      if (nextStatus === "Ready to Schedule") {
+        await createNotificationsForRole("Production Manager", {
+          type: "job_status_ready_to_schedule",
+          message: "A job is ready to schedule",
+        });
+      }
+    }
     if (
       status === "Approved" &&
       existingJob?.downPaymentStatus !== "Approved" &&

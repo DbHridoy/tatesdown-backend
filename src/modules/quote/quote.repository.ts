@@ -11,10 +11,7 @@ export class QuoteRepository {
     const { filter, search, options } = buildDynamicSearch(Quote, query);
     const [quote, total] = await Promise.all([
       Quote.find({ ...filter, ...search }, null, options).populate([{
-        path: "clientId",
-        populate: {
-          path: "salesRepId"
-        },
+        path: "clientId"
       }]),
       Quote.countDocuments({ ...filter, ...search }),
     ]);

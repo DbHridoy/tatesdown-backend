@@ -92,17 +92,43 @@ export class JobController {
       await Job.findByIdAndUpdate(jobId, { contractUrl: req.file.fileUrl });
     }
 
+    const existingDesignConsultation = await DesignConsultation.findOne({ jobId });
     const designConsultation = await DesignConsultation.findOneAndUpdate(
       { jobId },
       updatePayload,
       { new: true, upsert: true }
     );
-    if (status === "Approved") {
-      await Job.findByIdAndUpdate(jobId, { status: "Ready to Schedule" });
-      await createNotificationsForRole("Production Manager", {
-        type: "job_status_ready_to_schedule",
-        message: "A job is ready to schedule",
-      });
+    if (designConsultation) {
+      await Job.findByIdAndUpdate(jobId, { dcStatus: designConsultation.status });
+    }
+    const resolveStatus = (
+      nextDcStatus: string | undefined,
+      nextDownPaymentStatus: string | undefined,
+      hasDc: boolean
+    ) => {
+      if (nextDcStatus !== "Approved") {
+        return hasDc ? "DC Awaiting Approval" : "DC Pending";
+      }
+      if (nextDownPaymentStatus !== "Approved") {
+        return "Downpayment Pending";
+      }
+      return "Ready to Schedule";
+    };
+    const nextDcStatus = designConsultation?.status ?? job.dcStatus ?? "Pending";
+    const nextDownPaymentStatus = job.downPaymentStatus;
+    const nextJobStatus = resolveStatus(
+      nextDcStatus,
+      nextDownPaymentStatus,
+      true
+    );
+    if (job.status !== nextJobStatus) {
+      await Job.findByIdAndUpdate(jobId, { status: nextJobStatus });
+      if (nextJobStatus === "Ready to Schedule") {
+        await createNotificationsForRole("Production Manager", {
+          type: "job_status_ready_to_schedule",
+          message: "A job is ready to schedule",
+        });
+      }
     }
 
     res.status(201).json({
@@ -176,12 +202,38 @@ export class JobController {
         updatePayload,
         { new: true }
       );
-      if (status === "Approved") {
-        await Job.findByIdAndUpdate(job._id, { status: "Ready to Schedule" });
-        await createNotificationsForRole("Production Manager", {
-          type: "job_status_ready_to_schedule",
-          message: "A job is ready to schedule",
-        });
+      const resolveStatus = (
+        nextDcStatus: string | undefined,
+        nextDownPaymentStatus: string | undefined,
+        hasDc: boolean
+      ) => {
+        if (nextDcStatus !== "Approved") {
+          return hasDc ? "DC Awaiting Approval" : "DC Pending";
+        }
+        if (nextDownPaymentStatus !== "Approved") {
+          return "Downpayment Pending";
+        }
+        return "Ready to Schedule";
+      };
+      const nextDcStatus =
+        status ?? existingDesignConsultation.status ?? "Pending";
+      if (nextDcStatus) {
+        await Job.findByIdAndUpdate(job._id, { dcStatus: nextDcStatus });
+      }
+      const nextDownPaymentStatus = job.downPaymentStatus;
+      const nextJobStatus = resolveStatus(
+        nextDcStatus,
+        nextDownPaymentStatus,
+        true
+      );
+      if (job.status !== nextJobStatus) {
+        await Job.findByIdAndUpdate(job._id, { status: nextJobStatus });
+        if (nextJobStatus === "Ready to Schedule") {
+          await createNotificationsForRole("Production Manager", {
+            type: "job_status_ready_to_schedule",
+            message: "A job is ready to schedule",
+          });
+        }
       }
 
       res.status(200).json({

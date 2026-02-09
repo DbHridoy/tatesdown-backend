@@ -2,6 +2,8 @@ import { SalesRepRepository } from "../sales-rep/sales-rep.repository";
 import { QuoteRepository } from "./quote.repository";
 import { ClientRepository } from "../client/client.repository";
 import { createNotificationsForRole } from "../../utils/create-notification-utils";
+import { apiError } from "../../errors/api-error";
+import { Errors } from "../../constants/error-codes";
 
 export class QuoteService {
   constructor(
@@ -72,8 +74,24 @@ export class QuoteService {
   updateQuoteById = async (
     id: string,
     quoteInfo: any,
-    bidSheetUrl?: string
+    bidSheetUrl?: string,
+    user?: any
   ) => {
+    const existingQuote = await this.quoteRepository.getQuoteById(id);
+    if (!existingQuote) {
+      throw new apiError(Errors.NotFound.code, Errors.NotFound.message);
+    }
+    if (!user) {
+      throw new apiError(Errors.Unauthorized.code, Errors.Unauthorized.message);
+    }
+    const isAdmin = user.role === "Admin";
+    const isAssignedSalesRep =
+      user.role === "Sales Rep" &&
+      existingQuote.salesRepId?.toString() === user.userId?.toString();
+    if (!isAdmin && !isAssignedSalesRep) {
+      throw new apiError(Errors.Forbidden.code, Errors.Forbidden.message);
+    }
+
     const { bidSheet, ...updateInfo } = quoteInfo || {};
     const finalUpdateInfo = {
       ...updateInfo,

@@ -12,6 +12,8 @@ export const ObjectIdSchema = z
 ------------------------------------ */
 export const JobStatusEnum = z.enum([
   "DC Pending",
+  "DC Awaiting Approval",
+  "Downpayment Pending",
   "Ready to Schedule",
   "Scheduled and Open",
   "Pending Close",
