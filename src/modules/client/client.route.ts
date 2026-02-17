@@ -3,11 +3,17 @@ import { validate } from "../../middlewares/validate.middleware";
 import { CallLogSchema, ClientSchema } from "./client.schema";
 import { authMiddleware, clientController } from "../../container";
 import { uploadFile } from "../../middlewares/upload.middleware";
+import { optionalAuth } from "../../middlewares/optional-auth.middleware";
 
 const clientRoute = Router();
 
-clientRoute.post("/", clientController.createClient);
-clientRoute.post("/:clientId/client-note", uploadFile({ fieldName: "file", uploadType: "single", }), clientController.createClientNote);
+clientRoute.post("/", optionalAuth(authMiddleware.authenticate), clientController.createClient);
+clientRoute.post(
+  "/:clientId/client-note",
+  optionalAuth(authMiddleware.authenticate),
+  uploadFile({ fieldName: "file", uploadType: "single" }),
+  clientController.createClientNote
+);
 
 clientRoute.use(authMiddleware.authenticate);
 
