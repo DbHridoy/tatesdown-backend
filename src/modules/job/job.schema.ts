@@ -11,9 +11,9 @@ export const ObjectIdSchema = z
    Job Status Enum
 ------------------------------------ */
 export const JobStatusEnum = z.enum([
+  "Downpayment Pending",
   "DC Pending",
   "DC Awaiting Approval",
-  "Downpayment Pending",
   "Ready to Schedule",
   "Scheduled and Open",
   "Pending Close",
@@ -44,7 +44,7 @@ export const CreateJobSchema = z
 
     startDate: z.coerce.date(),
 
-    status: JobStatusEnum,
+    status: JobStatusEnum.default("Downpayment Pending"),
   })
   .strict();
 

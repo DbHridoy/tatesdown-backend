@@ -17,13 +17,17 @@ export class ClientService {
     private commonService: CommonService
   ) { }
 
-  createClient = async ({ body, user }: { body: any; user: any }) => {
+  createClient = async ({
+    body,
+    user,
+  }: {
+    body: any;
+    user?: any;
+  }) => {
     let salesRepId: Types.ObjectId | null = null;
 
-    // Role-based rule
-    if (user.role !== "Sales Rep") {
-      salesRepId = null;
-    } else {
+    // Only Sales Rep can be assigned
+    if (user?.role === "Sales Rep") {
       const salesRep = await this.salesRepRepo.findByUserId(user.userId);
 
       if (!salesRep) {
@@ -33,42 +37,54 @@ export class ClientService {
       salesRepId = user.userId;
     }
 
-
     const clientPayload = {
       ...body,
       salesRepId,
-      createdBy: user.userId,
+      createdBy: user?.userId ?? null,
     };
 
     const newClient = await this.clientRepo.createClient(clientPayload);
 
-    const trimmedNote = typeof body.note === "string" ? body.note.trim() : "";
-    const clientNote = {
-      clientId: newClient._id,
-      note: trimmedNote,
-      createdBy: user.userId,
-    };
-    if (newClient.salesRepId) {
-      await this.salesRepRepo.incrementSalesRepStats('client', newClient.salesRepId);
+    const trimmedNote =
+      typeof body.note === "string" ? body.note.trim() : "";
+
+    if (trimmedNote && user?.userId) {
+      await this.clientRepo.createClientNote({
+        clientId: newClient._id,
+        note: trimmedNote,
+        createdBy: user.userId,
+      });
     }
-    if (trimmedNote) {
-      await this.clientRepo.createClientNote(clientNote);
+
+    if (newClient.salesRepId) {
+      await this.salesRepRepo.incrementSalesRepStats(
+        "client",
+        newClient.salesRepId
+      );
     }
 
     await createNotificationsForRole("Admin", {
       type: "client_created",
-      message: `Client ${newClient.clientName || newClient.customClientId || newClient._id} created`,
+      message: `Client ${newClient.clientName ||
+        newClient.customClientId ||
+        newClient._id
+        } created`,
     });
+
     if (newClient.salesRepId) {
       await createNotification({
         forUser: newClient.salesRepId.toString(),
         type: "client_assigned",
-        message: `You have been assigned a new client: ${newClient.clientName || newClient.customClientId || newClient._id}`,
+        message: `You have been assigned a new client: ${newClient.clientName ||
+          newClient.customClientId ||
+          newClient._id
+          }`,
       });
     }
 
     return newClient;
   };
+
 
   createCallLog = async (callLogData: any, clientId: string, user: any) => {
     const callLogPayload: any = {
@@ -95,7 +111,7 @@ export class ClientService {
       quoteId: clientNoteData.quoteId || null,
       jobId: clientNoteData.jobId || null,
       clientId,
-      createdBy: user.userId,
+      createdBy: user?.userId,
     };
     const newClientNote = await this.clientRepo.createClientNote(
       clientNotePayload
@@ -158,10 +174,21 @@ export class ClientService {
     const newSalesRepId = updatedClient?.salesRepId?.toString();
     const previousSalesRepId = existingClient?.salesRepId?.toString();
     if (newSalesRepId && newSalesRepId !== previousSalesRepId) {
+      if (previousSalesRepId) {
+        await createNotification({
+          forUser: previousSalesRepId,
+          type: "client_unassigned",
+          message: `You have been unassigned from client: ${updatedClient?.clientName || updatedClient?._id}`,
+        });
+      }
       await createNotification({
         forUser: newSalesRepId,
         type: "client_assigned",
         message: `You have been assigned a new client: ${updatedClient?.clientName || updatedClient?._id}`,
+      });
+      await createNotificationsForRole("Admin", {
+        type: "client_reassigned",
+        message: `Client ${updatedClient?.clientName || updatedClient?._id} was reassigned`,
       });
     }
     return updatedClient;

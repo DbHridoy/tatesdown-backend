@@ -131,7 +131,7 @@ export class CommonRepository {
       pendingCloseCount,
       closedCount,
       cancelledCount,
-      readyToScheduleAgg,
+      soldAgg,
       scheduledAndOpenAgg,
       pendingCloseAgg,
       closedAgg,
@@ -146,7 +146,7 @@ export class CommonRepository {
       Job.countDocuments({ status: "Closed", ...dateFilter }),
       Job.countDocuments({ status: "Cancelled", ...dateFilter }),
       Job.aggregate([
-        { $match: { status: "Ready to Schedule", ...dateFilter } },
+        { $match: { status: { $ne: "Cancelled" }, ...dateFilter } },
         { $group: { _id: null, total: { $sum: "$price" } } },
       ]),
       Job.aggregate([
@@ -176,7 +176,7 @@ export class CommonRepository {
       pendingCloseCount,
       closedCount,
       cancelledCount,
-      totalRevenueSold: readyToScheduleAgg[0]?.total || 0,
+      totalRevenueSold: soldAgg[0]?.total || 0,
       totalRevenuePending:
         (scheduledAndOpenAgg[0]?.total || 0) +
         (pendingCloseAgg[0]?.total || 0),
@@ -289,8 +289,8 @@ export class CommonRepository {
         {
           $match: {
             salesRepId: salesRepObjectId,
-            status: { $ne: "Closed" },
-            startDate: { $gte: start, $lt: end },
+            status: { $ne: "Cancelled" },
+            createdAt: { $gte: start, $lt: end },
           },
         },
         { $group: { _id: null, total: { $sum: "$price" } } },
@@ -352,7 +352,7 @@ export class CommonRepository {
       totalQuotes,
       totalJobs,
       closedJobsAgg,
-      readyToScheduleAgg,
+      soldAgg,
       closedAgg,
       pendingAgg,
       variable,
@@ -375,7 +375,7 @@ export class CommonRepository {
         {
           $match: {
             salesRepId: salesRepObjectId,
-            status: "Ready to Schedule",
+            status: { $ne: "Cancelled" },
             ...dateFilter,
           },
         },
@@ -409,7 +409,7 @@ export class CommonRepository {
 
     const commissionRate = Number(variable?.salesRepCommissionRate || 0);
     const normalizedCommissionRate = commissionRate / 100;
-    const totalRevenueSold = readyToScheduleAgg[0]?.total || 0;
+    const totalRevenueSold = soldAgg[0]?.total || 0;
     const totalRevenueProduced = closedAgg[0]?.total || 0;
     const totalCommissionEarned =
       (closedAgg[0]?.total || 0) * normalizedCommissionRate;

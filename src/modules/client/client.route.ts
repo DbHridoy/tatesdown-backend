@@ -6,13 +6,14 @@ import { uploadFile } from "../../middlewares/upload.middleware";
 
 const clientRoute = Router();
 
+clientRoute.post("/", clientController.createClient);
+clientRoute.post("/:clientId/client-note", uploadFile({ fieldName: "file", uploadType: "single", }), clientController.createClientNote);
+
 clientRoute.use(authMiddleware.authenticate);
 
 //---------------------post------------------------//
 
-clientRoute.post("/", clientController.createClient);
 clientRoute.post("/:clientId/call-log", validate(CallLogSchema), clientController.createCallLog);
-clientRoute.post("/:clientId/client-note", uploadFile({ fieldName: "file", uploadType: "single", }), clientController.createClientNote);
 
 //---------------------get------------------------//
 

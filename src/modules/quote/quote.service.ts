@@ -1,7 +1,10 @@
 import { SalesRepRepository } from "../sales-rep/sales-rep.repository";
 import { QuoteRepository } from "./quote.repository";
 import { ClientRepository } from "../client/client.repository";
-import { createNotificationsForRole } from "../../utils/create-notification-utils";
+import {
+  createNotification,
+  createNotificationsForRole,
+} from "../../utils/create-notification-utils";
 import { apiError } from "../../errors/api-error";
 import { Errors } from "../../constants/error-codes";
 
@@ -101,6 +104,21 @@ export class QuoteService {
       id,
       finalUpdateInfo
     );
+    const previousStatus = existingQuote.status?.toString();
+    const nextStatus = updatedQuote?.status?.toString();
+    if (previousStatus !== nextStatus) {
+      if (existingQuote.salesRepId) {
+        await createNotification({
+          forUser: existingQuote.salesRepId.toString(),
+          type: "quote_status_updated",
+          message: `Quote status changed from ${previousStatus || "N/A"} to ${nextStatus || "N/A"}`,
+        });
+      }
+      await createNotificationsForRole("Admin", {
+        type: "quote_status_updated",
+        message: `A quote status changed from ${previousStatus || "N/A"} to ${nextStatus || "N/A"}`,
+      });
+    }
     if (!bidSheetUrl) {
       return updatedQuote;
     }

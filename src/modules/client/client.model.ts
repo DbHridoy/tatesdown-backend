@@ -27,7 +27,6 @@ const clientSchema = new Schema(
     createdBy: {
       type: Types.ObjectId,
       ref: "User",
-      required: true,
     },
     customClientId: String,
     clientName: { type: String, required: true },
@@ -40,7 +39,7 @@ const clientSchema = new Schema(
     zipCode: String,
     leadSource: {
       type: String,
-      enum: ["Door to Door", "Inbound", "Social"],
+      enum: ["Door to Door", "Inbound", "Social",""],
     },
     leadStatus: {
       type: String,

@@ -13,7 +13,6 @@ export interface JobDocument extends Document {
   price: number;
   downPayment: number;
   budgetSpent: number;
-  downPaymentStatus: "Approved" | "Rejected" | "Pending";
   totalHours: number;
   setupCleanup: number;
   powerwash: number;
@@ -22,15 +21,14 @@ export interface JobDocument extends Document {
   estimatedGallons: number;
   startDate: Date;
   status:
+  | "Downpayment Pending"
   | "DC Pending"
   | "DC Awaiting Approval"
-  | "Downpayment Pending"
   | "Ready to Schedule"
   | "Scheduled and Open"
   | "Pending Close"
   | "Closed"
   | "Cancelled";
-  dcStatus?: "Pending" | "Approved";
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -48,11 +46,6 @@ const jobSchema = new Schema<JobDocument>(
     price: { type: Number, required: true },
     downPayment: { type: Number, required: true },
     budgetSpent: { type: Number, default: 0 },
-    downPaymentStatus: {
-      type: String,
-      enum: ["Approved", "Rejected", "Pending"],
-      default: "Pending",
-    },
     totalHours: { type: Number, default: 0 },
     setupCleanup: { type: Number, default: 0 },
     powerwash: { type: Number, default: 0 },
@@ -63,21 +56,16 @@ const jobSchema = new Schema<JobDocument>(
     status: {
       type: String,
       enum: [
+        "Downpayment Pending",
         "DC Pending",
         "DC Awaiting Approval",
-        "Downpayment Pending",
         "Ready to Schedule",
         "Scheduled and Open",
         "Pending Close",
         "Closed",
         "Cancelled",
       ],
-      default: "DC Pending",
-    },
-    dcStatus: {
-      type: String,
-      enum: ["Pending", "Approved"],
-      default: "Pending",
+      default: "Downpayment Pending",
     },
   },
   {

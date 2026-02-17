@@ -5,7 +5,10 @@ import { HttpCodes } from "../../constants/status-codes";
 import { logger } from "../../utils/logger";
 import { Job } from "./job.model";
 import { DesignConsultation } from "./design-consultation.model";
-import { createNotificationsForRole } from "../../utils/create-notification-utils";
+import {
+  createNotification,
+  createNotificationsForRole,
+} from "../../utils/create-notification-utils";
 
 export class JobController {
   constructor(private readonly jobService: JobService) { }
@@ -92,37 +95,35 @@ export class JobController {
       await Job.findByIdAndUpdate(jobId, { contractUrl: req.file.fileUrl });
     }
 
-    const existingDesignConsultation = await DesignConsultation.findOne({ jobId });
     const designConsultation = await DesignConsultation.findOneAndUpdate(
       { jobId },
       updatePayload,
       { new: true, upsert: true }
     );
-    if (designConsultation) {
-      await Job.findByIdAndUpdate(jobId, { dcStatus: designConsultation.status });
-    }
-    const resolveStatus = (
-      nextDcStatus: string | undefined,
-      nextDownPaymentStatus: string | undefined,
-      hasDc: boolean
-    ) => {
-      if (nextDcStatus !== "Approved") {
-        return hasDc ? "DC Awaiting Approval" : "DC Pending";
-      }
-      if (nextDownPaymentStatus !== "Approved") {
-        return "Downpayment Pending";
-      }
-      return "Ready to Schedule";
-    };
-    const nextDcStatus = designConsultation?.status ?? job.dcStatus ?? "Pending";
-    const nextDownPaymentStatus = job.downPaymentStatus;
-    const nextJobStatus = resolveStatus(
-      nextDcStatus,
-      nextDownPaymentStatus,
-      true
-    );
+    const nextJobStatus =
+      designConsultation?.status === "Approved"
+        ? "Ready to Schedule"
+        : "DC Awaiting Approval";
     if (job.status !== nextJobStatus) {
       await Job.findByIdAndUpdate(jobId, { status: nextJobStatus });
+      if (job.salesRepId) {
+        await createNotification({
+          forUser: job.salesRepId.toString(),
+          type: "job_status_updated",
+          message: `Job status changed from ${job.status || "N/A"} to ${nextJobStatus}`,
+        });
+      }
+      if (job.productionManagerId) {
+        await createNotification({
+          forUser: job.productionManagerId.toString(),
+          type: "job_status_updated",
+          message: `Job status changed from ${job.status || "N/A"} to ${nextJobStatus}`,
+        });
+      }
+      await createNotificationsForRole("Admin", {
+        type: "job_status_updated",
+        message: `Job status changed from ${job.status || "N/A"} to ${nextJobStatus}`,
+      });
       if (nextJobStatus === "Ready to Schedule") {
         await createNotificationsForRole("Production Manager", {
           type: "job_status_ready_to_schedule",
@@ -202,32 +203,31 @@ export class JobController {
         updatePayload,
         { new: true }
       );
-      const resolveStatus = (
-        nextDcStatus: string | undefined,
-        nextDownPaymentStatus: string | undefined,
-        hasDc: boolean
-      ) => {
-        if (nextDcStatus !== "Approved") {
-          return hasDc ? "DC Awaiting Approval" : "DC Pending";
-        }
-        if (nextDownPaymentStatus !== "Approved") {
-          return "Downpayment Pending";
-        }
-        return "Ready to Schedule";
-      };
-      const nextDcStatus =
-        status ?? existingDesignConsultation.status ?? "Pending";
-      if (nextDcStatus) {
-        await Job.findByIdAndUpdate(job._id, { dcStatus: nextDcStatus });
-      }
-      const nextDownPaymentStatus = job.downPaymentStatus;
-      const nextJobStatus = resolveStatus(
-        nextDcStatus,
-        nextDownPaymentStatus,
-        true
-      );
+      const nextDcStatus = status ?? existingDesignConsultation.status ?? "Pending";
+      const nextJobStatus =
+        nextDcStatus === "Approved"
+          ? "Ready to Schedule"
+          : "DC Awaiting Approval";
       if (job.status !== nextJobStatus) {
         await Job.findByIdAndUpdate(job._id, { status: nextJobStatus });
+        if (job.salesRepId) {
+          await createNotification({
+            forUser: job.salesRepId.toString(),
+            type: "job_status_updated",
+            message: `Job status changed from ${job.status || "N/A"} to ${nextJobStatus}`,
+          });
+        }
+        if (job.productionManagerId) {
+          await createNotification({
+            forUser: job.productionManagerId.toString(),
+            type: "job_status_updated",
+            message: `Job status changed from ${job.status || "N/A"} to ${nextJobStatus}`,
+          });
+        }
+        await createNotificationsForRole("Admin", {
+          type: "job_status_updated",
+          message: `Job status changed from ${job.status || "N/A"} to ${nextJobStatus}`,
+        });
         if (nextJobStatus === "Ready to Schedule") {
           await createNotificationsForRole("Production Manager", {
             type: "job_status_ready_to_schedule",
@@ -402,19 +402,6 @@ export class JobController {
         success: true,
         message: "Job deleted successfully",
         data: job,
-      });
-    }
-  );
-
-  updateDownpaymentStatus = asyncHandler(
-    async (req: Request, res: Response, next: NextFunction) => {
-      const { id, status } = req.body;
-      logger.info({ id, status }, "JobController.updateDownpaymentStatus");
-      const result = await this.jobService.updateDownpaymentStatus(id, status);
-      res.status(HttpCodes.Ok).json({
-        success: true,
-        message: "Downpayment status updated successfully",
-        data: result,
       });
     }
   );
