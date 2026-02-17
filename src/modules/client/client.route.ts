@@ -8,6 +8,7 @@ import { optionalAuth } from "../../middlewares/optional-auth.middleware";
 const clientRoute = Router();
 
 clientRoute.post("/", optionalAuth(authMiddleware.authenticate), clientController.createClient);
+
 clientRoute.post(
   "/:clientId/client-note",
   optionalAuth(authMiddleware.authenticate),
