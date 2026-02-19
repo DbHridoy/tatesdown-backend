@@ -1,10 +1,7 @@
 import { UserRepository } from "./user.repository";
-import { logger } from "../../utils/logger";
 import { apiError } from "../../errors/api-error";
 import { Errors } from "../../constants/error-codes";
 import { createUserType } from "./user.type";
-import { hashUtils } from "../../container";
-import { mailer } from "../../container";
 import { HashUtils } from "../../utils/hash-utils";
 import { Mailer } from "../../utils/mailer-utils";
 
@@ -33,7 +30,7 @@ export class UserService {
     };
 
     const newUser = await this.userRepo.createUser(user);
-    //await this.mailerUtils.sendPassword(userBody.email, userBody.password);
+    await this.mailer.sendPassword(userBody.email, userBody.password);
 
     return newUser;
   };
