@@ -7,6 +7,10 @@ export class QuoteRepository {
     return newQuote.save();
   };
 
+  countQuotesByClientId = async (clientId: string) => {
+    return Quote.countDocuments({ clientId });
+  };
+
   getAllQuotes = async (query: any) => {
     const { filter, search, options } = buildDynamicSearch(Quote, query);
     const [quote, total] = await Promise.all([

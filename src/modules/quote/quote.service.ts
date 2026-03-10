@@ -1,6 +1,7 @@
 import { SalesRepRepository } from "../sales-rep/sales-rep.repository";
 import { QuoteRepository } from "./quote.repository";
 import { ClientRepository } from "../client/client.repository";
+import { JobRepository } from "../job/job.repository";
 import {
   createNotification,
   createNotificationsForRole,
@@ -12,8 +13,25 @@ export class QuoteService {
   constructor(
     private readonly quoteRepository: QuoteRepository,
     private readonly salesRepRepo: SalesRepRepository,
-    private readonly clientRepo: ClientRepository
+    private readonly clientRepo: ClientRepository,
+    private readonly jobRepository: JobRepository
   ) { }
+
+  private normalizeObjectId = (value: any) => {
+    if (!value) {
+      return null;
+    }
+
+    if (typeof value === "string") {
+      return value;
+    }
+
+    if (value._id) {
+      return value._id.toString();
+    }
+
+    return value.toString();
+  };
 
   createQuote = async (
     quoteInfo: any,
@@ -127,6 +145,27 @@ export class QuoteService {
   };
 
   deleteQuoteById = async (id: string) => {
-    return await this.quoteRepository.deleteQuoteById(id);
+    const existingQuote = await this.quoteRepository.getQuoteById(id);
+    const deletedQuote = await this.quoteRepository.deleteQuoteById(id);
+
+    const clientId = this.normalizeObjectId(existingQuote?.clientId);
+    if (!clientId) {
+      return deletedQuote;
+    }
+    const [remainingJobs, remainingQuotes] = await Promise.all([
+      this.jobRepository.countJobsByClientId(clientId),
+      this.quoteRepository.countQuotesByClientId(clientId),
+    ]);
+
+    const nextLeadStatus =
+      remainingJobs > 0
+        ? "Job"
+        : remainingQuotes > 0
+          ? "Quoted"
+          : "Not quoted";
+
+    await this.clientRepo.updateLeadStatus(clientId, nextLeadStatus);
+
+    return deletedQuote;
   };
 }

@@ -43,6 +43,10 @@ export class JobRepository {
     return await newJob.save();
   };
 
+  countJobsByClientId = async (clientId: string) => {
+    return Job.countDocuments({ clientId });
+  };
+
   createJobNote = async (jobNote: any) => {
     logger.info({ jobNote }, "JobRepository.createJobNote line 36");
     const newJobNote = new ClientNote(jobNote);
